@@ -1,4 +1,6 @@
 
+/* ########################################################################### */
+/* Parts that require value changes depending on the product */
 #include "MC96F6432.h"				// device header file
 extern void I2C0_Init(void);		// device i2c init function
 
@@ -26,6 +28,8 @@ extern void I2C0_Init(void);		// device i2c init function
 #define	RXACK			(1<<0)		// Ack is received at 9th clock of SCL
 
 #define	SLAVE_ADDR	0xA0		// Slave Address
+
+/* ########################################################################### */
 
 
 void I2C_Write(unsigned char* u8Data, unsigned char u8Length);
@@ -212,3 +216,41 @@ void I2C_Polling_Loop(void)
 	}
 	USI0ST2 = 0x00;
 }
+
+
+//===============================================================//
+// Application main example //
+
+unsigned char gu8TxDat[8];
+unsigned char gu8RxDat[8];
+
+void main_example(void)
+{
+	unsigned char i;
+
+	I2C0_Init();
+
+	/* I2C TX Procedure */
+	// Init I2C Tx Data
+	for(i=0;i<8;i++)
+	{
+		gu8TxDat[i] = (i + 0x00);
+	}
+	// I2C Write
+	I2C_Write(gu8TxDat, 8);
+
+	/* I2C RX Procedure */
+	// Init I2C Rx Data
+	for(i=0;i<8;i++)
+	{
+		gu8RxDat[i] = 0x00;
+	}
+	// I2C Read
+	I2C_Read(gu8RxDat, 8);
+	I2C_RandomRead(gu8RxDat, 8);
+
+	while(1);
+}
+
+// End //
+//===============================================================//
