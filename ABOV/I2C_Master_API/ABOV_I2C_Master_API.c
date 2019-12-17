@@ -5,7 +5,7 @@
 extern void I2C_Initial(void);		// device i2c init function
 
 //------------------------------------------------------------------------------
-//		MASK1 : I2C Control Register		//  @ I2CMR , I2CDR
+//		MASK1 : I2C Control Register		//  @ I2CCR
 //------------------------------------------------------------------------------
 #define	IIF				(1<<7)		// Interrupt Flag
 #define	IICEN			(1<<6)		// IIC Enable
@@ -30,11 +30,12 @@ extern void I2C_Initial(void);		// device i2c init function
 /* ########################################################################### */
 
 
-void _I2C_Write(unsigned char u8Addr, unsigned char* u8Data, unsigned char u8Length);
-void _I2C_Read(unsigned char u8Addr, unsigned char* u8Data, unsigned char u8Length);
-void _I2C_RandomRead(unsigned char u8Addr, unsigned char* u8Data, unsigned char u8Length);
-void _I2C_Handler(void);
-
+unsigned char gu8I2CTx_BuffLen;		// TX Buffer Length
+unsigned char *pgu8I2C_TxBuff;		// TX Buffer
+unsigned char gu8I2CRx_BuffLen;		// RX Buffer Length
+unsigned char *pgu8I2C_RxBuff;		// RX Buffer
+unsigned char gu8I2C_Status;
+unsigned char gu8I2C_SlaveAddr;
 
 typedef enum
 {
@@ -42,12 +43,11 @@ typedef enum
 	I2C_BUSY,
 };
 
-unsigned char gu8I2CTx_BuffLen;
-unsigned char *pgu8I2C_TxBuff;
-unsigned char gu8I2CRx_BuffLen;
-unsigned char *pgu8I2C_RxBuff;
-unsigned char gu8I2C_Status;
-unsigned char gu8I2C_SlaveAddr;
+
+void _I2C_Write(unsigned char u8Addr, unsigned char* u8Data, unsigned char u8Length);
+void _I2C_Read(unsigned char u8Addr, unsigned char* u8Data, unsigned char u8Length);
+void _I2C_RandomRead(unsigned char u8Addr, unsigned char* u8Data, unsigned char u8Length);
+void _I2C_Handler(void);
 
 
 void delay(unsigned int u8Delay)
