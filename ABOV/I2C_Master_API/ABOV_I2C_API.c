@@ -4,6 +4,15 @@
 #include "MC97FG316.h"				// device header file
 extern void I2C_Initial(void);		// device i2c init function
 
+/**********************************************************************
+// I2C Mode Selection
+ **********************************************************************/
+#if 0	// I2C Interrupt Mode
+#define	I2C_INTERRUPT
+#else	// I2C Polling Mode
+#define	I2C_POLLING
+#endif
+
 //------------------------------------------------------------------------------
 //		MASK1 : I2C Control Register		//  @ I2CCR
 //------------------------------------------------------------------------------
@@ -76,8 +85,10 @@ void _I2C_Write(unsigned char u8Addr, unsigned char* u8Data, unsigned char u8Len
 	// I2C Loop
 	while(gu8I2C_Status == I2C_BUSY)
 	{
-//		_I2C_Handler();		// Activate when polling mode
-//		delay(1000);		// Activate when polling mode
+		#ifdef	I2C_POLLING
+		_I2C_Handler();		// Activate when polling mode
+		delay(1000);		// Activate when polling mode
+		#endif
 	}
 }
 
@@ -101,8 +112,10 @@ void _I2C_Read(unsigned char u8Addr, unsigned char* u8Data, unsigned char u8Leng
 	// I2C Loop
 	while(gu8I2C_Status == I2C_BUSY)
 	{
-//		_I2C_Handler();		// Activate when polling mode
-//		delay(1000);		// Activate when polling mode
+		#ifdef	I2C_POLLING
+		_I2C_Handler();		// Activate when polling mode
+		delay(1000);		// Activate when polling mode
+		#endif
 	}
 }
 
@@ -129,8 +142,10 @@ void _I2C_RandomRead(unsigned char u8Addr, unsigned char* u8Data, unsigned char 
 	// I2C Loop
 	while(gu8I2C_Status == I2C_BUSY)
 	{
-//		_I2C_Handler();		// Activate when polling mode
-//		delay(1000);		// Activate when polling mode
+		#ifdef	I2C_POLLING
+		_I2C_Handler();		// Activate when polling mode
+		delay(1000);		// Activate when polling mode
+		#endif
 	}
 }
 
