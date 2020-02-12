@@ -1,0 +1,24 @@
+[CMSIS-SVD] 
+1. Input file : xxx.svd (XML 형식 -> 사용자가 작성 필요)
+2. Output file : xxx.sfr / xxx.h
+3. 실행파일 : SVDConv.exe , sfrCC2.exe (두 파일이 위치한 폴더에서 커멘드 입력)
+ - 샘플 파일 획득 경로 : C:\Keil_v5\UV4 or C:\Keil\ARM\CMSIS\SVD
+4. 커멘드
+ - SFR 생성 커멘드 : SVDConv.exe xxx.svd --generate=sfr
+ - Header 생성 커멘드 : SVDConv.exe xxx.svd --generate=header --debug-headerfile
+5. Header 파일 포맷 수정
+ - Device 설명 부분 오타 확인
+ - 정의문에 device 이름 대소문자 확인 (#ifndef , #include)
+ - 포트 레지스터 이름 변경 (디폴트 값은 첫번째 포트 레지스터 명으로 되어 있음)
+ - 각 Periperal 이름에 붙은 숫자 및 RESERVED 영역 숫자 삭제
+ 
+
+[Keil-Flashloader]
+1. Input file : Flash Erase/Program 함수 (사용자가 작성 필요)
+2. Output file : xxx.flm
+3. 실행파일 : Flashloader 프로젝트 (제공된 template 내부에 사용자 함수 채워넣어야 함)
+ - 샘플 파일 획득 경로 : C:\Keil\ARM\Pack\ARM\CMSIS\version\Device\_Template_Flash
+4. 커멘드
+ - Keil 프로젝트 컴파일 시 자동으로 xxx.flm 파일 생성
+5. 생성된 파일을 Keil Programming Algorithm으로 사용
+
