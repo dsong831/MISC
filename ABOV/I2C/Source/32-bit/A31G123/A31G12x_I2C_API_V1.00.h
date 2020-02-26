@@ -1,9 +1,9 @@
 /***************************************************************************//**
-*   @file					ABOV_USI_I2C.h
-*   @brief				USI Peripheral Function 
-*   @author		PTS Team, ABOV Semiconductor Co., Ltd.
-*   @version		V0.0.1
-*   @date				04. Feb. 2020
+*   @file					A31G12x_I2C_API_V1.00.h
+*   @brief				I2C Peripheral Function 
+*   @author		ABOV Semiconductor Co., Ltd.
+*   @version		V1.00
+*   @date				20. Feb. 2020
 *
 * Copyright(C) 2020, ABOV Semiconductor
 * All rights reserved.
@@ -41,15 +41,15 @@
 /*******************************************************************************
 * Public Macro
 *******************************************************************************/
-#define I2C_DEVICE_ADDRESS			0xA0
-#define I2C_SLAVE_OWN_ADDR		0xA0
-#define I2C_SPEED											10000
+#define I2C_DEVICE_ADDRESS			0xA0				// at master mode, slave device address
+#define I2C_SLAVE_OWN_ADDR		0xA0				// at slave mode, its own address
+#define I2C_SPEED											10000			// i2c speed (10kHz)
 
-#define I2C_MAX_BUFFER_SIZE		20
-#define I2C_MAX_CHANNEL					2
+#define I2C_MAX_BUFFER_SIZE		20					// i2c global buffer size (20-byte)
+#define I2C_MAX_CHANNEL					2						// i2c count of channel (i2c0, i2c1)
 
-#define I2C_CH0														0
-#define I2C_CH1														1
+#define I2C_CH0														0						// i2c0
+#define I2C_CH1														1						// i2c1
 
 #define I2C_ACK_DISABLE						0
 #define I2C_ACK_ENABLE							1
@@ -65,25 +65,27 @@
 /*******************************************************************************
 * Public Typedef
 *******************************************************************************/
-enum  i2c_control_flags{								// I2C Control Register Flags
-	fI2CnEN					= (1<<7),
-	fTXDLYENBn		= (1<<6),
-	fI2CnIEN					= (1<<5),
-	fI2CnIFLAG			= (1<<4),
-	fACKnEN					= (1<<3),
-	fIMASTERn			= (1<<2),
-	fSTOPCn				= (1<<1),
-	fSTARTCn			= (1<<0),
+/* I2C Control Register Flags */
+enum  i2c_control_flags{
+	fI2CnEN					= (1<<7),				// activate i2c block
+	fTXDLYENBn		= (1<<6),				// data hold time register control
+	fI2CnIEN					= (1<<5),				// i2c interrupt enable
+	fI2CnIFLAG			= (1<<4),				// i2c interrupt flag
+	fACKnEN					= (1<<3),				// control ack signal generation at ninth scl period
+	fIMASTERn			= (1<<2),				// represents operation mode of i2c (master or slave)
+	fSTOPCn				= (1<<1),				// stop condition generation when i2c is master
+	fSTARTCn			= (1<<0),				// start condition generation when i2c is master
 };
-enum  i2c_status_flags{								// I2C Status Register Flags
-	fGCALL						= (1<<7),
-	fTEND							= (1<<6),
-	fSTOPD					= (1<<5),
-	fSSEL							= (1<<4),
-	fMLOST					= (1<<3),
-	fBUSY						= (1<<2),
-	fTMODE					= (1<<1),
-	fRXACK						= (1<<0),
+/* I2C Status Register Flags */
+enum  i2c_status_flags{
+	fGCALL						= (1<<7),				// general call is detected
+	fTEND							= (1<<6),				// byte complete
+	fSTOPD					= (1<<5),				// stop condition is detected
+	fSSEL							= (1<<4),				// acts as a slave
+	fMLOST					= (1<<3),				// lost bus mastership
+	fBUSY						= (1<<2),				// i2c bus is busy
+	fTMODE					= (1<<1),				// i2c is transmitter
+	fRXACK						= (1<<0),				// ack is received at ninth scl period
 };
 
 /*******************************************************************************
