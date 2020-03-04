@@ -11,6 +11,8 @@
 #include "console.h"
 #include "slib.h"
 
+//#define	USE_UART_INTERRUPT
+
 
 void PCU_Init(void);
 void mainloop(void);
@@ -140,7 +142,7 @@ void HAL_Uart_IntConfig(uint8_t uart_no, uint32_t intr_mask, uint32_t int_enable
 	if(int_enable == 1)
 	{
 		reg_val = UARTx->IER_DLM;
-		reg_val = reg_val | (intr_mask);
+		reg_val = reg_val | (intr_mask & ~(UnIER_TEMTIE|UnIER_THREIE));
 		UARTx->IER_DLM = reg_val;
 	}
 	else
@@ -218,7 +220,7 @@ void HAL_Uart_Init(uint8_t uart_no, uint32_t Baudrate, uint8_t DataBits, uint8_t
 
 	/* Set Uart Parameter */
 	console_port = uart_no;																																// Set global var.
-	uart_intr = (UART_INTR_RX|UART_INTR_LINE);															// Enable DRIE&RLSIE
+	uart_intr = (UART_INTR_LINE|UART_INTR_RX|UART_INTR_TX);		// Enable line/rx/tx interrupt
 	uart_sampling = 0;																																				// 0: 1 time sampling , 1: 3 time sampling
 	uart_invert = 0;																																							// 0: no invert , 1: invert
 
@@ -286,6 +288,24 @@ void HAL_Uart_Init(uint8_t uart_no, uint32_t Baudrate, uint8_t DataBits, uint8_t
 	UARTx->SCR = 0;									// Disable Scratch
 }
 
+void HAL_Uart_Enable_Tx_Interrupt(UART_Type *UARTx, uint8_t status)
+{
+	uint32_t reg_val;
+
+	if(status == 1)
+	{
+		reg_val = UARTx->IER_DLM;
+		reg_val |= UnIER_THREIE;
+		UARTx->IER_DLM = reg_val;
+	}
+	else
+	{
+		reg_val = UARTx->IER_DLM;
+		reg_val &= ~(UnIER_THREIE);
+		UARTx->IER_DLM = reg_val;
+	}
+}
+
 void HAL_Uart_Tx_Handler(uint8_t uart_no)
 {
 	UART_Type* UARTx;
@@ -336,6 +356,10 @@ void HAL_Uart_Tx_Handler(uint8_t uart_no)
 			/* Transmission done */
 			else
 			{
+#ifdef	USE_UART_INTERRUPT
+				// Disable tx interrupt
+				HAL_Uart_Enable_Tx_Interrupt(UARTx, 0);
+#endif
 				// Initial parameters
 				tp_UartBuffer->TxBuffer_HeadIndex = 0;
 				tp_UartBuffer->TxBuffer_TailIndex = 0;
@@ -398,8 +422,27 @@ void HAL_Uart_Handler(uint8_t uart_no)
 
 uint8_t HAL_Uart_WriteBuffer(uint8_t uart_no, uint8_t *p_data, uint32_t data_count)
 {
+	UART_Type* UARTx;
 	UART_BUFFER *tp_UartBuffer;
 	uint32_t i;
+
+	/* Set Uart Channel */
+	if(uart_no == 0)
+	{
+		UARTx = UART0;
+	}
+	else if(uart_no == 1)
+	{
+		UARTx = UART1;
+	}
+	else if(uart_no == 2)
+	{
+		UARTx = UART2;
+	}
+	else if(uart_no == 3)
+	{
+		UARTx = UART3;
+	}
 	
 	/* Get Buffer BaseAddress */
 	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
@@ -423,8 +466,8 @@ uint8_t HAL_Uart_WriteBuffer(uint8_t uart_no, uint8_t *p_data, uint32_t data_cou
 	/* Update Tx Status */
 	tp_UartBuffer->TxState = UART_TX_STATE_TRANSMIT;
 
-#ifdef	UART_TX_INTERRUPT
-
+#ifdef	USE_UART_INTERRUPT
+	HAL_Uart_Enable_Tx_Interrupt(UARTx, 1);
 #else
 	while(1)
 	{
@@ -463,7 +506,7 @@ int main(void)
  	SystemCoreClockUpdate();		// Clock Update to PLL Frequency
 
 	HAL_Port_Init();
-	HAL_Uart_Init(1,38400, 8, 0, 1, 1);
+	HAL_Uart_Init(1,9600, 8, 0, 1, 1);
 
 	mainloop();							// User Code
 
@@ -533,7 +576,7 @@ void Disp_MainMenu(void)
 	cputs("3. GPIO External Intput\r\n");
 	cputs("========================================\r\n"); 	
 #else
-	zputs("\r\n========================================\r\n");
+	zputs("\r\n====0");
 	zputs("GPIO Demo\r\n");  
 	zputs("\t - MCU : A33G52x\r\n");
 	zputs("\t - Core: ARM Cortex-M3 \n\r");
@@ -1184,4 +1227,9 @@ void SysTick_Handler (void) 					// SysTick Interrupt Handler @ 1000Hz
 		if(period)
 			period--;
 	}
+}
+
+void UART1_Handler (void)
+{
+	HAL_Uart_Handler(1);
 }
