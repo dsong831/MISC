@@ -25,32 +25,16 @@ void gpioExtInt(void);
 uint32_t 	period;		// for Systick period 1ms
 uint32_t		flag;
 uint32_t		cnt = 0;
-void SysTick_Handler (void) 					// SysTick Interrupt Handler @ 1000Hz
-{
-	if (SysTick->LOAD == (SystemCoreClock/1000000)-1)		// SysTick period is 1us
-	{
-		if(flag == 0)
-		{
-			GPIO_OutputLow(PD,0);
-			flag = 1;
-		}
-		else
-		{
-			GPIO_OutputHigh(PD,0);
-			flag = 0;
-		}
-		cnt++;
-	}
-	else if(SysTick->LOAD == (SystemCoreClock/1000)-1)		// SysTick period is 1ms
-	{
-		if(period)
-			period--;
-	}
 
-}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
+
+UART_BUFFER	gt_Uart0Buffer;
+UART_BUFFER	gt_Uart1Buffer;
+UART_BUFFER	gt_Uart2Buffer;
+UART_BUFFER	gt_Uart3Buffer;
 
 void HAL_Port_Init(void)
 {
@@ -61,6 +45,57 @@ void HAL_Port_Init(void)
 	PCU_Set_Direction_Type (PCD, PIN_13, PnCR_OUTPUT_PUSH_PULL); 	
 	PCU_ConfigurePullup_Pulldown (PCD, PIN_12, 0, PnPCR_PULLUPDOWN_DISABLE); 
 	PCU_ConfigurePullup_Pulldown (PCD, PIN_13, 0, PnPCR_PULLUPDOWN_DISABLE);
+}
+
+UART_BUFFER* HAL_Uart_GetBufferBaseAddr(uint8_t uart_no)
+{
+	UART_BUFFER *tp_UartBuffer;
+	
+	/* Get Buffer BaseAddress */
+	switch(uart_no)
+	{
+		case 0:
+			tp_UartBuffer = &(gt_Uart0Buffer);
+			break;
+		case 1:
+			tp_UartBuffer = &(gt_Uart1Buffer);
+			break;
+		case 2:
+			tp_UartBuffer = &(gt_Uart2Buffer);
+			break;
+		case 3:
+		default:
+			tp_UartBuffer = &(gt_Uart3Buffer);
+			break;
+	}
+
+	return (tp_UartBuffer);
+}
+
+void HAL_Uart_BufferInit(uint8_t uart_no)
+{
+	UART_BUFFER *tp_UartBuffer;
+	uint8_t i;
+
+	/* Get Buffer BaseAddress */
+	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
+
+	/* Set Buffer Parameter */
+	tp_UartBuffer->RxState = UART_RX_STATE_IDLE;
+	tp_UartBuffer->TxState = UART_TX_STATE_IDLE;
+	tp_UartBuffer->RxBuffer_HeadIndex = 0;
+	tp_UartBuffer->TxBuffer_HeadIndex = 0;
+	tp_UartBuffer->RxBuffer_TailIndex = 0;
+	tp_UartBuffer->TxBuffer_TailIndex = 0;
+
+	for(i=0; i<UART_MAX_RX_BUFFER; i++)
+	{
+		tp_UartBuffer->RxBuffer[i] = 0;
+	}
+	for(i=0; i<UART_MAX_TX_BUFFER; i++)
+	{
+		tp_UartBuffer->TxBuffer[i] = 0;
+	}
 }
 
 void HAL_Uart_IntConfig(uint8_t uart_no, uint32_t intr_mask, uint32_t int_enable)
@@ -176,6 +211,10 @@ void HAL_Uart_Init(uint8_t uart_no, uint32_t Baudrate, uint8_t DataBits, uint8_t
 	{
 		UARTx = UART2;
 	}
+	else if(uart_no == 3)
+	{
+		UARTx = UART3;
+	}
 
 	/* Set Uart Parameter */
 	console_port = uart_no;																																// Set global var.
@@ -184,7 +223,7 @@ void HAL_Uart_Init(uint8_t uart_no, uint32_t Baudrate, uint8_t DataBits, uint8_t
 	uart_invert = 0;																																							// 0: no invert , 1: invert
 
 	/* Set Uart Buffer */
-	UART_InitBuffer(uart_no);
+	HAL_Uart_BufferInit(uart_no);
 
 	/* Set Uart Interrupt */
 	HAL_Uart_IntConfig(uart_no, uart_intr, int_enable);
@@ -247,8 +286,173 @@ void HAL_Uart_Init(uint8_t uart_no, uint32_t Baudrate, uint8_t DataBits, uint8_t
 	UARTx->SCR = 0;									// Disable Scratch
 }
 
+void HAL_Uart_Tx_Handler(uint8_t uart_no)
+{
+	UART_Type* UARTx;
+	UART_BUFFER *tp_UartBuffer;
+	volatile uint32_t line_status;
+	uint8_t send_data;
+	
+	/* Set Uart Channel */
+	if(uart_no == 0)
+	{
+		UARTx = UART0;
+	}
+	else if(uart_no == 1)
+	{
+		UARTx = UART1;
+	}
+	else if(uart_no == 2)
+	{
+		UARTx = UART2;
+	}
+	else if(uart_no == 3)
+	{
+		UARTx = UART3;
+	}
+
+	/* Get Buffer BaseAddress */
+	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
+
+	/* Read Line Status Register */
+	line_status = UARTx->LSR;
+
+	/* Line Error Check */
+	if((line_status & UnLSR_BI) == UnLSR_BI || (line_status & UnLSR_PE) == UnLSR_PE || (line_status & UnLSR_OE) == UnLSR_OE)
+	{
+		line_status = UARTx->LSR;
+	}
+	/* Normal process */
+	else
+	{
+		if((line_status & UnLSR_THRE) == UnLSR_THRE)
+		{
+			/* There are transmission data */
+			if(tp_UartBuffer->TxBuffer_HeadIndex < tp_UartBuffer->TxBuffer_TailIndex)
+			{
+				send_data = tp_UartBuffer->TxBuffer[tp_UartBuffer->TxBuffer_HeadIndex++];
+				UARTx->RBR_THR_DLL = send_data;
+			}
+			/* Transmission done */
+			else
+			{
+				// Initial parameters
+				tp_UartBuffer->TxBuffer_HeadIndex = 0;
+				tp_UartBuffer->TxBuffer_TailIndex = 0;
+				tp_UartBuffer->TxState = UART_TX_STATE_IDLE;
+			}
+		}
+	}
+}
+
+void HAL_Uart_Rx_Handler(uint8_t uart_no)
+{
+	
+}
+
+void HAL_Uart_Handler(uint8_t uart_no)
+{
+	UART_Type* UARTx;
+	volatile uint32_t intr_status;
+	volatile uint32_t line_status;
+	
+	/* Set Uart Channel */
+	if(uart_no == 0)
+	{
+		UARTx = UART0;
+	}
+	else if(uart_no == 1)
+	{
+		UARTx = UART1;
+	}
+	else if(uart_no == 2)
+	{
+		UARTx = UART2;
+	}
+	else if(uart_no == 3)
+	{
+		UARTx = UART3;
+	}
+	
+	/* Check Interrupt ID */
+	intr_status = UARTx->IIR;
+
+	/* Line Interrupt */
+	if((intr_status & UnIIR_INTR_BASIC_MASK) == UnIIR_IID_RCV_LINE_STATUS)
+	{
+		line_status = UARTx->LSR;					// Line Interrupt clear
+	}
+	
+	/* Rx Interrupt */
+	if((intr_status & UnIIR_INTR_BASIC_MASK) == UnIIR_IID_RBR_READY)
+	{
+		HAL_Uart_Rx_Handler(uart_no);		// Rx Process
+	}
+
+	/* Tx Interrupt */
+	if((intr_status & UnIIR_INTR_BASIC_MASK) == UnIIR_IID_THR_EMPTY)
+	{
+		HAL_Uart_Tx_Handler(uart_no);		// Tx Process
+	}
+}
+
+uint8_t HAL_Uart_WriteBuffer(uint8_t uart_no, uint8_t *p_data, uint32_t data_count)
+{
+	UART_BUFFER *tp_UartBuffer;
+	uint32_t i;
+	
+	/* Get Buffer BaseAddress */
+	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
+	
+	/* Wait until past last sequence */
+	while(tp_UartBuffer->TxState != UART_TX_STATE_IDLE);
+	for(i=0; i<0x100000; i++)
+	{
+		if(tp_UartBuffer->TxBuffer_HeadIndex == tp_UartBuffer->TxBuffer_TailIndex) {break;}
+		if(i == 0xFFFFF) {return (UART_TX_BUFFER_ERROR_WAIT_TIMEOUT);}
+	}
+
+	/* Load data to TxBuffer */
+	for(i=0; i<data_count; i++)
+	{
+		tp_UartBuffer->TxBuffer[i] = *(p_data + i);
+	}
+	tp_UartBuffer->TxBuffer_HeadIndex = 0;
+	tp_UartBuffer->TxBuffer_TailIndex = data_count;	
+
+	/* Update Tx Status */
+	tp_UartBuffer->TxState = UART_TX_STATE_TRANSMIT;
+
+#ifdef	UART_TX_INTERRUPT
+
+#else
+	while(1)
+	{
+		HAL_Uart_Tx_Handler(uart_no);
+		if(tp_UartBuffer->TxState == UART_TX_STATE_IDLE)
+		{
+			break;
+		}
+	}
+#endif
+	
+	return (UART_TX_BUFFER_SUCCESS);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
+
+void zputs(uint8_t *str)
+{
+	uint32_t		i; 
+
+	for (i=0; ; i++)
+	{
+		if (*(str+i) == 0) break; 
+	}
+
+	HAL_Uart_WriteBuffer(console_port, str, i); 
+}
 
 int main(void)
 {		
@@ -280,7 +484,7 @@ void mainloop(void)
 			disp_menu = 0; 
 		}
 
-		cputs("[G527]#"); 
+		zputs("[G527]#"); 
 
 		InData[0] = 0; 
 
@@ -290,23 +494,23 @@ void mainloop(void)
 			if (ch == ASCII_CARRIAGE_RETURN) break; 
 		}
 
-		cputs("\r\n\r\n"); 
+		zputs("\r\n\r\n"); 
 
 		if (InFlag)
 		{
 			if (!strncmp(InData, "1", 1))
 			{
-				cputs(">>> GPIO Blinky\r\n");
+				zputs(">>> GPIO Blinky\r\n");
 				gpioBlinky();				
 			}
 			else if (!strncmp(InData, "2", 1))
 			{
-				cputs(">>> GPIO Input\r\n");
+				zputs(">>> GPIO Input\r\n");
 				gpioInput();				
 			}	
 			else if (!strncmp(InData, "3", 1))
 			{
-				cputs(">>> GPIO External Input\r\n");
+				zputs(">>> GPIO External Input\r\n");
 				gpioExtInt();				
 			}
 			
@@ -318,15 +522,27 @@ void mainloop(void)
 
 void Disp_MainMenu(void)
 {
-	cprintf("\r\n========================================\r\n");
-	cprintf("GPIO Demo\r\n");  
-	cprintf("\t - MCU : A33G52x\r\n");
-	cprintf("\t - Core: ARM Cortex-M3 \n\r");
-	cprintf("\t - Communicate via: UART0 - 38400 bps \n\r");
-	cprintf("1. GPIO Blinky\r\n");
-	cprintf("2. GPIO Input\r\n");
-	cprintf("3. GPIO External Intput\r\n");
-	cprintf("========================================\r\n"); 
+#if 0
+	cputs("\r\n========================================\r\n");
+	cputs("GPIO Demo\r\n");  
+	cputs("\t - MCU : A33G52x\r\n");
+	cputs("\t - Core: ARM Cortex-M3 \n\r");
+	cputs("\t - Communicate via: UART0 - 38400 bps \n\r");
+	cputs("1. GPIO Blinky\r\n");
+	cputs("2. GPIO Input\r\n");
+	cputs("3. GPIO External Intput\r\n");
+	cputs("========================================\r\n"); 	
+#else
+	zputs("\r\n========================================\r\n");
+	zputs("GPIO Demo\r\n");  
+	zputs("\t - MCU : A33G52x\r\n");
+	zputs("\t - Core: ARM Cortex-M3 \n\r");
+	zputs("\t - Communicate via: UART0 - 38400 bps \n\r");
+	zputs("1. GPIO Blinky\r\n");
+	zputs("2. GPIO Input\r\n");
+	zputs("3. GPIO External Intput\r\n");
+	zputs("========================================\r\n"); 
+#endif
 }
 
 void delay (void) 
@@ -947,3 +1163,25 @@ void PCU_Init(void)
 		;
 }
 
+void SysTick_Handler (void) 					// SysTick Interrupt Handler @ 1000Hz
+{
+	if (SysTick->LOAD == (SystemCoreClock/1000000)-1)		// SysTick period is 1us
+	{
+		if(flag == 0)
+		{
+			GPIO_OutputLow(PD,0);
+			flag = 1;
+		}
+		else
+		{
+			GPIO_OutputHigh(PD,0);
+			flag = 0;
+		}
+		cnt++;
+	}
+	else if(SysTick->LOAD == (SystemCoreClock/1000)-1)		// SysTick period is 1ms
+	{
+		if(period)
+			period--;
+	}
+}
