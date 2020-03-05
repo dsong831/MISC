@@ -11,7 +11,7 @@
 #include "console.h"
 #include "slib.h"
 
-//#define	USE_UART_INTERRUPT
+//#define	USE_UART_TX_INTERRUPT
 
 
 void PCU_Init(void);
@@ -385,7 +385,7 @@ void HAL_Uart_Tx_Handler(uint8_t uart_no)
 			/* Transmission done */
 			else
 			{
-#ifdef	USE_UART_INTERRUPT
+#ifdef	USE_UART_TX_INTERRUPT
 				// Disable tx interrupt
 				HAL_Uart_Enable_Tx_Interrupt(UARTx, 0);
 #endif
@@ -481,7 +481,7 @@ uint8_t HAL_Uart_WriteBuffer(uint8_t uart_no, uint8_t *p_data, uint32_t data_cou
 	/* Update Tx Status */
 	tp_UartBuffer->TxState = UART_TX_STATE_TRANSMIT;
 
-#ifdef	USE_UART_INTERRUPT
+#ifdef	USE_UART_TX_INTERRUPT
 	HAL_Uart_Enable_Tx_Interrupt(UARTx, 1);
 #else
 	while(1)
