@@ -11,8 +11,8 @@
 #include "console.h"
 #include "slib.h"
 
-#define	USE_UART_TX_INTERRUPT
-#define	USE_UART_RX_INTERRUPT
+#define USE_UART_TX_INTERRUPT
+#define USE_UART_RX_INTERRUPT
 
 
 void PCU_Init(void);
@@ -410,7 +410,6 @@ void HAL_Uart_Rx_Handler(uint8_t uart_no)
 	UART_BUFFER *tp_UartBuffer;
 	volatile uint32_t line_status;
 	uint8_t receive_data;
-	uint16_t next_index;
 	
 	/* Get Uart Object */
 	UARTx = HAL_UART_Get_Object(uart_no);	
@@ -418,36 +417,41 @@ void HAL_Uart_Rx_Handler(uint8_t uart_no)
 	/* Get Buffer BaseAddress */
 	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
 	
-	/* Load data from RBR register */
-	receive_data = UARTx->RBR_THR_DLL;
-	
-	/* Read Line Status Register */
+	/* Check Line Status Register */
 	line_status = UARTx->LSR;
-
-	/* Line Error Check */
-	if((line_status & UnLSR_BI) == UnLSR_BI || (line_status & UnLSR_PE) == UnLSR_PE || (line_status & UnLSR_OE) == UnLSR_OE)
+	// Line Error
+	if((line_status & UnLSR_BI) || (line_status & UnLSR_PE) || (line_status & UnLSR_OE))
 	{
-		line_status = UARTx->LSR;
+		line_status = UARTx->LSR;	// Clear Error Flags
 	}
-	/* Normal process */
+	// Line OK
 	else
 	{
-		/* Check Rx Buffer Index */
-		next_index = tp_UartBuffer->RxBuffer_TailIndex + 1;
-		if(next_index >= UART_MAX_RX_BUFFER)
+		if(line_status & UnLSR_DR)
 		{
-			next_index = 0;
-		}
-		
-		if(next_index == tp_UartBuffer->RxBuffer_HeadIndex)
-		{
-			tp_UartBuffer->RxState = UART_RX_STATE_IDLE;
-			return;
+			// Fetch data from RBR register
+			receive_data = UARTx->RBR_THR_DLL;
+			tp_UartBuffer->RxBuffer[tp_UartBuffer->RxBuffer_HeadIndex++] = receive_data;
+
+			// Rx Head Index Full
+			if(tp_UartBuffer->RxBuffer_HeadIndex == UART_MAX_RX_BUFFER)
+			{
+				tp_UartBuffer->RxBuffer_HeadIndex = 0;
+			}
 		}
 		else
 		{
-			tp_UartBuffer->RxBuffer[tp_UartBuffer->RxBuffer_TailIndex] = receive_data;
-			tp_UartBuffer->RxBuffer_TailIndex = next_index;
+			// Receive Done
+			if(tp_UartBuffer->RxBuffer_HeadIndex == tp_UartBuffer->RxBuffer_TailIndex)
+			{
+				if(tp_UartBuffer->RxBuffer_HeadIndex != 0)
+				{
+					// Initial parameters
+					tp_UartBuffer->RxBuffer_HeadIndex = 0;
+					tp_UartBuffer->RxBuffer_TailIndex = 0;
+					tp_UartBuffer->RxState = UART_RX_STATE_IDLE;
+				}
+			}
 		}
 	}
 }
@@ -552,25 +556,46 @@ uint8_t HAL_Uart_ReadBuffer(uint8_t uart_no, uint8_t *p_status)
 	
 	/* Get Buffer BaseAddress */
 	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
-	
-	/* Fetch Data From RxBuffer */
-	if(tp_UartBuffer->RxBuffer_HeadIndex == tp_UartBuffer->RxBuffer_TailIndex)
+
+	if(tp_UartBuffer->RxBuffer_TailIndex < tp_UartBuffer->RxBuffer_HeadIndex)
 	{
-		// Rx Buffer Empty Error
-		receive_data = 0;
-		*p_status = UART_RX_BUFFER_ERROR_EMPTY;
+		// Load data from Rx Buffer
+		receive_data = tp_UartBuffer->RxBuffer[tp_UartBuffer->RxBuffer_TailIndex++];
+		*p_status = UART_RX_BUFFER_SUCCESS;
+		
+		if(tp_UartBuffer->RxBuffer_TailIndex == UART_MAX_RX_BUFFER)
+		{
+			tp_UartBuffer->RxBuffer_TailIndex = 0;
+		}
+		if(tp_UartBuffer->RxBuffer_TailIndex == tp_UartBuffer->RxBuffer_HeadIndex)
+		{
+			tp_UartBuffer->RxBuffer_HeadIndex = 0;
+			tp_UartBuffer->RxBuffer_TailIndex = 0;
+			tp_UartBuffer->RxState = UART_RX_STATE_IDLE;
+		}
+	}
+	else if(tp_UartBuffer->RxBuffer_TailIndex > tp_UartBuffer->RxBuffer_HeadIndex)
+	{
+		// Load data from Rx Buffer
+		receive_data = tp_UartBuffer->RxBuffer[tp_UartBuffer->RxBuffer_TailIndex++];
+		*p_status = UART_RX_BUFFER_SUCCESS;
+		
+		if(tp_UartBuffer->RxBuffer_TailIndex == UART_MAX_RX_BUFFER)
+		{
+			tp_UartBuffer->RxBuffer_TailIndex = 0;
+		}
+		if(tp_UartBuffer->RxBuffer_TailIndex == tp_UartBuffer->RxBuffer_HeadIndex)
+		{
+			tp_UartBuffer->RxBuffer_HeadIndex = 0;
+			tp_UartBuffer->RxBuffer_TailIndex = 0;
+			tp_UartBuffer->RxState = UART_RX_STATE_IDLE;
+		}
 	}
 	else
 	{
-		// Normal Rx
-		receive_data = tp_UartBuffer->RxBuffer[tp_UartBuffer->RxBuffer_HeadIndex++];
-		*p_status = UART_RX_BUFFER_SUCCESS;
-	}
-	
-	/* Check Rx Buffer Index */
-	if(tp_UartBuffer->RxBuffer_HeadIndex >= UART_MAX_RX_BUFFER)
-	{
-		tp_UartBuffer->RxBuffer_HeadIndex = 0;
+		// Rx Buffer Empty
+		receive_data = 0;
+		*p_status = UART_RX_BUFFER_ERROR_EMPTY;
 	}
 
 	/* Update Rx Status */
@@ -579,14 +604,7 @@ uint8_t HAL_Uart_ReadBuffer(uint8_t uart_no, uint8_t *p_status)
 #ifdef	USE_UART_RX_INTERRUPT
 
 #else
-	while(1)
-	{
-		HAL_Uart_Rx_Handler(uart_no);
-		if(tp_UartBuffer->RxState == UART_RX_STATE_IDLE)
-		{
-			break;
-		}
-	}
+	HAL_Uart_Rx_Handler(uart_no);
 #endif
 
 	return (receive_data);
