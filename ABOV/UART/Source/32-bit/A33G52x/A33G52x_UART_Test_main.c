@@ -11,7 +11,8 @@
 #include "console.h"
 #include "slib.h"
 
-//#define	USE_UART_TX_INTERRUPT
+#define	USE_UART_TX_INTERRUPT
+#define	USE_UART_RX_INTERRUPT
 
 
 void PCU_Init(void);
@@ -377,9 +378,9 @@ void HAL_Uart_Tx_Handler(uint8_t uart_no)
 		if((line_status & UnLSR_THRE) == UnLSR_THRE)
 		{
 			/* There are transmission data */
-			if(tp_UartBuffer->TxBuffer_HeadIndex < tp_UartBuffer->TxBuffer_TailIndex)
+			if(tp_UartBuffer->TxBuffer_TailIndex < tp_UartBuffer->TxBuffer_HeadIndex)
 			{
-				send_data = tp_UartBuffer->TxBuffer[tp_UartBuffer->TxBuffer_HeadIndex++];
+				send_data = tp_UartBuffer->TxBuffer[tp_UartBuffer->TxBuffer_TailIndex++];
 				UARTx->RBR_THR_DLL = send_data;
 			}
 			/* Transmission done */
@@ -405,7 +406,50 @@ void HAL_Uart_Tx_Handler(uint8_t uart_no)
 */
 void HAL_Uart_Rx_Handler(uint8_t uart_no)
 {
+	UART_Type* UARTx;
+	UART_BUFFER *tp_UartBuffer;
+	volatile uint32_t line_status;
+	uint8_t receive_data;
+	uint16_t next_index;
 	
+	/* Get Uart Object */
+	UARTx = HAL_UART_Get_Object(uart_no);	
+
+	/* Get Buffer BaseAddress */
+	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
+	
+	/* Load data from RBR register */
+	receive_data = UARTx->RBR_THR_DLL;
+	
+	/* Read Line Status Register */
+	line_status = UARTx->LSR;
+
+	/* Line Error Check */
+	if((line_status & UnLSR_BI) == UnLSR_BI || (line_status & UnLSR_PE) == UnLSR_PE || (line_status & UnLSR_OE) == UnLSR_OE)
+	{
+		line_status = UARTx->LSR;
+	}
+	/* Normal process */
+	else
+	{
+		/* Check Rx Buffer Index */
+		next_index = tp_UartBuffer->RxBuffer_TailIndex + 1;
+		if(next_index >= UART_MAX_RX_BUFFER)
+		{
+			next_index = 0;
+		}
+		
+		if(next_index == tp_UartBuffer->RxBuffer_HeadIndex)
+		{
+			tp_UartBuffer->RxState = UART_RX_STATE_IDLE;
+			return;
+		}
+		else
+		{
+			tp_UartBuffer->RxBuffer[tp_UartBuffer->RxBuffer_TailIndex] = receive_data;
+			tp_UartBuffer->RxBuffer_TailIndex = next_index;
+		}
+	}
 }
 
 /**
@@ -430,12 +474,11 @@ void HAL_Uart_Handler(uint8_t uart_no)
 	{
 		line_status = UARTx->LSR;					// Line Interrupt clear
 	}
-	
+
 	/* Rx Interrupt */
 	if((intr_status & UnIIR_INTR_BASIC_MASK) == UnIIR_IID_RBR_READY)
 	{
 		HAL_Uart_Rx_Handler(uart_no);		// Rx Process
-		UART1_ReceiveData_ISR(); // origin function
 	}
 
 	/* Tx Interrupt */
@@ -466,7 +509,7 @@ uint8_t HAL_Uart_WriteBuffer(uint8_t uart_no, uint8_t *p_data, uint32_t data_cou
 	while(tp_UartBuffer->TxState != UART_TX_STATE_IDLE);
 	for(i=0; i<0x100000; i++)
 	{
-		if(tp_UartBuffer->TxBuffer_HeadIndex == tp_UartBuffer->TxBuffer_TailIndex) {break;}
+		if(tp_UartBuffer->TxBuffer_TailIndex == tp_UartBuffer->TxBuffer_HeadIndex) {break;}
 		if(i == 0xFFFFF) {return (UART_TX_BUFFER_ERROR_WAIT_TIMEOUT);}
 	}
 
@@ -475,8 +518,8 @@ uint8_t HAL_Uart_WriteBuffer(uint8_t uart_no, uint8_t *p_data, uint32_t data_cou
 	{
 		tp_UartBuffer->TxBuffer[i] = *(p_data + i);
 	}
-	tp_UartBuffer->TxBuffer_HeadIndex = 0;
-	tp_UartBuffer->TxBuffer_TailIndex = data_count;	
+	tp_UartBuffer->TxBuffer_HeadIndex = data_count;
+	tp_UartBuffer->TxBuffer_TailIndex = 0;
 
 	/* Update Tx Status */
 	tp_UartBuffer->TxState = UART_TX_STATE_TRANSMIT;
@@ -497,6 +540,58 @@ uint8_t HAL_Uart_WriteBuffer(uint8_t uart_no, uint8_t *p_data, uint32_t data_cou
 	return (UART_TX_BUFFER_SUCCESS);
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
+uint8_t HAL_Uart_ReadBuffer(uint8_t uart_no, uint8_t *p_status)
+{
+	UART_BUFFER *tp_UartBuffer;
+	uint8_t receive_data;
+	
+	/* Get Buffer BaseAddress */
+	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
+	
+	/* Fetch Data From RxBuffer */
+	if(tp_UartBuffer->RxBuffer_HeadIndex == tp_UartBuffer->RxBuffer_TailIndex)
+	{
+		// Rx Buffer Empty Error
+		receive_data = 0;
+		*p_status = UART_RX_BUFFER_ERROR_EMPTY;
+	}
+	else
+	{
+		// Normal Rx
+		receive_data = tp_UartBuffer->RxBuffer[tp_UartBuffer->RxBuffer_HeadIndex++];
+		*p_status = UART_RX_BUFFER_SUCCESS;
+	}
+	
+	/* Check Rx Buffer Index */
+	if(tp_UartBuffer->RxBuffer_HeadIndex >= UART_MAX_RX_BUFFER)
+	{
+		tp_UartBuffer->RxBuffer_HeadIndex = 0;
+	}
+
+	/* Update Rx Status */
+	tp_UartBuffer->RxState = UART_RX_STATE_RECEIVE;
+	
+#ifdef	USE_UART_RX_INTERRUPT
+
+#else
+	while(1)
+	{
+		HAL_Uart_Rx_Handler(uart_no);
+		if(tp_UartBuffer->RxState == UART_RX_STATE_IDLE)
+		{
+			break;
+		}
+	}
+#endif
+
+	return (receive_data);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -510,6 +605,56 @@ void zputs(uint8_t *str)
 	}
 
 	HAL_Uart_WriteBuffer(console_port, str, i); 
+}
+
+int zgetchar (void)
+{
+	uint8_t			status;
+	int			ch;
+
+	ch = HAL_Uart_ReadBuffer (1, &status);
+
+	if (status != UART_RX_BUFFER_SUCCESS) ch = -1; 
+
+	return ch;
+}
+
+int zgetstring(void)
+{
+	int		ch; 
+
+	ch = zgetchar(); 
+
+	if (ch > 0)
+	{
+		if (InCount < 80)
+		{
+			if (InCount == 0 && ch < 0x20)
+			{
+				InData[0] = 0; 
+				return ch; 
+			}
+
+			cputc(ch); 
+			if (ch == ASCII_BACKSPACE)
+			{
+				InCount--; 
+				return ch; 
+			}
+
+			if (ch == ASCII_CARRIAGE_RETURN)
+			{
+				InData[InCount] = 0; 
+				InFlag = 1; 
+				return ch; 
+			}
+
+			InData[InCount++] = ch; 
+
+		}
+	}
+
+	return 0; 
 }
 
 int main(void)
@@ -544,11 +689,22 @@ void mainloop(void)
 
 		zputs("[G527]#"); 
 
-		InData[0] = 0; 
+		for(;;)
+		{
+			ch = zgetchar();
+			if(ch == 0x35)
+			{
+				zputs("OK\n\r"); 
+				ch = 0;
+			}
+		}
 
+#if 0
+		InData[0] = 0; 
 		for (;;)
 		{
 			ch = getstring(); 
+//			ch = zgetstring(); 
 			if (ch == ASCII_CARRIAGE_RETURN) break; 
 		}
 
@@ -574,8 +730,8 @@ void mainloop(void)
 			
 			InFlag = InCount = 0; 
 		}
+#endif
 	}
-
 }
 
 void Disp_MainMenu(void)
@@ -1246,6 +1402,5 @@ void SysTick_Handler (void) 					// SysTick Interrupt Handler @ 1000Hz
 
 void UART1_Handler (void)
 {
-//	HAL_Uart_Handler(1);
-	UART1_Transmit_Receive_ISR(); 
+	HAL_Uart_Handler(1);
 }
