@@ -38,6 +38,41 @@ UART_BUFFER	gt_Uart1Buffer;
 UART_BUFFER	gt_Uart2Buffer;
 UART_BUFFER	gt_Uart3Buffer;
 
+/**
+* @brief
+* @param   
+* @return
+*/
+UART_Type* HAL_UART_Get_Object(uint8_t uart_no)
+{
+	UART_Type* UARTx;
+
+	/* Set Uart Channel */
+	switch(uart_no)
+	{
+		case 0:
+			UARTx = UART0;
+			break;
+		case 1:
+			UARTx = UART1;
+			break;
+		case 2:
+			UARTx = UART2;
+			break;
+		case 3:
+		default:
+			UARTx = UART3;
+			break;
+	}
+
+	return (UARTx);
+}
+
+/**
+* @brief
+* @param   
+* @return
+*/
 void HAL_Port_Init(void)
 {
 	/* UART1 Port Setting (PD13-TXD1 / PD12-RXD1) */
@@ -49,9 +84,14 @@ void HAL_Port_Init(void)
 	PCU_ConfigurePullup_Pulldown (PCD, PIN_13, 0, PnPCR_PULLUPDOWN_DISABLE);
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
 UART_BUFFER* HAL_Uart_GetBufferBaseAddr(uint8_t uart_no)
 {
-	UART_BUFFER *tp_UartBuffer;
+	UART_BUFFER* tp_UartBuffer;
 	
 	/* Get Buffer BaseAddress */
 	switch(uart_no)
@@ -74,9 +114,14 @@ UART_BUFFER* HAL_Uart_GetBufferBaseAddr(uint8_t uart_no)
 	return (tp_UartBuffer);
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
 void HAL_Uart_BufferInit(uint8_t uart_no)
 {
-	UART_BUFFER *tp_UartBuffer;
+	UART_BUFFER* tp_UartBuffer;
 	uint8_t i;
 
 	/* Get Buffer BaseAddress */
@@ -100,6 +145,11 @@ void HAL_Uart_BufferInit(uint8_t uart_no)
 	}
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
 void HAL_Uart_IntConfig(uint8_t uart_no, uint32_t intr_mask, uint32_t int_enable)
 {
 	NVIC_IntrConfig nvic_config;
@@ -107,20 +157,9 @@ void HAL_Uart_IntConfig(uint8_t uart_no, uint32_t intr_mask, uint32_t int_enable
 
 	uint32_t intr_status;
 	uint32_t reg_val;
-	
-	/* Set Uart Channel */
-	if(uart_no == 0)
-	{
-		UARTx = UART0;
-	}
-	else if(uart_no == 1)
-	{
-		UARTx = UART1;
-	}
-	else if(uart_no == 2)
-	{
-		UARTx = UART2;
-	}
+
+	/* Get Uart Object */
+	UARTx = HAL_UART_Get_Object(uart_no);
 
 	/* Disable interrupt */
 	reg_val = UARTx->IER_DLM;
@@ -158,6 +197,11 @@ void HAL_Uart_IntConfig(uint8_t uart_no, uint32_t intr_mask, uint32_t int_enable
 	NVIC_ConfigureInterrupt (NVIC, &nvic_config); 
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
 void HAL_Uart_SetBaudrate(UART_Type* UARTx, uint32_t baudrate, uint32_t ref_clk)
 {
 	uint32_t reg_val;
@@ -191,6 +235,11 @@ void HAL_Uart_SetBaudrate(UART_Type* UARTx, uint32_t baudrate, uint32_t ref_clk)
 	UARTx->LCR = (reg_val  & ~UnLCR_DLAB);
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
 void HAL_Uart_Init(uint8_t uart_no, uint32_t Baudrate, uint8_t DataBits, uint8_t Parity, uint8_t StopBits, uint8_t int_enable)
 {
 	UART_Type* UARTx;
@@ -200,23 +249,8 @@ void HAL_Uart_Init(uint8_t uart_no, uint32_t Baudrate, uint8_t DataBits, uint8_t
 	uint8_t uart_sampling;
 	uint8_t uart_invert;
 
-	/* Set Uart Channel */
-	if(uart_no == 0)
-	{
-		UARTx = UART0;
-	}
-	else if(uart_no == 1)
-	{
-		UARTx = UART1;
-	}
-	else if(uart_no == 2)
-	{
-		UARTx = UART2;
-	}
-	else if(uart_no == 3)
-	{
-		UARTx = UART3;
-	}
+	/* Get Uart Object */
+	UARTx = HAL_UART_Get_Object(uart_no);
 
 	/* Set Uart Parameter */
 	console_port = uart_no;																																// Set global var.
@@ -288,6 +322,11 @@ void HAL_Uart_Init(uint8_t uart_no, uint32_t Baudrate, uint8_t DataBits, uint8_t
 	UARTx->SCR = 0;									// Disable Scratch
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
 void HAL_Uart_Enable_Tx_Interrupt(UART_Type *UARTx, uint8_t status)
 {
 	uint32_t reg_val;
@@ -306,30 +345,20 @@ void HAL_Uart_Enable_Tx_Interrupt(UART_Type *UARTx, uint8_t status)
 	}
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
 void HAL_Uart_Tx_Handler(uint8_t uart_no)
 {
 	UART_Type* UARTx;
 	UART_BUFFER *tp_UartBuffer;
 	volatile uint32_t line_status;
 	uint8_t send_data;
-	
-	/* Set Uart Channel */
-	if(uart_no == 0)
-	{
-		UARTx = UART0;
-	}
-	else if(uart_no == 1)
-	{
-		UARTx = UART1;
-	}
-	else if(uart_no == 2)
-	{
-		UARTx = UART2;
-	}
-	else if(uart_no == 3)
-	{
-		UARTx = UART3;
-	}
+
+	/* Get Uart Object */
+	UARTx = HAL_UART_Get_Object(uart_no);	
 
 	/* Get Buffer BaseAddress */
 	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
@@ -369,34 +398,29 @@ void HAL_Uart_Tx_Handler(uint8_t uart_no)
 	}
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
 void HAL_Uart_Rx_Handler(uint8_t uart_no)
 {
 	
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
 void HAL_Uart_Handler(uint8_t uart_no)
 {
 	UART_Type* UARTx;
 	volatile uint32_t intr_status;
 	volatile uint32_t line_status;
-	
-	/* Set Uart Channel */
-	if(uart_no == 0)
-	{
-		UARTx = UART0;
-	}
-	else if(uart_no == 1)
-	{
-		UARTx = UART1;
-	}
-	else if(uart_no == 2)
-	{
-		UARTx = UART2;
-	}
-	else if(uart_no == 3)
-	{
-		UARTx = UART3;
-	}
+
+	/* Get Uart Object */
+	UARTx = HAL_UART_Get_Object(uart_no);
 	
 	/* Check Interrupt ID */
 	intr_status = UARTx->IIR;
@@ -411,6 +435,7 @@ void HAL_Uart_Handler(uint8_t uart_no)
 	if((intr_status & UnIIR_INTR_BASIC_MASK) == UnIIR_IID_RBR_READY)
 	{
 		HAL_Uart_Rx_Handler(uart_no);		// Rx Process
+		UART1_ReceiveData_ISR(); // origin function
 	}
 
 	/* Tx Interrupt */
@@ -420,29 +445,19 @@ void HAL_Uart_Handler(uint8_t uart_no)
 	}
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
 uint8_t HAL_Uart_WriteBuffer(uint8_t uart_no, uint8_t *p_data, uint32_t data_count)
 {
 	UART_Type* UARTx;
 	UART_BUFFER *tp_UartBuffer;
 	uint32_t i;
 
-	/* Set Uart Channel */
-	if(uart_no == 0)
-	{
-		UARTx = UART0;
-	}
-	else if(uart_no == 1)
-	{
-		UARTx = UART1;
-	}
-	else if(uart_no == 2)
-	{
-		UARTx = UART2;
-	}
-	else if(uart_no == 3)
-	{
-		UARTx = UART3;
-	}
+	/* Get Uart Object */
+	UARTx = HAL_UART_Get_Object(uart_no);
 	
 	/* Get Buffer BaseAddress */
 	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
@@ -1231,5 +1246,6 @@ void SysTick_Handler (void) 					// SysTick Interrupt Handler @ 1000Hz
 
 void UART1_Handler (void)
 {
-	HAL_Uart_Handler(1);
+//	HAL_Uart_Handler(1);
+	UART1_Transmit_Receive_ISR(); 
 }
