@@ -121,5 +121,12 @@ void HAL_Uart_Handler(uint8_t uart_no);
 uint8_t HAL_Uart_WriteBuffer(uint8_t uart_no, uint8_t *p_data, uint32_t data_count);
 uint8_t HAL_Uart_ReadBuffer(uint8_t uart_no, uint8_t *p_status);
 
+void aputc(uint8_t uart_no, uint32_t data);
+void aputs(uint8_t uart_no, uint8_t *p_data);
+uint8_t agetc(uint8_t uart_no);
+uint8_t agets(uint8_t uart_no, uint8_t *p_data);
+void aputhex(uint8_t uart_no, uint32_t data);
+uint8_t agethex(uint8_t uart_no, uint8_t *data);
+
 
 /************************ (C) COPYRIGHT ABOV SEMICONDUCTOR *****END OF FILE****/

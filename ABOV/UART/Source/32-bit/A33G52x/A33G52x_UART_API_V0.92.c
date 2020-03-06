@@ -628,4 +628,260 @@ uint8_t HAL_Uart_ReadBuffer(uint8_t uart_no, uint8_t *p_status)
 	return (receive_data);
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
+void aputc(uint8_t uart_no, uint32_t data)
+{
+	uint8_t p_data[4];
+
+	if(data > 0xFFFFFF)
+	{
+		p_data[0] = (data>>24) & 0x0F;
+		p_data[1] = (data>>16) & 0x0F;
+		p_data[2] = (data>>8) & 0x0F;
+		p_data[3] = (data>>0) & 0x0F;
+		HAL_Uart_WriteBuffer(uart_no, p_data, 4);
+	}
+	else if(data > 0xFFFF)
+	{
+		p_data[0] = (data>>16) & 0x0F;
+		p_data[1] = (data>>8) & 0x0F;
+		p_data[2] = (data>>0) & 0x0F;
+		HAL_Uart_WriteBuffer(uart_no, p_data, 3);
+	}
+	else if(data > 0xFF)
+	{
+		p_data[0] = (data>>8) & 0x0F;
+		p_data[1] = (data>>0) & 0x0F;
+		HAL_Uart_WriteBuffer(uart_no, p_data, 2);
+	}
+	else
+	{
+		p_data[0] = (uint8_t)data;
+		HAL_Uart_WriteBuffer(uart_no, p_data, 1);
+	}
+}
+
+/**
+* @brief
+* @param   
+* @return
+*/
+void aputs(uint8_t uart_no, uint8_t *p_data)
+{
+	uint32_t i;
+	
+	for(i=0; ; i++)
+	{
+		if(*(p_data+i) == 0){break;}
+	}
+
+	HAL_Uart_WriteBuffer(uart_no, p_data, i);
+}
+
+/**
+* @brief
+* @param   
+* @return
+*/
+uint8_t agetc(uint8_t uart_no)
+{
+	uint8_t status;
+	uint8_t data;
+
+	data = HAL_Uart_ReadBuffer(uart_no, &status);
+	if(status != fUART_RX_BUFFER_SUCCESS){return 0;}
+
+	return data;
+}
+
+/**
+* @brief
+* @param   
+* @return
+*/
+uint8_t agets(uint8_t uart_no, uint8_t *p_data)
+{
+	uint8_t status;
+	uint8_t data_cnt;
+
+	data_cnt = 0;
+	while(1)
+	{
+		*p_data = HAL_Uart_ReadBuffer(uart_no, &status);
+		if(status == fUART_RX_BUFFER_SUCCESS)
+		{
+			p_data++;
+			data_cnt++;
+		}
+		if(*(p_data-1) == 0x0d){break;}
+	}
+	
+	return (data_cnt-1);
+}
+
+/**
+* @brief
+* @param   
+* @return
+*/
+void aputhex(uint8_t uart_no, uint32_t data)
+{
+	uint8_t i;
+	uint8_t p_data[1];
+	uint32_t nibble;
+
+	if(data > 0xFFFFFFF)
+	{
+		i = 32;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			p_data[0] = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_Uart_WriteBuffer(uart_no, p_data, 1);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFFFFFF)
+	{
+		i = 28;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			p_data[0] = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_Uart_WriteBuffer(uart_no, p_data, 1);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFFFFF)
+	{
+		i = 24;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			p_data[0] = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_Uart_WriteBuffer(uart_no, p_data, 1);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFFFF)
+	{
+		i = 20;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			p_data[0] = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_Uart_WriteBuffer(uart_no, p_data, 1);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFFF)
+	{
+		i = 16;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			p_data[0] = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_Uart_WriteBuffer(uart_no, p_data, 1);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFF)
+	{
+		i = 12;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			p_data[0] = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_Uart_WriteBuffer(uart_no, p_data, 1);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xF)
+	{
+		i = 8;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			p_data[0] = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_Uart_WriteBuffer(uart_no, p_data, 1);
+			if(i==0){break;}
+		}
+	}
+	else
+	{
+		i = 4;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			p_data[0] = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_Uart_WriteBuffer(uart_no, p_data, 1);
+			if(i==0){break;}
+		}
+	}
+}
+
+/**
+* @brief
+* @param   
+* @return
+*/
+uint8_t agethex(uint8_t uart_no, uint8_t *data)
+{
+	uint8_t i;
+	uint8_t data_cnt;
+	
+	data_cnt = agets(1,data);
+	
+	for(i=0; i<data_cnt; i++)
+	{
+		switch(data[i])
+		{
+			case 0x30:
+				data[i] = 0x0;
+				break;
+			case 0x31:
+				data[i] = 0x1;
+				break;
+			case 0x32:
+				data[i] = 0x2;
+				break;
+			case 0x33:
+				data[i] = 0x3;
+				break;
+			case 0x34:
+				data[i] = 0x4;
+				break;
+			case 0x35:
+				data[i] = 0x5;
+				break;
+			case 0x36:
+				data[i] = 0x6;
+				break;
+			case 0x37:
+				data[i] = 0x7;
+				break;
+			case 0x38:
+				data[i] = 0x8;
+				break;
+			case 0x39:
+				data[i] = 0x9;
+				break;
+		}
+	}
+	
+	return data_cnt;
+}
+
 /************************ (C) COPYRIGHT ABOV SEMICONDUCTOR *****END OF FILE****/
