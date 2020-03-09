@@ -127,6 +127,7 @@ uint8_t agetc(uint8_t uart_no);
 uint8_t agets(uint8_t uart_no, uint8_t *p_data);
 void aputhex(uint8_t uart_no, uint32_t data);
 uint8_t agethex(uint8_t uart_no, uint8_t *data);
+void RegisterWrite_Handler(void);
 
 
 /************************ (C) COPYRIGHT ABOV SEMICONDUCTOR *****END OF FILE****/

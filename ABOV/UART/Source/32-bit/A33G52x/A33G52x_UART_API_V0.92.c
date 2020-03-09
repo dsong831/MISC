@@ -906,4 +906,61 @@ uint8_t agethex(uint8_t uart_no, uint8_t *data)
 	return data_cnt;
 }
 
+/**
+* @brief
+* @param   
+* @return
+*/
+void RegisterWrite_Handler(void)
+{
+	uint32_t addr, val;
+	uint32_t *p_Register;
+	uint8_t data[9];
+	uint8_t i, data_cnt;
+
+	aputs(1,"\n\r#########################");
+	aputs(1,"\n\r## Register Write/Read ##");
+	aputs(1,"\n\r#########################\n\r");
+	
+	while(1)
+	{
+		addr = 0; val = 0;
+		
+		/* Input Target Address */
+		aputs(1,"\n\r");		
+		aputs(1,">>TargetAddr : 0x");		
+		data_cnt = agethex(1, data);
+		for(i=0; i<data_cnt; i++)
+		{
+			addr = (addr<<4);
+			addr |= data[i];
+		}
+		aputhex(1, addr);
+		aputs(1," => OK\n\r");
+		
+		/* Input Value */
+		aputs(1,">>WriteValue : 0x");		
+		data_cnt = agethex(1, data);
+		for(i=0; i<data_cnt; i++)
+		{
+			val = (val<<4);
+			val |= data[i];
+		}
+		aputhex(1, val);
+		aputs(1," => OK\n\r");		
+
+		/* Register Write/Read */
+		p_Register = (uint32_t *)addr;
+		if(data_cnt >0)
+		{
+			*p_Register = val;
+		}
+		aputs(1,"[0x");
+		aputhex(1,addr);
+		aputs(1,"] = 0x");		
+		aputhex(1, *p_Register);
+		aputs(1," [OK]\n\r");
+	}
+}
+
 /************************ (C) COPYRIGHT ABOV SEMICONDUCTOR *****END OF FILE****/
