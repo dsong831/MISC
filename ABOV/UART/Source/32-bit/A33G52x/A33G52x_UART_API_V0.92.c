@@ -525,7 +525,7 @@ uint8_t HAL_Uart_WriteBuffer(uint8_t uart_no, uint8_t *p_data, uint32_t data_cou
 	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
 	
 	/* Wait until past last sequence */
-	while(tp_UartBuffer->TxState != fUART_TX_STATE_IDLE);
+//	while(tp_UartBuffer->TxState != fUART_TX_STATE_IDLE);
 	for(i=0; i<0x100000; i++)
 	{
 		if(tp_UartBuffer->TxBuffer_TailIndex == tp_UartBuffer->TxBuffer_HeadIndex) {break;}
@@ -711,16 +711,17 @@ uint8_t agets(uint8_t uart_no, uint8_t *p_data)
 	data_cnt = 0;
 	while(1)
 	{
+		if(*(p_data) == 0x0d){break;}
+		
 		*p_data = HAL_Uart_ReadBuffer(uart_no, &status);
 		if(status == fUART_RX_BUFFER_SUCCESS)
 		{
 			p_data++;
 			data_cnt++;
 		}
-		if(*(p_data-1) == 0x0d){break;}
 	}
 	
-	return (data_cnt-1);
+	return (data_cnt);
 }
 
 /**
@@ -877,6 +878,27 @@ uint8_t agethex(uint8_t uart_no, uint8_t *data)
 				break;
 			case 0x39:
 				data[i] = 0x9;
+				break;
+			case 0x61:
+				data[i] = 0xa;
+				break;
+			case 0x62:
+				data[i] = 0xb;
+				break;
+			case 0x63:
+				data[i] = 0xc;
+				break;
+			case 0x64:
+				data[i] = 0xd;
+				break;
+			case 0x65:
+				data[i] = 0xe;
+				break;
+			case 0x66:
+				data[i] = 0xf;
+				break;
+			default :
+				data[i] = 0;				
 				break;
 		}
 	}
