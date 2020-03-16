@@ -1,5 +1,5 @@
 /***************************************************************************//**
-*   @file					A33G52x_UART_API_V0.92.c
+*   @file					A33G52x_UART_API_V0.93.c
 *   @brief				UART Peripheral Function
 *   @author		ABOV Semiconductor Co., Ltd.
 *   @version		V1.00
@@ -23,7 +23,7 @@
 /*******************************************************************************
 * Included File
 *******************************************************************************/
-#include "A33G52x_UART_API_V0.92.h"
+#include "A33G52x_UART_API_V0.93.h"
 #include "A33G52x.h"
 /*******************************************************************************
 * Private Pre-processor Definition & Macro
@@ -350,7 +350,6 @@ void HAL_Uart_Tx_Handler(uint8_t uart_no)
 	UART_Type* UARTx;
 	tUART_BUFFER *tp_UartBuffer;
 	volatile uint32_t line_status;
-	uint8_t send_data;
 
 	/* Get Uart Object */
 	UARTx = HAL_UART_Get_Object(uart_no);	
@@ -371,43 +370,27 @@ void HAL_Uart_Tx_Handler(uint8_t uart_no)
 	{
 		if((line_status & fUnLSR_THRE) == fUnLSR_THRE)
 		{
-			/* Load data to THR */
-			if(tp_UartBuffer->TxBuffer_TailIndex < tp_UartBuffer->TxBuffer_HeadIndex)
-			{
-				send_data = tp_UartBuffer->TxBuffer[tp_UartBuffer->TxBuffer_TailIndex++];
-				UARTx->RBR_THR_DLL = send_data;
-				
-				// Tx Tail Index Full
-				if(tp_UartBuffer->TxBuffer_TailIndex == fUART_MAX_TX_BUFFER)
-				{
-					tp_UartBuffer->TxBuffer_TailIndex = 0;
-				}
-			}
-			/* Load data to THR */
-			else if(tp_UartBuffer->TxBuffer_TailIndex > tp_UartBuffer->TxBuffer_HeadIndex)
-			{
-				send_data = tp_UartBuffer->TxBuffer[tp_UartBuffer->TxBuffer_TailIndex++];
-				UARTx->RBR_THR_DLL = send_data;
-				
-				// Tx Tail Index Full
-				if(tp_UartBuffer->TxBuffer_TailIndex == fUART_MAX_TX_BUFFER)
-				{
-					tp_UartBuffer->TxBuffer_TailIndex = 0;
-				}
-			}
 			/* Transmission Done */
+			if(tp_UartBuffer->TxBuffer_HeadIndex == tp_UartBuffer->TxBuffer_TailIndex)
+			{
+				// Initial parameters
+				tp_UartBuffer->TxBuffer_HeadIndex = 0;
+				tp_UartBuffer->TxBuffer_TailIndex = 0;
+				tp_UartBuffer->TxState = fUART_TX_STATE_IDLE;
+#ifdef	fUSE_UART_TX_INTERRUPT
+				// Disable tx interrupt
+				HAL_Uart_Enable_Tx_Interrupt(UARTx, 0);
+#endif
+			}
+			/* Load data to THR */
 			else
 			{
-				if(tp_UartBuffer->TxBuffer_HeadIndex != 0)
+				UARTx->RBR_THR_DLL = tp_UartBuffer->TxBuffer[tp_UartBuffer->TxBuffer_TailIndex++];
+
+				// Tx Tail Index Full
+				if(tp_UartBuffer->TxBuffer_TailIndex == fUART_MAX_TX_BUFFER)
 				{
-#ifdef	fUSE_UART_TX_INTERRUPT
-					// Disable tx interrupt
-					HAL_Uart_Enable_Tx_Interrupt(UARTx, 0);
-#endif
-					// Initial parameters
-					tp_UartBuffer->TxBuffer_HeadIndex = 0;
 					tp_UartBuffer->TxBuffer_TailIndex = 0;
-					tp_UartBuffer->TxState = fUART_TX_STATE_IDLE;
 				}
 			}
 		}
@@ -424,7 +407,6 @@ void HAL_Uart_Rx_Handler(uint8_t uart_no)
 	UART_Type* UARTx;
 	tUART_BUFFER *tp_UartBuffer;
 	volatile uint32_t line_status;
-	uint8_t receive_data;
 	
 	/* Get Uart Object */
 	UARTx = HAL_UART_Get_Object(uart_no);	
@@ -445,27 +427,12 @@ void HAL_Uart_Rx_Handler(uint8_t uart_no)
 		if(line_status & fUnLSR_DR)
 		{
 			// Fetch data from RBR register
-			receive_data = UARTx->RBR_THR_DLL;
-			tp_UartBuffer->RxBuffer[tp_UartBuffer->RxBuffer_HeadIndex++] = receive_data;
-
+			tp_UartBuffer->RxBuffer[tp_UartBuffer->RxBuffer_HeadIndex++] = UARTx->RBR_THR_DLL;
+			tp_UartBuffer->RxState = fUART_RX_STATE_RECEIVE;
 			// Rx Head Index Full
 			if(tp_UartBuffer->RxBuffer_HeadIndex == fUART_MAX_RX_BUFFER)
 			{
 				tp_UartBuffer->RxBuffer_HeadIndex = 0;
-			}
-		}
-		else
-		{
-			// Receive Done
-			if(tp_UartBuffer->RxBuffer_HeadIndex == tp_UartBuffer->RxBuffer_TailIndex)
-			{
-				if(tp_UartBuffer->RxBuffer_HeadIndex != 0)
-				{
-					// Initial parameters
-					tp_UartBuffer->RxBuffer_HeadIndex = 0;
-					tp_UartBuffer->RxBuffer_TailIndex = 0;
-					tp_UartBuffer->RxState = fUART_RX_STATE_IDLE;
-				}
 			}
 		}
 	}
@@ -523,24 +490,27 @@ uint8_t HAL_Uart_WriteBuffer(uint8_t uart_no, uint8_t *p_data, uint32_t data_cou
 	
 	/* Get Buffer BaseAddress */
 	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
-	
+
 	/* Wait until past last sequence */
-//	while(tp_UartBuffer->TxState != fUART_TX_STATE_IDLE);
 	for(i=0; i<0x100000; i++)
 	{
-		if(tp_UartBuffer->TxBuffer_TailIndex == tp_UartBuffer->TxBuffer_HeadIndex) {break;}
-		if(i == 0xFFFFF) {return (fUART_TX_BUFFER_ERROR_WAIT_TIMEOUT);}
+		if(tp_UartBuffer->TxBuffer_HeadIndex == tp_UartBuffer->TxBuffer_TailIndex)
+		{
+			tp_UartBuffer->TxBuffer_HeadIndex = 0;
+			tp_UartBuffer->TxBuffer_TailIndex = 0;
+			break;
+		}
+		if(i == 0xFFFFF)
+		{
+			return (fUART_TX_BUFFER_ERROR_WAIT_TIMEOUT);
+		}
 	}
 
 	/* Load data to TxBuffer */
 	for(i=0; i<data_count; i++)
 	{
-		tp_UartBuffer->TxBuffer[i] = *(p_data + i);
+		tp_UartBuffer->TxBuffer[tp_UartBuffer->TxBuffer_HeadIndex++] = *(p_data + i);
 	}
-	tp_UartBuffer->TxBuffer_HeadIndex = data_count;
-	tp_UartBuffer->TxBuffer_TailIndex = 0;
-
-	/* Update Tx Status */
 	tp_UartBuffer->TxState = fUART_TX_STATE_TRANSMIT;
 
 #ifdef	fUSE_UART_TX_INTERRUPT
@@ -569,61 +539,43 @@ uint8_t HAL_Uart_ReadBuffer(uint8_t uart_no, uint8_t *p_status)
 {
 	tUART_BUFFER *tp_UartBuffer;
 	uint8_t receive_data;
-	
+
+#ifndef	fUSE_UART_RX_INTERRUPT
+	HAL_Uart_Rx_Handler(uart_no);
+#endif
+
 	/* Get Buffer BaseAddress */
 	tp_UartBuffer = HAL_Uart_GetBufferBaseAddr(uart_no);
 
-	if(tp_UartBuffer->RxBuffer_TailIndex < tp_UartBuffer->RxBuffer_HeadIndex)
+	if(tp_UartBuffer->RxState == fUART_RX_STATE_RECEIVE)
 	{
-		// Load data from Rx Buffer
-		receive_data = tp_UartBuffer->RxBuffer[tp_UartBuffer->RxBuffer_TailIndex++];
-		*p_status = fUART_RX_BUFFER_SUCCESS;
-
-		// Rx Tail Index Full
-		if(tp_UartBuffer->RxBuffer_TailIndex == fUART_MAX_RX_BUFFER)
+		if(tp_UartBuffer->RxBuffer_HeadIndex == tp_UartBuffer->RxBuffer_TailIndex)
 		{
-			tp_UartBuffer->RxBuffer_TailIndex = 0;
-		}
-		// Receive Done
-		if(tp_UartBuffer->RxBuffer_TailIndex == tp_UartBuffer->RxBuffer_HeadIndex)
-		{
+			// Receive Done
 			tp_UartBuffer->RxBuffer_HeadIndex = 0;
 			tp_UartBuffer->RxBuffer_TailIndex = 0;
 			tp_UartBuffer->RxState = fUART_RX_STATE_IDLE;
+			*p_status = fUART_RX_BUFFER_ERROR_EMPTY;
 		}
-	}
-	else if(tp_UartBuffer->RxBuffer_TailIndex > tp_UartBuffer->RxBuffer_HeadIndex)
-	{
-		// Load data from Rx Buffer
-		receive_data = tp_UartBuffer->RxBuffer[tp_UartBuffer->RxBuffer_TailIndex++];
-		*p_status = fUART_RX_BUFFER_SUCCESS;
+		else
+		{
+			// Load data from Rx Buffer
+			receive_data = tp_UartBuffer->RxBuffer[tp_UartBuffer->RxBuffer_TailIndex++];
+			*p_status = fUART_RX_BUFFER_SUCCESS;
 
-		// Rx Tail Index Full		
-		if(tp_UartBuffer->RxBuffer_TailIndex == fUART_MAX_RX_BUFFER)
-		{
-			tp_UartBuffer->RxBuffer_TailIndex = 0;
-		}
-		// Receive Done
-		if(tp_UartBuffer->RxBuffer_TailIndex == tp_UartBuffer->RxBuffer_HeadIndex)
-		{
-			tp_UartBuffer->RxBuffer_HeadIndex = 0;
-			tp_UartBuffer->RxBuffer_TailIndex = 0;
-			tp_UartBuffer->RxState = fUART_RX_STATE_IDLE;
+			// Rx Tail Index Full
+			if(tp_UartBuffer->RxBuffer_TailIndex == fUART_MAX_RX_BUFFER)
+			{
+				tp_UartBuffer->RxBuffer_TailIndex = 0;
+			}
 		}
 	}
 	else
 	{
-		// Rx Buffer Empty
+		// Rx Buffer Empty Error
 		receive_data = 0;
 		*p_status = fUART_RX_BUFFER_ERROR_EMPTY;
 	}
-
-	/* Update Rx Status */
-	tp_UartBuffer->RxState = fUART_RX_STATE_RECEIVE;
-	
-#ifndef	fUSE_UART_RX_INTERRUPT
-	HAL_Uart_Rx_Handler(uart_no);
-#endif
 
 	return (receive_data);
 }
