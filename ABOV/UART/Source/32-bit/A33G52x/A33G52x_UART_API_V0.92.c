@@ -710,14 +710,19 @@ uint8_t agets(uint8_t uart_no, uint8_t *p_data)
 
 	data_cnt = 0;
 	while(1)
-	{
-		if(*(p_data) == 0x0d){break;}
-		
+	{		
 		*p_data = HAL_Uart_ReadBuffer(uart_no, &status);
 		if(status == fUART_RX_BUFFER_SUCCESS)
 		{
-			p_data++;
-			data_cnt++;
+			if(*(p_data) == 0x0d)
+			{
+				break;
+			}
+			else
+			{
+				p_data++;
+				data_cnt++;
+			}
 		}
 	}
 	
