@@ -1,5 +1,5 @@
 /***************************************************************************//**
-*   @file					A33G52x_UART_API_V0.93.h
+*   @file					A33G52x_UART_API_V0.94.h
 *   @brief				UART Peripheral Function
 *   @author		ABOV Semiconductor Co., Ltd.
 *   @version		V1.00

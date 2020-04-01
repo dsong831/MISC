@@ -1,5 +1,5 @@
 /***************************************************************************//**
-*   @file					A33G52x_UART_API_V0.93.c
+*   @file					A33G52x_UART_API_V0.94.c
 *   @brief				UART Peripheral Function
 *   @author		ABOV Semiconductor Co., Ltd.
 *   @version		V1.00
@@ -23,7 +23,7 @@
 /*******************************************************************************
 * Included File
 *******************************************************************************/
-#include "A33G52x_UART_API_V0.93.h"
+#include "A33G52x_UART_API_V0.94.h"
 #include "A33G52x.h"
 /*******************************************************************************
 * Private Pre-processor Definition & Macro
@@ -800,7 +800,7 @@ uint8_t agethex(uint8_t uart_no, uint8_t *data)
 	uint8_t i;
 	uint8_t data_cnt;
 	
-	data_cnt = agets(1,data);
+	data_cnt = agets(uart_no, data);
 	
 	for(i=0; i<data_cnt; i++)
 	{
