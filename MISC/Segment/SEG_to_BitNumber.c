@@ -12,6 +12,12 @@ dec_num : Bit numbers
 7 : 0,1,2,5
 8 : 0,1,2,3,4,5,6
 9 : 0,1,2,3,5,6
+A : 0,1,2,4,5,6,7
+B : 0,1,2,3,4,5,6,7
+C : 0,3,4,5,7
+D : 0,1,2,3,4,5,7
+E : 0,3,4,5,6,7
+F : 0,4,5,6,7
 * @param   
 * @return
 */
@@ -49,6 +55,24 @@ unsigned char SEG_TO_NUM(unsigned char dec_num)
 			break;
 		case 9:
 			u8Data = 0x6F;
+			break;
+		case 10:
+			u8Data = 0xF7;
+			break;
+		case 11:
+			u8Data = 0xFF;
+			break;
+		case 12:
+			u8Data = 0xB9;
+			break;
+		case 13:
+			u8Data = 0xBF;
+			break;
+		case 14:
+			u8Data = 0xF9;
+			break;
+		case 15:
+			u8Data = 0xF1;
 			break;
 		default :
 			u8Data = 0xFF;
