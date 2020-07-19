@@ -158,7 +158,9 @@ HAL_Status_Type HAL_UART_Init(UART_Type *UARTn, UART_CFG_Type *UARTConfigStruct,
 void HAL_UART_BaudrateSet(UART_Type *UARTn, uint32_t baudrate);
 void HAL_UART_RingBuffer_Init(UART_Type *UARTn);
 void HAL_UART_TransmitData(UART_Type *UARTn, uint8_t tx_data);
+int8_t HAL_UART_ReceiveData(UART_Type *UARTn);
 void HAL_UART_TX_Handler(UART_Type *UARTn);
+void HAL_UART_RX_Handler(UART_Type *UARTn);
 
 extern uint8_t u8Dummy;
 

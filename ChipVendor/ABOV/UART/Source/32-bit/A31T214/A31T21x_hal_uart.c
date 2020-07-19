@@ -308,7 +308,7 @@ void HAL_UART_RingBuffer_Init(UART_Type *UARTn)
 }
 
 /*********************************************************************//**
- * @brief						Initialize	RingBuffer Parameters
+ * @brief						UART Transmit Data (Interrupt mode)
  * @param[in]	UARTn	Pointer to selected UART peripheral, should be:
  *											- UART0	:UART0 peripheral
  *											- UART1	:UART1 peripheral
@@ -331,7 +331,7 @@ void HAL_UART_TransmitData(UART_Type *UARTn, uint8_t tx_data)
 			else
 			{
 				tx1_RingBuffer.Buffer[tx1_RingBuffer.HeadPtr++] = tx_data;
-				if(tx1_RingBuffer.HeadPtr == RING_BUFFER_LENGTH)
+				if(tx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
 				{
 					tx1_RingBuffer.HeadPtr = 0;
 				}
@@ -340,7 +340,7 @@ void HAL_UART_TransmitData(UART_Type *UARTn, uint8_t tx_data)
 		else
 		{
 			tx1_RingBuffer.Buffer[tx1_RingBuffer.HeadPtr++] = tx_data;
-			if(tx1_RingBuffer.HeadPtr == RING_BUFFER_LENGTH)
+			if(tx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
 			{
 				tx1_RingBuffer.HeadPtr = 0;
 			}
@@ -351,7 +351,38 @@ void HAL_UART_TransmitData(UART_Type *UARTn, uint8_t tx_data)
 }
 
 /*********************************************************************//**
- * @brief						UART Transmit Handler
+ * @brief						UART Receive Data (Interrupt mode)
+ * @param[in]	UARTn	Pointer to selected UART peripheral, should be:
+ *											- UART0	:UART0 peripheral
+ *											- UART1	:UART1 peripheral
+ * @return				received data
+ **********************************************************************/
+int8_t HAL_UART_ReceiveData(UART_Type *UARTn)
+{
+	if(UARTn == UART1)
+	{
+		if(rx1_RingBuffer.HeadPtr != rx1_RingBuffer.TailPtr)
+		{
+			if(rx1_RingBuffer.TailPtr > RING_BUFFER_LENGTH)
+			{
+				rx1_RingBuffer.TailPtr = 0;
+			}
+			return rx1_RingBuffer.Buffer[rx1_RingBuffer.TailPtr++];
+		}
+		else
+		{
+				rx1_RingBuffer.State = UART_RX_IDLE;
+				return -1;
+		}
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+/*********************************************************************//**
+ * @brief						UART Transmit Handler (Interrupt Handler)
  * @param[in]	UARTn	Pointer to selected UART peripheral, should be:
  *											- UART0	:UART0 peripheral
  *											- UART1	:UART1 peripheral
@@ -366,7 +397,7 @@ void HAL_UART_TX_Handler(UART_Type *UARTn)
 			if(UARTn->LSR & UART_LSR_THRE)
 			{
 				UARTn->THR = tx1_RingBuffer.Buffer[tx1_RingBuffer.TailPtr++];
-				if(tx1_RingBuffer.TailPtr == RING_BUFFER_LENGTH)
+				if(tx1_RingBuffer.TailPtr > RING_BUFFER_LENGTH)
 				{
 					tx1_RingBuffer.TailPtr = 0;
 				}
@@ -381,10 +412,49 @@ void HAL_UART_TX_Handler(UART_Type *UARTn)
 	u8Dummy = UARTn->IIR;		// Clear interrupt
 }
 
-
-
-
-
+/*********************************************************************//**
+ * @brief						UART Receive Handler (Interrupt Handler)
+ * @param[in]	UARTn	Pointer to selected UART peripheral, should be:
+ *											- UART0	:UART0 peripheral
+ *											- UART1	:UART1 peripheral
+ * @return				None
+ **********************************************************************/
+void HAL_UART_RX_Handler(UART_Type *UARTn)
+{
+	if(UARTn == UART1)
+	{
+		if(rx1_RingBuffer.HeadPtr == rx1_RingBuffer.TailPtr)
+		{
+			if(rx1_RingBuffer.State == UART_RX_IDLE)
+			{
+				rx1_RingBuffer.Buffer[rx1_RingBuffer.HeadPtr++] = UARTn->RBR;	// First data receive
+				rx1_RingBuffer.State = UART_RX_BUSY;
+				if(rx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+				{
+					rx1_RingBuffer.HeadPtr = 0;
+				}
+			}
+			else
+			{
+				rx1_RingBuffer.Buffer[rx1_RingBuffer.HeadPtr++] = UARTn->RBR;
+				if(rx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+				{
+					rx1_RingBuffer.HeadPtr = 0;
+				}
+			}
+		}
+		else
+		{
+			rx1_RingBuffer.Buffer[rx1_RingBuffer.HeadPtr++] = UARTn->RBR;
+			if(rx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+			{
+				rx1_RingBuffer.HeadPtr = 0;
+			}
+		}
+	}
+	
+	u8Dummy = UARTn->IIR;		// Clear interrupt
+}
 
 
 
