@@ -606,4 +606,281 @@ void HAL_UART_RX_Handler(UART_Type *UARTn)
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
+ **********************************************************************/
+void aputs(UART_Type *UARTn, uint8_t *p_data)
+{
+	while(1)
+	{
+		HAL_UART_TransmitData(UARTn, *p_data);
+		if(*p_data == 0){break;}
+		else{p_data++;}
+	}
+}
+
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
+ **********************************************************************/
+void aputhex(UART_Type *UARTn, uint32_t data)
+{
+	uint8_t i;
+	uint8_t tx_data;
+	uint32_t nibble;
+
+	if(data > 0xFFFFFFF)
+	{
+		i = 32;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_UART_TransmitData(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFFFFFF)
+	{
+		i = 28;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_UART_TransmitData(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFFFFF)
+	{
+		i = 24;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_UART_TransmitData(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFFFF)
+	{
+		i = 20;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_UART_TransmitData(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFFF)
+	{
+		i = 16;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_UART_TransmitData(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFF)
+	{
+		i = 12;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_UART_TransmitData(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xF)
+	{
+		i = 8;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_UART_TransmitData(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else
+	{
+		i = 4;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			HAL_UART_TransmitData(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+}
+
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
+ **********************************************************************/
+void agets(UART_Type *UARTn, int8_t *p_data)
+{
+	while(1)
+	{
+		*p_data = HAL_UART_ReceiveData(UARTn);
+		if(*p_data == -1){}
+		else if(*p_data == 0x0D){break;}
+		else{p_data++;}
+	}
+}
+
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
+ **********************************************************************/
+#if 0
+uint8_t agethex(uint8_t uart_no, uint8_t *data)
+{
+	uint8_t i;
+	uint8_t data_cnt;
+	
+	data_cnt = agets(uart_no, data);
+	
+	for(i=0; i<data_cnt; i++)
+	{
+		switch(data[i])
+		{
+			case 0x30:
+				data[i] = 0x0;
+				break;
+			case 0x31:
+				data[i] = 0x1;
+				break;
+			case 0x32:
+				data[i] = 0x2;
+				break;
+			case 0x33:
+				data[i] = 0x3;
+				break;
+			case 0x34:
+				data[i] = 0x4;
+				break;
+			case 0x35:
+				data[i] = 0x5;
+				break;
+			case 0x36:
+				data[i] = 0x6;
+				break;
+			case 0x37:
+				data[i] = 0x7;
+				break;
+			case 0x38:
+				data[i] = 0x8;
+				break;
+			case 0x39:
+				data[i] = 0x9;
+				break;
+			case 0x61:
+				data[i] = 0xa;
+				break;
+			case 0x62:
+				data[i] = 0xb;
+				break;
+			case 0x63:
+				data[i] = 0xc;
+				break;
+			case 0x64:
+				data[i] = 0xd;
+				break;
+			case 0x65:
+				data[i] = 0xe;
+				break;
+			case 0x66:
+				data[i] = 0xf;
+				break;
+			default :
+				data[i] = 0;				
+				break;
+		}
+	}
+	
+	return data_cnt;
+}
+#endif
+#if 0
+/**
+* @brief
+* @param   
+* @return
+*/
+void RegisterWrite_Handler(void)
+{
+	uint32_t addr, val;
+	uint32_t *p_Register;
+	uint8_t data[9];
+	uint8_t i, data_cnt;
+
+	aputs(1,"\n\r#########################");
+	aputs(1,"\n\r## Register Write/Read ##");
+	aputs(1,"\n\r#########################\n\r");
+	
+	while(1)
+	{
+		addr = 0; val = 0;
+		
+		/* Input Target Address */
+		aputs(1,"\n\r");		
+		aputs(1,">>TargetAddr : 0x");		
+		data_cnt = agethex(1, data);
+		for(i=0; i<data_cnt; i++)
+		{
+			addr = (addr<<4);
+			addr |= data[i];
+		}
+		aputhex(1, addr);
+		aputs(1," => OK\n\r");
+		
+		/* Input Value */
+		aputs(1,">>WriteValue : 0x");		
+		data_cnt = agethex(1, data);
+		for(i=0; i<data_cnt; i++)
+		{
+			val = (val<<4);
+			val |= data[i];
+		}
+		aputhex(1, val);
+		aputs(1," => OK\n\r");		
+
+		/* Register Write/Read */
+		p_Register = (uint32_t *)addr;
+		if(data_cnt >0)
+		{
+			*p_Register = val;
+		}
+		aputs(1,"[0x");
+		aputhex(1,addr);
+		aputs(1,"] = 0x");		
+		aputhex(1, *p_Register);
+		aputs(1," [OK]\n\r");
+	}
+}
+#endif
+
 /* --------------------------------- End Of File ------------------------------ */

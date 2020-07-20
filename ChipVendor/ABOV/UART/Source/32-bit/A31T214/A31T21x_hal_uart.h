@@ -171,6 +171,12 @@ extern RingBuffer_Type	rx0_RingBuffer;
 extern RingBuffer_Type	rx1_RingBuffer;
 
 
+/* Application Functions ----------------------------------------------------------- */
+void aputs(UART_Type *UARTn, uint8_t *p_data);
+void aputhex(UART_Type *UARTn, uint32_t data);
+void agets(UART_Type *UARTn, int8_t *p_data);
+
+
 #ifdef __cplusplus
 }
 #endif
