@@ -609,6 +609,15 @@ void HAL_UART_RX_Handler(UART_Type *UARTn)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
+ **********************************************************************/
+void aputc(UART_Type *UARTn, uint8_t data)
+{
+	HAL_UART_WriteBuffer(UARTn, data);
+}
 
 /*********************************************************************//**
  * @brief
@@ -619,7 +628,7 @@ void aputs(UART_Type *UARTn, uint8_t *p_data)
 {
 	while(1)
 	{
-		HAL_UART_TransmitData(UARTn, *p_data);
+		aputc(UARTn, *p_data);
 		if(*p_data == 0){break;}
 		else{p_data++;}
 	}
@@ -644,7 +653,7 @@ void aputhex(UART_Type *UARTn, uint32_t data)
 			i-=4;
 			nibble = (data>>i) & 0x0F;
 			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
-			HAL_UART_TransmitData(UARTn, tx_data);
+			aputc(UARTn, tx_data);
 			if(i==0){break;}
 		}
 	}
@@ -656,7 +665,7 @@ void aputhex(UART_Type *UARTn, uint32_t data)
 			i-=4;
 			nibble = (data>>i) & 0x0F;
 			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
-			HAL_UART_TransmitData(UARTn, tx_data);
+			aputc(UARTn, tx_data);
 			if(i==0){break;}
 		}
 	}
@@ -668,7 +677,7 @@ void aputhex(UART_Type *UARTn, uint32_t data)
 			i-=4;
 			nibble = (data>>i) & 0x0F;
 			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
-			HAL_UART_TransmitData(UARTn, tx_data);
+			aputc(UARTn, tx_data);
 			if(i==0){break;}
 		}
 	}
@@ -680,7 +689,7 @@ void aputhex(UART_Type *UARTn, uint32_t data)
 			i-=4;
 			nibble = (data>>i) & 0x0F;
 			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
-			HAL_UART_TransmitData(UARTn, tx_data);
+			aputc(UARTn, tx_data);
 			if(i==0){break;}
 		}
 	}
@@ -692,7 +701,7 @@ void aputhex(UART_Type *UARTn, uint32_t data)
 			i-=4;
 			nibble = (data>>i) & 0x0F;
 			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
-			HAL_UART_TransmitData(UARTn, tx_data);
+			aputc(UARTn, tx_data);
 			if(i==0){break;}
 		}
 	}
@@ -704,7 +713,7 @@ void aputhex(UART_Type *UARTn, uint32_t data)
 			i-=4;
 			nibble = (data>>i) & 0x0F;
 			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
-			HAL_UART_TransmitData(UARTn, tx_data);
+			aputc(UARTn, tx_data);
 			if(i==0){break;}
 		}
 	}
@@ -716,7 +725,7 @@ void aputhex(UART_Type *UARTn, uint32_t data)
 			i-=4;
 			nibble = (data>>i) & 0x0F;
 			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
-			HAL_UART_TransmitData(UARTn, tx_data);
+			aputc(UARTn, tx_data);
 			if(i==0){break;}
 		}
 	}
@@ -728,7 +737,7 @@ void aputhex(UART_Type *UARTn, uint32_t data)
 			i-=4;
 			nibble = (data>>i) & 0x0F;
 			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
-			HAL_UART_TransmitData(UARTn, tx_data);
+			aputc(UARTn, tx_data);
 			if(i==0){break;}
 		}
 	}
@@ -739,15 +748,9 @@ void aputhex(UART_Type *UARTn, uint32_t data)
  * @param[in]
  * @return
  **********************************************************************/
-void agets(UART_Type *UARTn, int8_t *p_data)
+uint8_t agetc(UART_Type *UARTn)
 {
-	while(1)
-	{
-		*p_data = HAL_UART_ReceiveData(UARTn);
-		if(*p_data == -1){}
-		else if(*p_data == 0x0D){break;}
-		else{p_data++;}
-	}
+	return HAL_UART_ReadBuffer(UARTn);
 }
 
 /*********************************************************************//**
@@ -755,118 +758,142 @@ void agets(UART_Type *UARTn, int8_t *p_data)
  * @param[in]
  * @return
  **********************************************************************/
-#if 0
-uint8_t agethex(uint8_t uart_no, uint8_t *data)
+uint8_t agets(UART_Type *UARTn, uint8_t *p_data)
+{
+	uint8_t receive_count = 0;
+
+	while(1)
+	{
+		*p_data = agetc(UARTn);
+		if(*p_data == 0x0D)
+		{
+			break;
+		}
+		else
+		{
+			p_data++;
+			receive_count++;
+		}
+	}
+
+	return receive_count;
+}
+
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
+ **********************************************************************/
+uint8_t agethex(UART_Type *UARTn, uint8_t *p_data)
 {
 	uint8_t i;
-	uint8_t data_cnt;
+	uint8_t receive_count;
 	
-	data_cnt = agets(uart_no, data);
+	receive_count = agets(UARTn, p_data);
 	
-	for(i=0; i<data_cnt; i++)
+	for(i=0; i<receive_count; i++)
 	{
-		switch(data[i])
+		switch(p_data[i])
 		{
 			case 0x30:
-				data[i] = 0x0;
+				p_data[i] = 0x0;
 				break;
 			case 0x31:
-				data[i] = 0x1;
+				p_data[i] = 0x1;
 				break;
 			case 0x32:
-				data[i] = 0x2;
+				p_data[i] = 0x2;
 				break;
 			case 0x33:
-				data[i] = 0x3;
+				p_data[i] = 0x3;
 				break;
 			case 0x34:
-				data[i] = 0x4;
+				p_data[i] = 0x4;
 				break;
 			case 0x35:
-				data[i] = 0x5;
+				p_data[i] = 0x5;
 				break;
 			case 0x36:
-				data[i] = 0x6;
+				p_data[i] = 0x6;
 				break;
 			case 0x37:
-				data[i] = 0x7;
+				p_data[i] = 0x7;
 				break;
 			case 0x38:
-				data[i] = 0x8;
+				p_data[i] = 0x8;
 				break;
 			case 0x39:
-				data[i] = 0x9;
+				p_data[i] = 0x9;
 				break;
 			case 0x61:
-				data[i] = 0xa;
+				p_data[i] = 0xa;
 				break;
 			case 0x62:
-				data[i] = 0xb;
+				p_data[i] = 0xb;
 				break;
 			case 0x63:
-				data[i] = 0xc;
+				p_data[i] = 0xc;
 				break;
 			case 0x64:
-				data[i] = 0xd;
+				p_data[i] = 0xd;
 				break;
 			case 0x65:
-				data[i] = 0xe;
+				p_data[i] = 0xe;
 				break;
 			case 0x66:
-				data[i] = 0xf;
+				p_data[i] = 0xf;
 				break;
 			default :
-				data[i] = 0;				
+				p_data[i] = 0;				
 				break;
 		}
 	}
 	
-	return data_cnt;
+	return receive_count;
 }
-#endif
-#if 0
-/**
-* @brief
-* @param   
-* @return
-*/
-void RegisterWrite_Handler(void)
+
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
+ **********************************************************************/
+void RegisterWrite_Handler(UART_Type *UARTn)
 {
 	uint32_t addr, val;
 	uint32_t *p_Register;
 	uint8_t data[9];
 	uint8_t i, data_cnt;
 
-	aputs(1,"\n\r#########################");
-	aputs(1,"\n\r## Register Write/Read ##");
-	aputs(1,"\n\r#########################\n\r");
+	aputs(UARTn,"\n\r#########################");
+	aputs(UARTn,"\n\r## Register Write/Read ##");
+	aputs(UARTn,"\n\r#########################\n\r");
 	
 	while(1)
 	{
 		addr = 0; val = 0;
 		
 		/* Input Target Address */
-		aputs(1,"\n\r");		
-		aputs(1,">>TargetAddr : 0x");		
-		data_cnt = agethex(1, data);
+		aputs(UARTn,"\n\r");		
+		aputs(UARTn,">>TargetAddr : 0x");		
+		data_cnt = agethex(UARTn, data);
 		for(i=0; i<data_cnt; i++)
 		{
 			addr = (addr<<4);
 			addr |= data[i];
 		}
-		aputhex(1, addr);
-		aputs(1," => OK\n\r");
+		aputhex(UARTn, addr);
+		aputs(UARTn," => OK\n\r");
 		
 		/* Input Value */
-		aputs(1,">>WriteValue : 0x");		
-		data_cnt = agethex(1, data);
+		aputs(UARTn,">>WriteValue : 0x");		
+		data_cnt = agethex(UARTn, data);
 		for(i=0; i<data_cnt; i++)
 		{
 			val = (val<<4);
 			val |= data[i];
 		}
-		aputhex(1, val);
-		aputs(1," => OK\n\r");		
+		aputhex(UARTn, val);
+		aputs(UARTn," => OK\n\r");		
 
 		/* Register Write/Read */
 		p_Register = (uint32_t *)addr;
@@ -874,13 +901,13 @@ void RegisterWrite_Handler(void)
 		{
 			*p_Register = val;
 		}
-		aputs(1,"[0x");
-		aputhex(1,addr);
-		aputs(1,"] = 0x");		
-		aputhex(1, *p_Register);
-		aputs(1," [OK]\n\r");
+		aputs(UARTn,"[0x");
+		aputhex(UARTn,addr);
+		aputs(UARTn,"] = 0x");		
+		aputhex(UARTn, *p_Register);
+		aputs(UARTn," [OK]\n\r");
 	}
 }
-#endif
+
 
 /* --------------------------------- End Of File ------------------------------ */

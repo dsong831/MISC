@@ -172,9 +172,13 @@ extern RingBuffer_Type	rx1_RingBuffer;
 
 
 /* Application Functions ----------------------------------------------------------- */
+void aputc(UART_Type *UARTn, uint8_t data);
 void aputs(UART_Type *UARTn, uint8_t *p_data);
 void aputhex(UART_Type *UARTn, uint32_t data);
-void agets(UART_Type *UARTn, int8_t *p_data);
+uint8_t agetc(UART_Type *UARTn);
+uint8_t agets(UART_Type *UARTn, uint8_t *p_data);
+uint8_t agethex(UART_Type *UARTn, uint8_t *p_data);
+void RegisterWrite_Handler(UART_Type *UARTn);
 
 
 #ifdef __cplusplus
