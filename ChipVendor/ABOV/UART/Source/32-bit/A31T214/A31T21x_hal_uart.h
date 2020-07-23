@@ -54,7 +54,7 @@ extern "C"
 #define UART_IIR_IPEN					((uint8_t)(1<<0)) /*!<Interrupt Pending bit (0: Interrupt pending, 1: No pending) */
 #define UART_IIR_IID_RLS			((uint8_t)(3<<1)) /*!<Interrupt identification: Receive line status*/
 #define UART_IIR_IID_RDA			((uint8_t)(2<<1)) /*!<Interrupt identification: Receive data available*/
-#define UART_IIR_IID_THRE			((uint8_t)(1<<1)) /*!<Interrupt identification: Transmitter Holding Register Empty*/
+#define UART_IIR_IID_THRE		((uint8_t)(1<<1)) /*!<Interrupt identification: Transmitter Holding Register Empty*/
 #define UART_IIR_TXE						((uint8_t)(1<<4)) /*!<Transmit Complete Interrupt Source ID bit */
 #define UART_IIR_BITMASK		((uint8_t)(0x1F)) /*!<UART interrupt identification register bit mask */
 
@@ -159,6 +159,7 @@ void HAL_UART_BaudrateSet(UART_Type *UARTn, uint32_t baudrate);
 void HAL_UART_RingBuffer_Init(UART_Type *UARTn);
 void HAL_UART_TransmitData(UART_Type *UARTn, uint8_t tx_data);
 int8_t HAL_UART_ReceiveData(UART_Type *UARTn);
+void HAL_UART_Handler(UART_Type *UARTn);
 void HAL_UART_TX_Handler(UART_Type *UARTn);
 void HAL_UART_RX_Handler(UART_Type *UARTn);
 
@@ -168,6 +169,16 @@ extern RingBuffer_Type	tx0_RingBuffer;
 extern RingBuffer_Type	tx1_RingBuffer;
 extern RingBuffer_Type	rx0_RingBuffer;
 extern RingBuffer_Type	rx1_RingBuffer;
+
+
+/* Application Functions ----------------------------------------------------------- */
+void aputc(UART_Type *UARTn, uint8_t data);
+void aputs(UART_Type *UARTn, uint8_t *p_data);
+void aputhex(UART_Type *UARTn, uint32_t data);
+uint8_t agetc(UART_Type *UARTn);
+uint8_t agets(UART_Type *UARTn, uint8_t *p_data);
+uint8_t agethex(UART_Type *UARTn, uint8_t *p_data);
+void RegisterWrite_Handler(UART_Type *UARTn);
 
 
 #ifdef __cplusplus

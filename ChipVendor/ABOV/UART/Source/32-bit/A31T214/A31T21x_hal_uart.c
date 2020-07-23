@@ -66,7 +66,7 @@ uint8_t HAL_UART_ReadBuffer(UART_Type* UARTn)
  *											- UART0 : UART0 peripheral
  *											- UART1 : UART1 peripheral
  * @param[in]	tx_data		Data to transmit
- * @return					None
+ * @return				None
  **********************************************************************/
 void HAL_UART_WriteBuffer(UART_Type* UARTn, uint8_t tx_data)
 {
@@ -241,7 +241,6 @@ HAL_Status_Type HAL_UART_Init(UART_Type *UARTn, UART_CFG_Type *UARTConfigStruct,
  *											- UART0	:UART0 peripheral
  *											- UART1	:UART1 peripheral
  * @param[in]	baudrate Desired UART baud rate.
- * @param[in]	ref_clk	Reference clock for baudrate.
  * @return				None
  **********************************************************************/
 void HAL_UART_BaudrateSet(UART_Type *UARTn, uint32_t baudrate)
@@ -280,7 +279,9 @@ void HAL_UART_BaudrateSet(UART_Type *UARTn, uint32_t baudrate)
 
 /*********************************************************************//**
  * @brief						Initialize RingBuffer Parameters
- * @param[in]	None
+ * @param[in]	UARTn	Pointer to selected UART peripheral, should be:
+ *											- UART0	:UART0 peripheral
+ *											- UART1	:UART1 peripheral
  * @return				None
  **********************************************************************/
 void HAL_UART_RingBuffer_Init(UART_Type *UARTn)
@@ -319,18 +320,50 @@ void HAL_UART_TransmitData(UART_Type *UARTn, uint8_t tx_data)
 {
 	UARTn->IER &= ~(UART_IER_THREIE);		// Disable thre interrupt
 
-	if(UARTn == UART1)
+	/* UART0 Unit */
+	if(UARTn == UART0)
+	{
+		if(tx0_RingBuffer.HeadPtr == tx0_RingBuffer.TailPtr)
+		{
+			if(tx0_RingBuffer.State == UART_TX_IDLE)
+			{
+				HAL_UART_WriteBuffer(UARTn, tx_data);		// First data to transmit
+				tx0_RingBuffer.State = UART_TX_BUSY;
+			}
+			else
+			{
+				tx0_RingBuffer.Buffer[tx0_RingBuffer.HeadPtr++] = tx_data;
+				// Check buffer max length
+				if(tx0_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+				{
+					tx0_RingBuffer.HeadPtr = 0;
+				}
+			}
+		}
+		else
+		{
+			tx0_RingBuffer.Buffer[tx0_RingBuffer.HeadPtr++] = tx_data;
+			// Check buffer max length
+			if(tx0_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+			{
+				tx0_RingBuffer.HeadPtr = 0;
+			}
+		}
+	}
+	/* UART1 Unit */
+	else if(UARTn == UART1)
 	{
 		if(tx1_RingBuffer.HeadPtr == tx1_RingBuffer.TailPtr)
 		{
 			if(tx1_RingBuffer.State == UART_TX_IDLE)
 			{
-				HAL_UART_WriteBuffer(UARTn, tx_data);	// First data transmit
+				HAL_UART_WriteBuffer(UARTn, tx_data);		// First data to transmit
 				tx1_RingBuffer.State = UART_TX_BUSY;
 			}
 			else
 			{
 				tx1_RingBuffer.Buffer[tx1_RingBuffer.HeadPtr++] = tx_data;
+				// Check buffer max length
 				if(tx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
 				{
 					tx1_RingBuffer.HeadPtr = 0;
@@ -340,6 +373,7 @@ void HAL_UART_TransmitData(UART_Type *UARTn, uint8_t tx_data)
 		else
 		{
 			tx1_RingBuffer.Buffer[tx1_RingBuffer.HeadPtr++] = tx_data;
+			// Check buffer max length
 			if(tx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
 			{
 				tx1_RingBuffer.HeadPtr = 0;
@@ -355,29 +389,87 @@ void HAL_UART_TransmitData(UART_Type *UARTn, uint8_t tx_data)
  * @param[in]	UARTn	Pointer to selected UART peripheral, should be:
  *											- UART0	:UART0 peripheral
  *											- UART1	:UART1 peripheral
- * @return				received data
+ * @return				Received data
  **********************************************************************/
 int8_t HAL_UART_ReceiveData(UART_Type *UARTn)
 {
-	if(UARTn == UART1)
+	/* UART0 Unit */
+	if(UARTn == UART0)
+	{
+		if(rx0_RingBuffer.HeadPtr != rx0_RingBuffer.TailPtr)
+		{
+			// Check buffer max length
+			if(rx0_RingBuffer.TailPtr > RING_BUFFER_LENGTH)
+			{
+				rx0_RingBuffer.TailPtr = 0;
+				return rx1_RingBuffer.Buffer[rx1_RingBuffer.TailPtr];
+			}
+			return rx0_RingBuffer.Buffer[rx0_RingBuffer.TailPtr++];
+		}
+		else
+		{
+				// No received data
+				rx0_RingBuffer.State = UART_RX_IDLE;
+				return -1;
+		}
+	}
+	/* UART1 Unit */
+	else if(UARTn == UART1)
 	{
 		if(rx1_RingBuffer.HeadPtr != rx1_RingBuffer.TailPtr)
 		{
+			// Check buffer max length
 			if(rx1_RingBuffer.TailPtr > RING_BUFFER_LENGTH)
 			{
 				rx1_RingBuffer.TailPtr = 0;
+				return rx1_RingBuffer.Buffer[rx1_RingBuffer.TailPtr];
 			}
 			return rx1_RingBuffer.Buffer[rx1_RingBuffer.TailPtr++];
 		}
 		else
 		{
+				// No received data
 				rx1_RingBuffer.State = UART_RX_IDLE;
 				return -1;
 		}
 	}
+	/* No Unit */
 	else
 	{
 		return -1;
+	}
+}
+
+/*********************************************************************//**
+ * @brief						UART Handler (Interrupt Handler)
+ * @param[in]	UARTn	Pointer to selected UART peripheral, should be:
+ *											- UART0	:UART0 peripheral
+ *											- UART1	:UART1 peripheral
+ * @return				None
+ **********************************************************************/
+void HAL_UART_Handler(UART_Type *UARTn)
+{
+	volatile uint32_t int_status;
+	volatile uint32_t line_error;
+	
+	int_status = UARTn->IIR;
+
+	/* Line Interrupt */
+	if((int_status & UART_IIR_BITMASK) == UART_IIR_IID_RLS)
+	{
+		line_error = UARTn->LSR;							// Clear line Error Interrupt
+	}
+	
+	/* Rx Interrupt */
+	if((int_status & UART_IIR_BITMASK) == UART_IIR_IID_RDA)
+	{
+		HAL_UART_RX_Handler(UARTn);		// Rx Process
+	}
+	
+	/* Tx Interrupt */
+	if((int_status & UART_IIR_BITMASK) == UART_IIR_IID_THRE)
+	{
+		HAL_UART_TX_Handler(UARTn);		// Tx Process
 	}
 }
 
@@ -390,13 +482,35 @@ int8_t HAL_UART_ReceiveData(UART_Type *UARTn)
  **********************************************************************/
 void HAL_UART_TX_Handler(UART_Type *UARTn)
 {
-	if(UARTn == UART1)
+	/* UART0 Unit */
+	if(UARTn == UART0)
+	{
+		if(tx0_RingBuffer.HeadPtr != tx0_RingBuffer.TailPtr)
+		{
+			if(UARTn->LSR & UART_LSR_THRE)
+			{
+				UARTn->THR = tx0_RingBuffer.Buffer[tx0_RingBuffer.TailPtr++];
+				// Check buffer max length
+				if(tx0_RingBuffer.TailPtr > RING_BUFFER_LENGTH)
+				{
+					tx0_RingBuffer.TailPtr = 0;
+				}
+			}
+		}
+		else
+		{
+				tx0_RingBuffer.State = UART_TX_IDLE;
+		}
+	}
+	/* UART1 Unit */
+	else if(UARTn == UART1)
 	{
 		if(tx1_RingBuffer.HeadPtr != tx1_RingBuffer.TailPtr)
 		{
 			if(UARTn->LSR & UART_LSR_THRE)
 			{
 				UARTn->THR = tx1_RingBuffer.Buffer[tx1_RingBuffer.TailPtr++];
+				// Check buffer max length
 				if(tx1_RingBuffer.TailPtr > RING_BUFFER_LENGTH)
 				{
 					tx1_RingBuffer.TailPtr = 0;
@@ -408,8 +522,6 @@ void HAL_UART_TX_Handler(UART_Type *UARTn)
 				tx1_RingBuffer.State = UART_TX_IDLE;
 		}
 	}
-
-	u8Dummy = UARTn->IIR;		// Clear interrupt
 }
 
 /*********************************************************************//**
@@ -421,14 +533,51 @@ void HAL_UART_TX_Handler(UART_Type *UARTn)
  **********************************************************************/
 void HAL_UART_RX_Handler(UART_Type *UARTn)
 {
-	if(UARTn == UART1)
+	/* UART0 Unit */
+	if(UARTn == UART0)
+	{
+		if(rx0_RingBuffer.HeadPtr == rx0_RingBuffer.TailPtr)
+		{
+			if(rx0_RingBuffer.State == UART_RX_IDLE)
+			{
+				rx0_RingBuffer.Buffer[rx0_RingBuffer.HeadPtr++] = UARTn->RBR;		// First data to receive
+				rx0_RingBuffer.State = UART_RX_BUSY;
+				// Check buffer max length
+				if(rx0_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+				{
+					rx0_RingBuffer.HeadPtr = 0;
+				}
+			}
+			else
+			{
+				rx0_RingBuffer.Buffer[rx0_RingBuffer.HeadPtr++] = UARTn->RBR;
+				// Check buffer max length
+				if(rx0_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+				{
+					rx0_RingBuffer.HeadPtr = 0;
+				}
+			}
+		}
+		else
+		{
+			rx0_RingBuffer.Buffer[rx0_RingBuffer.HeadPtr++] = UARTn->RBR;
+			// Check buffer max length
+			if(rx0_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+			{
+				rx0_RingBuffer.HeadPtr = 0;
+			}
+		}
+	}
+	/* UART1 Unit */
+	else if(UARTn == UART1)
 	{
 		if(rx1_RingBuffer.HeadPtr == rx1_RingBuffer.TailPtr)
 		{
 			if(rx1_RingBuffer.State == UART_RX_IDLE)
 			{
-				rx1_RingBuffer.Buffer[rx1_RingBuffer.HeadPtr++] = UARTn->RBR;	// First data receive
+				rx1_RingBuffer.Buffer[rx1_RingBuffer.HeadPtr++] = UARTn->RBR;		// First data to receive
 				rx1_RingBuffer.State = UART_RX_BUSY;
+				// Check buffer max length
 				if(rx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
 				{
 					rx1_RingBuffer.HeadPtr = 0;
@@ -437,6 +586,7 @@ void HAL_UART_RX_Handler(UART_Type *UARTn)
 			else
 			{
 				rx1_RingBuffer.Buffer[rx1_RingBuffer.HeadPtr++] = UARTn->RBR;
+				// Check buffer max length
 				if(rx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
 				{
 					rx1_RingBuffer.HeadPtr = 0;
@@ -446,131 +596,318 @@ void HAL_UART_RX_Handler(UART_Type *UARTn)
 		else
 		{
 			rx1_RingBuffer.Buffer[rx1_RingBuffer.HeadPtr++] = UARTn->RBR;
+			// Check buffer max length
 			if(rx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
 			{
 				rx1_RingBuffer.HeadPtr = 0;
 			}
 		}
 	}
-	
-	u8Dummy = UARTn->IIR;		// Clear interrupt
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-#if 0
-/**********************************************************************//**
- * @brief		Send a block of data via UART peripheral
- * @param[in]	UARTx	Selected UART peripheral used to send data, should be:
- * 					- UART0	:UART0 peripheral
- * 					- UART1	:UART1 peripheral
- * @param[in]	txbuf 	Pointer to Transmit buffer
- * @param[in]	buflen 	Length of Transmit buffer
- * @param[in] 	flag 	Flag used in  UART transfer, should be
- * 					- NONE_BLOCKING
- * 					- BLOCKING
- * @return 		Number of bytes sent.
- *
- * Note: when using UART in BLOCKING mode, a time-out condition is used
- * via defined symbol UART_BLOCKING_TIMEOUT.
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
  **********************************************************************/
-uint32_t HAL_UART_Transmit(UART_Type *UARTx, uint8_t *txbuf, uint32_t buflen, TRANSFER_BLOCK_Type flag)
+void aputc(UART_Type *UARTn, uint8_t data)
 {
-	uint32_t bToSend, bSent, timeOut;
-	uint8_t *pChar = txbuf;
-
-	bToSend = buflen;
-
-	// blocking mode
-	if (flag == BLOCKING) {
-		bSent = 0;
-		while (bToSend){
-			timeOut = UART_BLOCKING_TIMEOUT;
-			// Wait for THR empty with timeout
-			while (!(UARTx->LSR & UART_LSR_THRE)) {
-				if (timeOut == 0) break;
-				timeOut--;
-			}
-			// Time out!
-			if(timeOut == 0) break;
-			HAL_UART_TransmitByte(UARTx, (*pChar++));
-			bToSend--;
-			bSent++;
-		}
-	}
-	// None blocking mode
-	else {
-		bSent = 0;
-		while (bToSend) {
-			if (!(UARTx->LSR & UART_LSR_THRE)){
-				//continue;
-				break;
-			}
-			HAL_UART_TransmitByte(UARTx, (*pChar++));
-			bToSend--;
-			bSent++;
-		}
-	}
-	return bSent;
+	HAL_UART_WriteBuffer(UARTn, data);
 }
 
 /*********************************************************************//**
- * @brief		Receive a block of data via UART peripheral
- * @param[in]	UARTx	Selected UART peripheral used to send data,
- * 				should be:
- * 					- UART0	:UART0 peripheral
- * 					- UART1	:UART1 peripheral
- * @param[out]	rxbuf 	Pointer to Received buffer
- * @param[in]	buflen 	Length of Received buffer
- * @param[in] 	flag 	Flag mode, should be:
- * 					- NONE_BLOCKING
- * 					- BLOCKING
- * @return 		Number of bytes received
- *
- * Note: when using UART in BLOCKING mode, a time-out condition is used
- * via defined symbol UART_BLOCKING_TIMEOUT.
+ * @brief
+ * @param[in]
+ * @return
  **********************************************************************/
-uint32_t HAL_UART_Receive(UART_Type *UARTx, uint8_t *rxbuf, uint32_t buflen, TRANSFER_BLOCK_Type flag)
+void aputs(UART_Type *UARTn, uint8_t *p_data)
 {
-	uint32_t bToRecv, bRecv, timeOut;
-	uint8_t *pChar = rxbuf;
-
-	bToRecv = buflen;
-
-	// Blocking mode
-	if (flag == BLOCKING) {
-		bRecv = 0;
-		while (bToRecv){
-			timeOut = UART_BLOCKING_TIMEOUT;
-			while (!(UARTx->LSR & UART_LSR_RDR)){
-				if (timeOut == 0) break;
-				timeOut--;
-			}
-			// Time out!
-			if(timeOut == 0) break;
-			// Get data from the buffer
-			(*pChar++) = HAL_UART_ReceiveByte(UARTx);
-			bToRecv--;
-			bRecv++;
-		}
+	while(1)
+	{
+		aputc(UARTn, *p_data);
+		if(*p_data == 0){break;}
+		else{p_data++;}
 	}
-	// None blocking mode
-	else {
-		bRecv = 0;
-		while (bToRecv) {
-			if (!(UARTx->LSR & UART_LSR_RDR)) {
-				break;
-			} else {
-				(*pChar++) = HAL_UART_ReceiveByte(UARTx);
-				bRecv++;
-				bToRecv--;
-			}
-		}
-	}
-	return bRecv;
 }
-#endif
+
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
+ **********************************************************************/
+void aputhex(UART_Type *UARTn, uint32_t data)
+{
+	uint8_t i;
+	uint8_t tx_data;
+	uint32_t nibble;
+
+	if(data > 0xFFFFFFF)
+	{
+		i = 32;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			aputc(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFFFFFF)
+	{
+		i = 28;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			aputc(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFFFFF)
+	{
+		i = 24;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			aputc(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFFFF)
+	{
+		i = 20;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			aputc(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFFF)
+	{
+		i = 16;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			aputc(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xFF)
+	{
+		i = 12;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			aputc(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else if(data > 0xF)
+	{
+		i = 8;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			aputc(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+	else
+	{
+		i = 4;
+		while(1)
+		{
+			i-=4;
+			nibble = (data>>i) & 0x0F;
+			tx_data = (nibble>9) ? ('A' + nibble - 10) : ('0' + nibble);
+			aputc(UARTn, tx_data);
+			if(i==0){break;}
+		}
+	}
+}
+
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
+ **********************************************************************/
+uint8_t agetc(UART_Type *UARTn)
+{
+	return HAL_UART_ReadBuffer(UARTn);
+}
+
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
+ **********************************************************************/
+uint8_t agets(UART_Type *UARTn, uint8_t *p_data)
+{
+	uint8_t receive_count = 0;
+
+	while(1)
+	{
+		*p_data = agetc(UARTn);
+		if(*p_data == 0x0D)
+		{
+			break;
+		}
+		else
+		{
+			p_data++;
+			receive_count++;
+		}
+	}
+
+	return receive_count;
+}
+
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
+ **********************************************************************/
+uint8_t agethex(UART_Type *UARTn, uint8_t *p_data)
+{
+	uint8_t i;
+	uint8_t receive_count;
+	
+	receive_count = agets(UARTn, p_data);
+	
+	for(i=0; i<receive_count; i++)
+	{
+		switch(p_data[i])
+		{
+			case 0x30:
+				p_data[i] = 0x0;
+				break;
+			case 0x31:
+				p_data[i] = 0x1;
+				break;
+			case 0x32:
+				p_data[i] = 0x2;
+				break;
+			case 0x33:
+				p_data[i] = 0x3;
+				break;
+			case 0x34:
+				p_data[i] = 0x4;
+				break;
+			case 0x35:
+				p_data[i] = 0x5;
+				break;
+			case 0x36:
+				p_data[i] = 0x6;
+				break;
+			case 0x37:
+				p_data[i] = 0x7;
+				break;
+			case 0x38:
+				p_data[i] = 0x8;
+				break;
+			case 0x39:
+				p_data[i] = 0x9;
+				break;
+			case 0x61:
+				p_data[i] = 0xa;
+				break;
+			case 0x62:
+				p_data[i] = 0xb;
+				break;
+			case 0x63:
+				p_data[i] = 0xc;
+				break;
+			case 0x64:
+				p_data[i] = 0xd;
+				break;
+			case 0x65:
+				p_data[i] = 0xe;
+				break;
+			case 0x66:
+				p_data[i] = 0xf;
+				break;
+			default :
+				p_data[i] = 0;				
+				break;
+		}
+	}
+	
+	return receive_count;
+}
+
+/*********************************************************************//**
+ * @brief
+ * @param[in]
+ * @return
+ **********************************************************************/
+void RegisterWrite_Handler(UART_Type *UARTn)
+{
+	uint32_t addr, val;
+	uint32_t *p_Register;
+	uint8_t data[9];
+	uint8_t i, data_cnt;
+
+	aputs(UARTn,"\n\r#########################");
+	aputs(UARTn,"\n\r## Register Write/Read ##");
+	aputs(UARTn,"\n\r#########################\n\r");
+	
+	while(1)
+	{
+		addr = 0; val = 0;
+		
+		/* Input Target Address */
+		aputs(UARTn,"\n\r");		
+		aputs(UARTn,">>TargetAddr : 0x");		
+		data_cnt = agethex(UARTn, data);
+		for(i=0; i<data_cnt; i++)
+		{
+			addr = (addr<<4);
+			addr |= data[i];
+		}
+		aputhex(UARTn, addr);
+		aputs(UARTn," => OK\n\r");
+		
+		/* Input Value */
+		aputs(UARTn,">>WriteValue : 0x");		
+		data_cnt = agethex(UARTn, data);
+		for(i=0; i<data_cnt; i++)
+		{
+			val = (val<<4);
+			val |= data[i];
+		}
+		aputhex(UARTn, val);
+		aputs(UARTn," => OK\n\r");		
+
+		/* Register Write/Read */
+		p_Register = (uint32_t *)addr;
+		if(data_cnt >0)
+		{
+			*p_Register = val;
+		}
+		aputs(UARTn,"[0x");
+		aputhex(UARTn,addr);
+		aputs(UARTn,"] = 0x");		
+		aputhex(UARTn, *p_Register);
+		aputs(UARTn," [OK]\n\r");
+	}
+}
 
 
 /* --------------------------------- End Of File ------------------------------ */
