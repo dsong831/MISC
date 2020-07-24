@@ -184,7 +184,7 @@ HAL_Status_Type HAL_SPI_Init(SPI_Type *SPIn, SPI_CFG_Type *SPIConfigStruct, SPI_
 	/* Config Baudrate */
 	if(SPIConfigStruct->tMS == SPI_MS_MASTER)
 	{
-		SPIn->BR = (SPIConfigStruct->tBaudrate & 0xFFFF);	// Baudrate = PCLK/(BR+1)
+		SPIn->BR = ((SystemPeriClock / SPIConfigStruct->tBaudrate) - 1) & 0xFFFF;		// Baudrate = PCLK/(BR+1)
 	}
 	else
 	{
