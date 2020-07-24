@@ -93,7 +93,7 @@ void HAL_UART_WriteBuffer(UART_Type* UARTn, uint8_t tx_data)
  *											- UART_INT_RXE_RLS
  *											- UART_INT_THR_RLS
  *											- UART_INT_RXE_THR_RLS
- * @return					None
+ * @return					HAL_Status_Type
  **********************************************************************/
 HAL_Status_Type HAL_UART_Init(UART_Type *UARTn, UART_CFG_Type *UARTConfigStruct, UART_INTCFG_Type UARTIntConfig)
 {
