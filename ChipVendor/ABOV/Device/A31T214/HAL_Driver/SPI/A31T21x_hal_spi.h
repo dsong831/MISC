@@ -50,34 +50,34 @@ extern "C"
 #define SPI_CR_BITSZ_16	((uint8_t)(2<<0))		/*!<16-bit data length */
 #define SPI_CR_BITSZ_17	((uint8_t)(3<<0))		/*!<17-bit data length */
 
-#define SPI_CR_CPOL				((uint8_t)(1<<2))		/*!<Select an active-low clock */
-#define SPI_CR_CPHA				((uint8_t)(1<<3))		/*!<Samples data generated at even number edges */
-#define SPI_CR_MSBF				((uint8_t)(1<<4))		/*!<Selects MSB-first transmission */
-#define SPI_CR_MS						((uint8_t)(1<<5))		/*!<SPI Master mode */
-#define SPI_CR_SSPOL			((uint8_t)(1<<8))		/*!<SS signal active high */
-#define SPI_CR_SSMO			((uint8_t)(1<<9))		/*!<Enables the SS output signal */
-#define SPI_CR_SSMASK		((uint8_t)(1<<10))	/*!<Mask the signal from pin SS */
-#define SPI_CR_LBE					((uint8_t)(1<<11))	/*!<Uses loop-back mode */
-#define SPI_CR_SSOUT			((uint8_t)(1<<12))	/*!<High SS output */
-#define SPI_CR_SSMOD		((uint8_t)(1<<13))	/*!<SS signal generated, according to the SSOUT */
-#define SPI_CR_RXIE					((uint8_t)(1<<14))	/*!<Enables the receive interrupt */
-#define SPI_CR_TXIE					((uint8_t)(1<<15))	/*!<Enables the transmit interrupt */
-#define SPI_CR_SSCIE				((uint8_t)(1<<16))	/*!<Enables interrupts for both nSS edges */
-#define SPI_CR_RXDIE				((uint8_t)(1<<17))	/*!<Enables the DMA Rx complete interrupt */
-#define SPI_CR_TXDIE				((uint8_t)(1<<18))	/*!<Enables the DMA Tx complete interrupt */
-#define SPI_CR_RXBC				((uint8_t)(1<<19))	/*!<Clears the Rx buffer */
-#define SPI_CR_TXBC				((uint8_t)(1<<20))	/*!<Clears the Tx buffer */
+#define SPI_CR_CPOL				((uint32_t)(1<<2))		/*!<Select an active-low clock */
+#define SPI_CR_CPHA				((uint32_t)(1<<3))		/*!<Samples data generated at even number edges */
+#define SPI_CR_MSBF				((uint32_t)(1<<4))		/*!<Selects MSB-first transmission */
+#define SPI_CR_MS						((uint32_t)(1<<5))		/*!<SPI Master mode */
+#define SPI_CR_SSPOL			((uint32_t)(1<<8))		/*!<SS signal active high */
+#define SPI_CR_SSMO			((uint32_t)(1<<9))		/*!<Enables the SS output signal */
+#define SPI_CR_SSMASK		((uint32_t)(1<<10))	/*!<Mask the signal from pin SS */
+#define SPI_CR_LBE					((uint32_t)(1<<11))	/*!<Uses loop-back mode */
+#define SPI_CR_SSOUT			((uint32_t)(1<<12))	/*!<High SS output */
+#define SPI_CR_SSMOD		((uint32_t)(1<<13))	/*!<SS signal generated, according to the SSOUT */
+#define SPI_CR_RXIE					((uint32_t)(1<<14))	/*!<Enables the receive interrupt */
+#define SPI_CR_TXIE					((uint32_t)(1<<15))	/*!<Enables the transmit interrupt */
+#define SPI_CR_SSCIE				((uint32_t)(1<<16))	/*!<Enables interrupts for both nSS edges */
+#define SPI_CR_RXDIE				((uint32_t)(1<<17))	/*!<Enables the DMA Rx complete interrupt */
+#define SPI_CR_TXDIE				((uint32_t)(1<<18))	/*!<Enables the DMA Tx complete interrupt */
+#define SPI_CR_RXBC				((uint32_t)(1<<19))	/*!<Clears the Rx buffer */
+#define SPI_CR_TXBC				((uint32_t)(1<<20))	/*!<Clears the Tx buffer */
 
-#define SPI_SR_RRDY				((uint8_t)(1<<0))		/*!<The receive buffer holds data */
-#define SPI_SR_TRDY				((uint8_t)(1<<1))		/*!<The transmit buffer is ready for use */
-#define SPI_SR_TXIDLE			((uint8_t)(1<<2))		/*!<The SPI is idle */
-#define SPI_SR_UDRF				((uint8_t)(1<<3))		/*!<A transmit underrun error has been detected */
-#define SPI_SR_OVRF				((uint8_t)(1<<4))		/*!<A receive overrun error has been detected */
-#define SPI_SR_SSON				((uint8_t)(1<<5))		/*!<Enables the SS signal */
-#define SPI_SR_SSDET			((uint8_t)(1<<6))		/*!<An SS edge has been detected */
-#define SPI_SR_SBUSY			((uint8_t)(1<<7))		/*!<A transmission or reception is in progress */
-#define SPI_SR_RXDMAF		((uint8_t)(1<<8))		/*!<A DMA receptoin has been completed. */
-#define SPI_SR_TXDMAF		((uint8_t)(1<<9))		/*!<A DMA transmission has been completed. */
+#define SPI_SR_RRDY				((uint32_t)(1<<0))		/*!<The receive buffer holds data */
+#define SPI_SR_TRDY				((uint32_t)(1<<1))		/*!<The transmit buffer is ready for use */
+#define SPI_SR_TXIDLE			((uint32_t)(1<<2))		/*!<The SPI is idle */
+#define SPI_SR_UDRF				((uint32_t)(1<<3))		/*!<A transmit underrun error has been detected */
+#define SPI_SR_OVRF				((uint32_t)(1<<4))		/*!<A receive overrun error has been detected */
+#define SPI_SR_SSON				((uint32_t)(1<<5))		/*!<Enables the SS signal */
+#define SPI_SR_SSDET			((uint32_t)(1<<6))		/*!<An SS edge has been detected */
+#define SPI_SR_SBUSY			((uint32_t)(1<<7))		/*!<A transmission or reception is in progress */
+#define SPI_SR_RXDMAF		((uint32_t)(1<<8))		/*!<A DMA receptoin has been completed. */
+#define SPI_SR_TXDMAF		((uint32_t)(1<<9))		/*!<A DMA transmission has been completed. */
 
 /* Macro defines for SPIConfigStruct */
 #define SPI_CPOL_ActiveLow			(0)
@@ -141,7 +141,7 @@ typedef enum {
 void HAL_SPI_WriteBuffer(SPI_Type* SPIn, uint32_t tx_data);
 uint32_t HAL_SPI_ReadBuffer(SPI_Type* SPIn);
 HAL_Status_Type HAL_SPI_Init(SPI_Type *SPIn, SPI_CFG_Type *SPIConfigStruct, SPI_INTCFG_Type SPIIntConfig);
-void HAL_SPI_Enable(SPI_Type* SPIn, EN_DIS_Type spi_en);
+void HAL_SPI_Command(SPI_Type* SPIn, EN_DIS_Type spi_en);
 void HAL_SPI_SetSSOutput(SPI_Type* SPIn, uint8_t ss_output);
 
 

@@ -50,6 +50,7 @@ void HAL_SPI_WriteBuffer(SPI_Type* SPIn, uint32_t tx_data)
 {
 	while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
 	SPIn->RDR_TDR = tx_data;
+	HAL_SPI_Command(SPI20, ENABLE);
 }
 
 /**********************************************************************//**
@@ -171,8 +172,8 @@ HAL_Status_Type HAL_SPI_Init(SPI_Type *SPIn, SPI_CFG_Type *SPIConfigStruct, SPI_
 	}
 
 	SPIn->CR = (3<<19)		// TRX Buffer Clear
-		| (1<<13)									// SSMOD		(0: SS auto mode / 1: SS manual mode)
-		| (1<<12)									// SSOUT			(0: SS out low / 1: SS out high)
+		| (0<<13)									// SSMOD		(0: SS auto mode / 1: SS manual mode)
+		| (0<<12)									// SSOUT			(0: SS out low / 1: SS out high)
 		| (0<<11)									// LBE					(0: Disable loop-back mode / 1: Enable loop-back mode)
 		| (0<<10)									// SSMASK	(0: Disable SS Mask / 1: Enable SS Mask)
 		| (1<<9)										// SSMO			(0: Disable SS signal / 1: Enable SS signal)
@@ -240,7 +241,7 @@ HAL_Status_Type HAL_SPI_Init(SPI_Type *SPIn, SPI_CFG_Type *SPIConfigStruct, SPI_
  *											- DISABLE
  * @return				None
  **********************************************************************/
-void HAL_SPI_Enable(SPI_Type* SPIn, EN_DIS_Type spi_en)
+void HAL_SPI_Command(SPI_Type* SPIn, EN_DIS_Type spi_en)
 {
 	if(spi_en == ENABLE)
 	{
