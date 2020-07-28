@@ -38,10 +38,10 @@
 uint8_t u8Dummy;
 
 /* Private Types --------------------------------------------------------------- */
-RingBuffer_Type	tx0_RingBuffer;
-RingBuffer_Type	tx1_RingBuffer;
-RingBuffer_Type	rx0_RingBuffer;
-RingBuffer_Type	rx1_RingBuffer;
+uRingBuffer_Type	tx0_RingBuffer;
+uRingBuffer_Type	tx1_RingBuffer;
+uRingBuffer_Type	rx0_RingBuffer;
+uRingBuffer_Type	rx1_RingBuffer;
 
 
 /* Public Functions -------------------------------------------------------- */
@@ -334,7 +334,7 @@ void HAL_UART_TransmitData(UART_Type *UARTn, uint8_t tx_data)
 			{
 				tx0_RingBuffer.Buffer[tx0_RingBuffer.HeadPtr++] = tx_data;
 				// Check buffer max length
-				if(tx0_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+				if(tx0_RingBuffer.HeadPtr > uRING_BUFFER_LENGTH)
 				{
 					tx0_RingBuffer.HeadPtr = 0;
 				}
@@ -344,7 +344,7 @@ void HAL_UART_TransmitData(UART_Type *UARTn, uint8_t tx_data)
 		{
 			tx0_RingBuffer.Buffer[tx0_RingBuffer.HeadPtr++] = tx_data;
 			// Check buffer max length
-			if(tx0_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+			if(tx0_RingBuffer.HeadPtr > uRING_BUFFER_LENGTH)
 			{
 				tx0_RingBuffer.HeadPtr = 0;
 			}
@@ -364,7 +364,7 @@ void HAL_UART_TransmitData(UART_Type *UARTn, uint8_t tx_data)
 			{
 				tx1_RingBuffer.Buffer[tx1_RingBuffer.HeadPtr++] = tx_data;
 				// Check buffer max length
-				if(tx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+				if(tx1_RingBuffer.HeadPtr > uRING_BUFFER_LENGTH)
 				{
 					tx1_RingBuffer.HeadPtr = 0;
 				}
@@ -374,7 +374,7 @@ void HAL_UART_TransmitData(UART_Type *UARTn, uint8_t tx_data)
 		{
 			tx1_RingBuffer.Buffer[tx1_RingBuffer.HeadPtr++] = tx_data;
 			// Check buffer max length
-			if(tx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+			if(tx1_RingBuffer.HeadPtr > uRING_BUFFER_LENGTH)
 			{
 				tx1_RingBuffer.HeadPtr = 0;
 			}
@@ -399,10 +399,10 @@ int8_t HAL_UART_ReceiveData(UART_Type *UARTn)
 		if(rx0_RingBuffer.HeadPtr != rx0_RingBuffer.TailPtr)
 		{
 			// Check buffer max length
-			if(rx0_RingBuffer.TailPtr > RING_BUFFER_LENGTH)
+			if(rx0_RingBuffer.TailPtr > uRING_BUFFER_LENGTH)
 			{
 				rx0_RingBuffer.TailPtr = 0;
-				return rx1_RingBuffer.Buffer[rx1_RingBuffer.TailPtr];
+				return rx0_RingBuffer.Buffer[rx0_RingBuffer.TailPtr];
 			}
 			return rx0_RingBuffer.Buffer[rx0_RingBuffer.TailPtr++];
 		}
@@ -419,7 +419,7 @@ int8_t HAL_UART_ReceiveData(UART_Type *UARTn)
 		if(rx1_RingBuffer.HeadPtr != rx1_RingBuffer.TailPtr)
 		{
 			// Check buffer max length
-			if(rx1_RingBuffer.TailPtr > RING_BUFFER_LENGTH)
+			if(rx1_RingBuffer.TailPtr > uRING_BUFFER_LENGTH)
 			{
 				rx1_RingBuffer.TailPtr = 0;
 				return rx1_RingBuffer.Buffer[rx1_RingBuffer.TailPtr];
@@ -491,7 +491,7 @@ void HAL_UART_TX_Handler(UART_Type *UARTn)
 			{
 				UARTn->THR = tx0_RingBuffer.Buffer[tx0_RingBuffer.TailPtr++];
 				// Check buffer max length
-				if(tx0_RingBuffer.TailPtr > RING_BUFFER_LENGTH)
+				if(tx0_RingBuffer.TailPtr > uRING_BUFFER_LENGTH)
 				{
 					tx0_RingBuffer.TailPtr = 0;
 				}
@@ -511,7 +511,7 @@ void HAL_UART_TX_Handler(UART_Type *UARTn)
 			{
 				UARTn->THR = tx1_RingBuffer.Buffer[tx1_RingBuffer.TailPtr++];
 				// Check buffer max length
-				if(tx1_RingBuffer.TailPtr > RING_BUFFER_LENGTH)
+				if(tx1_RingBuffer.TailPtr > uRING_BUFFER_LENGTH)
 				{
 					tx1_RingBuffer.TailPtr = 0;
 				}
@@ -543,7 +543,7 @@ void HAL_UART_RX_Handler(UART_Type *UARTn)
 				rx0_RingBuffer.Buffer[rx0_RingBuffer.HeadPtr++] = UARTn->RBR;		// First data to receive
 				rx0_RingBuffer.State = UART_RX_BUSY;
 				// Check buffer max length
-				if(rx0_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+				if(rx0_RingBuffer.HeadPtr > uRING_BUFFER_LENGTH)
 				{
 					rx0_RingBuffer.HeadPtr = 0;
 				}
@@ -552,7 +552,7 @@ void HAL_UART_RX_Handler(UART_Type *UARTn)
 			{
 				rx0_RingBuffer.Buffer[rx0_RingBuffer.HeadPtr++] = UARTn->RBR;
 				// Check buffer max length
-				if(rx0_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+				if(rx0_RingBuffer.HeadPtr > uRING_BUFFER_LENGTH)
 				{
 					rx0_RingBuffer.HeadPtr = 0;
 				}
@@ -562,7 +562,7 @@ void HAL_UART_RX_Handler(UART_Type *UARTn)
 		{
 			rx0_RingBuffer.Buffer[rx0_RingBuffer.HeadPtr++] = UARTn->RBR;
 			// Check buffer max length
-			if(rx0_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+			if(rx0_RingBuffer.HeadPtr > uRING_BUFFER_LENGTH)
 			{
 				rx0_RingBuffer.HeadPtr = 0;
 			}
@@ -578,7 +578,7 @@ void HAL_UART_RX_Handler(UART_Type *UARTn)
 				rx1_RingBuffer.Buffer[rx1_RingBuffer.HeadPtr++] = UARTn->RBR;		// First data to receive
 				rx1_RingBuffer.State = UART_RX_BUSY;
 				// Check buffer max length
-				if(rx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+				if(rx1_RingBuffer.HeadPtr > uRING_BUFFER_LENGTH)
 				{
 					rx1_RingBuffer.HeadPtr = 0;
 				}
@@ -587,7 +587,7 @@ void HAL_UART_RX_Handler(UART_Type *UARTn)
 			{
 				rx1_RingBuffer.Buffer[rx1_RingBuffer.HeadPtr++] = UARTn->RBR;
 				// Check buffer max length
-				if(rx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+				if(rx1_RingBuffer.HeadPtr > uRING_BUFFER_LENGTH)
 				{
 					rx1_RingBuffer.HeadPtr = 0;
 				}
@@ -597,7 +597,7 @@ void HAL_UART_RX_Handler(UART_Type *UARTn)
 		{
 			rx1_RingBuffer.Buffer[rx1_RingBuffer.HeadPtr++] = UARTn->RBR;
 			// Check buffer max length
-			if(rx1_RingBuffer.HeadPtr > RING_BUFFER_LENGTH)
+			if(rx1_RingBuffer.HeadPtr > uRING_BUFFER_LENGTH)
 			{
 				rx1_RingBuffer.HeadPtr = 0;
 			}

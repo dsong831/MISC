@@ -84,11 +84,11 @@ extern "C"
 #define UART_LSR_BITMASK	((uint8_t)(0x7F)) 	/*!<Line status bit mask */
 
 // For Using RingBuffer
-#define RING_BUFFER_LENGTH		(512)
-#define UART_TX_IDLE									(0)
-#define UART_TX_BUSY								(1)
-#define UART_RX_IDLE								(0)
-#define UART_RX_BUSY							(1)
+#define uRING_BUFFER_LENGTH		(256)
+#define UART_TX_IDLE										(0)
+#define UART_TX_BUSY									(1)
+#define UART_RX_IDLE									(0)
+#define UART_RX_BUSY								(1)
 
 
 /* Public Types --------------------------------------------------------------- */
@@ -144,11 +144,11 @@ typedef enum {
 
 // For Using RingBuffer
 typedef struct {
-	uint8_t Buffer[RING_BUFFER_LENGTH];
+	uint8_t Buffer[uRING_BUFFER_LENGTH];
 	uint8_t State;
 	uint32_t HeadPtr;
 	uint32_t TailPtr;
-} RingBuffer_Type;
+} uRingBuffer_Type;
 
 
 /* Public Functions ----------------------------------------------------------- */
@@ -165,10 +165,10 @@ void HAL_UART_RX_Handler(UART_Type *UARTn);
 
 extern uint8_t u8Dummy;
 
-extern RingBuffer_Type	tx0_RingBuffer;
-extern RingBuffer_Type	tx1_RingBuffer;
-extern RingBuffer_Type	rx0_RingBuffer;
-extern RingBuffer_Type	rx1_RingBuffer;
+extern uRingBuffer_Type	tx0_RingBuffer;
+extern uRingBuffer_Type	tx1_RingBuffer;
+extern uRingBuffer_Type	rx0_RingBuffer;
+extern uRingBuffer_Type	rx1_RingBuffer;
 
 
 /* Application Functions ----------------------------------------------------------- */
