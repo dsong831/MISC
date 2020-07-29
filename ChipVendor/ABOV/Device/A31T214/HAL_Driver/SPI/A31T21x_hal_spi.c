@@ -303,9 +303,9 @@ void HAL_SPI_SetSSOutput(SPI_Type* SPIn, uint8_t ss_output)
 void HAL_SPI_TransmitData_POL(SPI_Type* SPIn, uint32_t tx_data)
 {
 	while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
-	HAL_SPI_Command(SPI20, DISABLE);
+	HAL_SPI_Command(SPIn, DISABLE);
 	SPIn->RDR_TDR = tx_data;
-	HAL_SPI_Command(SPI20, ENABLE);
+	HAL_SPI_Command(SPIn, ENABLE);
 }
 
 /**********************************************************************//**
@@ -359,14 +359,14 @@ void HAL_SPI_RingBuffer_Init(SPI_Type *SPIn)
 }
 
 /*********************************************************************//**
- * @brief						SPI Transmit/Receive Data (Interrupt mode)
+ * @brief						SPI Transmit Data (Interrupt mode)
  * @param[in]	SPIn	Pointer to selected SPI peripheral, should be:
  *											- SPI20	:		SPI20 peripheral
  *											- SPI21	:		SPI21 peripheral
  * @param[in]	tx_data		SPI Transmit Data
  * @return				None
  **********************************************************************/
-void HAL_SPI_TransmitReceiveData(SPI_Type *SPIn, uint8_t tx_data)
+void HAL_SPI_TransmitData_INT(SPI_Type *SPIn, uint8_t tx_data)
 {
 	SPIn->CR &= ~(SPI_CR_TXIE);		// Disable tx interrupt
 
@@ -377,7 +377,11 @@ void HAL_SPI_TransmitReceiveData(SPI_Type *SPIn, uint8_t tx_data)
 		{
 			if(spi_tx20_RingBuffer.State == SPI_TX_IDLE)
 			{
-				HAL_SPI_WriteBuffer(SPIn, tx_data);		// First data to transmit
+				// First data to transmit
+				while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
+				SPIn->RDR_TDR = tx_data;
+				HAL_SPI_Command(SPIn, ENABLE);
+
 				spi_tx20_RingBuffer.State = SPI_TX_BUSY;
 			}
 			else
@@ -388,6 +392,7 @@ void HAL_SPI_TransmitReceiveData(SPI_Type *SPIn, uint8_t tx_data)
 				{
 					spi_tx20_RingBuffer.HeadPtr = 0;
 				}
+//				SPIn->CR |= (SPI_CR_TXIE);			// Enable tx interrupt
 			}
 		}
 		else
@@ -398,6 +403,7 @@ void HAL_SPI_TransmitReceiveData(SPI_Type *SPIn, uint8_t tx_data)
 			{
 				spi_tx20_RingBuffer.HeadPtr = 0;
 			}
+//			SPIn->CR |= (SPI_CR_TXIE);			// Enable tx interrupt
 		}
 	}
 	/* SPI21 Unit */
@@ -407,7 +413,11 @@ void HAL_SPI_TransmitReceiveData(SPI_Type *SPIn, uint8_t tx_data)
 		{
 			if(spi_tx21_RingBuffer.State == SPI_TX_IDLE)
 			{
-				HAL_SPI_WriteBuffer(SPIn, tx_data);		// First data to transmit
+				// First data to transmit
+				while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
+				SPIn->RDR_TDR = tx_data;
+				HAL_SPI_Command(SPIn, ENABLE);
+
 				spi_tx21_RingBuffer.State = SPI_TX_BUSY;
 			}
 			else
@@ -418,6 +428,7 @@ void HAL_SPI_TransmitReceiveData(SPI_Type *SPIn, uint8_t tx_data)
 				{
 					spi_tx21_RingBuffer.HeadPtr = 0;
 				}
+				SPIn->CR |= (SPI_CR_TXIE);			// Enable tx interrupt
 			}
 		}
 		else
@@ -428,10 +439,9 @@ void HAL_SPI_TransmitReceiveData(SPI_Type *SPIn, uint8_t tx_data)
 			{
 				spi_tx21_RingBuffer.HeadPtr = 0;
 			}
+			SPIn->CR |= (SPI_CR_TXIE);			// Enable tx interrupt
 		}
 	}
-
-	SPIn->CR |= (SPI_CR_TXIE);			// Enable tx interrupt
 }
 
 /*********************************************************************//**
@@ -441,7 +451,7 @@ void HAL_SPI_TransmitReceiveData(SPI_Type *SPIn, uint8_t tx_data)
  *											- SPI21	:		SPI21 peripheral
  * @return				Received data
  **********************************************************************/
-int8_t HAL_SPI_GetReceivedData(SPI_Type *SPIn)
+int8_t HAL_SPI_ReceivedData_INT(SPI_Type *SPIn)
 {
 	/* SPI20 Unit */
 	if(SPIn == SPI20)
@@ -508,17 +518,18 @@ void HAL_SPI_Handler(SPI_Type *SPIn)
 	{
 		SPIn->CR |= (3<<19);		// Clear Tx/Rx Buffer
 	}
-	
-	/* Rx Interrupt */
-	if(int_status & SPI_SR_RRDY)
+	else
 	{
-		HAL_SPI_RX_Handler(SPIn);		// Rx Process
-	}
-	
-	/* Tx Interrupt */
-	if(int_status & SPI_SR_TRDY)
-	{
-		HAL_SPI_TX_Handler(SPIn);		// Tx Process
+		/* Tx Interrupt */
+		if(int_status & SPI_SR_TRDY)
+		{
+			HAL_SPI_TX_Handler(SPIn);		// Tx Process
+		}
+		/* Rx Interrupt */
+		if(int_status & SPI_SR_RRDY)
+		{
+			HAL_SPI_RX_Handler(SPIn);		// Rx Process
+		}
 	}
 }
 
@@ -537,8 +548,7 @@ void HAL_SPI_TX_Handler(SPI_Type *SPIn)
 		if(spi_tx20_RingBuffer.HeadPtr != spi_tx20_RingBuffer.TailPtr)
 		{
 			SPIn->RDR_TDR = spi_tx20_RingBuffer.Buffer[spi_tx20_RingBuffer.TailPtr++];
-			HAL_SPI_Command(SPIn, ENABLE);
-			
+
 			// Check buffer max length
 			if(spi_tx20_RingBuffer.TailPtr > sRING_BUFFER_LENGTH)
 			{
@@ -557,8 +567,7 @@ void HAL_SPI_TX_Handler(SPI_Type *SPIn)
 		if(spi_tx21_RingBuffer.HeadPtr != spi_tx21_RingBuffer.TailPtr)
 		{
 			SPIn->RDR_TDR = spi_tx21_RingBuffer.Buffer[spi_tx21_RingBuffer.TailPtr++];
-			HAL_SPI_Command(SPIn, ENABLE);
-			
+
 			// Check buffer max length
 			if(spi_tx21_RingBuffer.TailPtr > sRING_BUFFER_LENGTH)
 			{
