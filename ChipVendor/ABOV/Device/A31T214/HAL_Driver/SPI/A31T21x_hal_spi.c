@@ -45,7 +45,7 @@ sRingBuffer_Type	spi_rx21_RingBuffer;
 
 /* Public Functions ------------------------------------------------------- */
 /**********************************************************************//**
- * @brief						Transmit a single data through SPIn peripheral (Polling mode)
+ * @brief						Transmit a single data through SPIn peripheral
  * @param[in]	SPIn	SPI peripheral selected, should be:
  *											- SP	:SPI20~21 peripheral
  * @param[in]	tx_data		Data to transmit
@@ -55,11 +55,10 @@ void HAL_SPI_WriteBuffer(SPI_Type* SPIn, uint32_t tx_data)
 {
 	while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
 	SPIn->RDR_TDR = tx_data;
-	HAL_SPI_Command(SPI20, ENABLE);
 }
 
 /**********************************************************************//**
- * @brief						Receive a single data from SPIx peripheral (Polling mode)
+ * @brief						Receive a single data from SPIx peripheral
  * @param[in]	SPIn	SPI peripheral selected, should be
  *											- SP	:SPI20~21 peripheral
  * @return				Received data
@@ -294,6 +293,35 @@ void HAL_SPI_SetSSOutput(SPI_Type* SPIn, uint8_t ss_output)
 	}
 }
 
+/**********************************************************************//**
+ * @brief						Transmit a single data through SPIn peripheral (Polling mode)
+ * @param[in]	SPIn	SPI peripheral selected, should be:
+ *											- SP	:SPI20~21 peripheral
+ * @param[in]	tx_data		Data to transmit
+ * @return				None
+ **********************************************************************/
+void HAL_SPI_TransmitData_POL(SPI_Type* SPIn, uint32_t tx_data)
+{
+	while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
+	HAL_SPI_Command(SPI20, DISABLE);
+	SPIn->RDR_TDR = tx_data;
+	HAL_SPI_Command(SPI20, ENABLE);
+}
+
+/**********************************************************************//**
+ * @brief						Receive a single data from SPIx peripheral (Polling mode)
+ * @param[in]	SPIn	SPI peripheral selected, should be
+ *											- SP	:SPI20~21 peripheral
+ * @return				Received data
+ **********************************************************************/
+uint32_t HAL_SPI_ReceiveData_POL(SPI_Type* SPIn)
+{
+	while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
+	SPIn->RDR_TDR = 0x00;										// Dummy data
+	while(!(SPIn->SR & SPI_SR_RRDY));	// Wait until receive buffer holds data.
+	return ((uint32_t) (SPIn->RDR_TDR));
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -331,14 +359,14 @@ void HAL_SPI_RingBuffer_Init(SPI_Type *SPIn)
 }
 
 /*********************************************************************//**
- * @brief						SPI Transmit Data (Interrupt mode)
+ * @brief						SPI Transmit/Receive Data (Interrupt mode)
  * @param[in]	SPIn	Pointer to selected SPI peripheral, should be:
  *											- SPI20	:		SPI20 peripheral
  *											- SPI21	:		SPI21 peripheral
  * @param[in]	tx_data		SPI Transmit Data
  * @return				None
  **********************************************************************/
-void HAL_SPI_TransmitData(SPI_Type *SPIn, uint8_t tx_data)
+void HAL_SPI_TransmitReceiveData(SPI_Type *SPIn, uint8_t tx_data)
 {
 	SPIn->CR &= ~(SPI_CR_TXIE);		// Disable tx interrupt
 
@@ -407,13 +435,13 @@ void HAL_SPI_TransmitData(SPI_Type *SPIn, uint8_t tx_data)
 }
 
 /*********************************************************************//**
- * @brief						SPI Receive Data (Interrupt mode)
+ * @brief						SPI Get Received Data (Interrupt mode)
  * @param[in]	SPIn	Pointer to selected SPI peripheral, should be:
  *											- SPI20	:		SPI20 peripheral
  *											- SPI21	:		SPI21 peripheral
  * @return				Received data
  **********************************************************************/
-int8_t HAL_SPI_ReceiveData(SPI_Type *SPIn)
+int8_t HAL_SPI_GetReceivedData(SPI_Type *SPIn)
 {
 	/* SPI20 Unit */
 	if(SPIn == SPI20)
