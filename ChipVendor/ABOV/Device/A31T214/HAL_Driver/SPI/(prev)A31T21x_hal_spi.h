@@ -103,11 +103,11 @@ extern "C"
 
 
 // For Using RingBuffer
-#define SPI_BUFFER_LENGTH		(20)
-#define SPI_TX_IDLE									(0)
-#define SPI_TX_BUSY								(1)
-#define SPI_RX_IDLE									(0)
-#define SPI_RX_BUSY								(1)
+#define sRING_BUFFER_LENGTH		(256)
+#define SPI_TX_IDLE											(0)
+#define SPI_TX_BUSY										(1)
+#define SPI_RX_IDLE											(0)
+#define SPI_RX_BUSY										(1)
 
 
 /* Public Types --------------------------------------------------------------- */
@@ -147,11 +147,11 @@ typedef enum {
 
 // For Using RingBuffer
 typedef struct {
-	uint8_t Buffer[SPI_BUFFER_LENGTH];
+	uint8_t Buffer[sRING_BUFFER_LENGTH];
 	uint8_t State;
 	uint32_t HeadPtr;
 	uint32_t TailPtr;
-} SPI_Buffer_Type;
+} sRingBuffer_Type;
 
 
 /* Public Functions ----------------------------------------------------------- */
@@ -162,15 +162,18 @@ void HAL_SPI_Command(SPI_Type* SPIn, EN_DIS_Type spi_en);
 void HAL_SPI_SetSSOutput(SPI_Type* SPIn, uint8_t ss_output);
 void HAL_SPI_TransmitData_POL(SPI_Type* SPIn, uint32_t tx_data);
 uint32_t HAL_SPI_ReceiveData_POL(SPI_Type* SPIn);
-void HAL_SPI_Buffer_Init(SPI_Type *SPIn);
-void HAL_SPI_TransmitReceiveData_INT(SPI_Type *SPIn, uint32_t *p_txdata, uint8_t tx_length, uint32_t *p_rxdata, uint8_t rx_length);
+void HAL_SPI_RingBuffer_Init(SPI_Type *SPIn);
+void HAL_SPI_TransmitData_INT(SPI_Type *SPIn, uint8_t tx_data);
+int8_t HAL_SPI_ReceivedData_INT(SPI_Type *SPIn);
 void HAL_SPI_Handler(SPI_Type *SPIn);
+void HAL_SPI_TX_Handler(SPI_Type *SPIn);
+void HAL_SPI_RX_Handler(SPI_Type *SPIn);
 
 
-extern SPI_Buffer_Type	spi_tx20_Buffer;
-extern SPI_Buffer_Type	spi_tx21_Buffer;
-extern SPI_Buffer_Type	spi_rx20_Buffer;
-extern SPI_Buffer_Type	spi_rx21_Buffer;
+extern sRingBuffer_Type	spi_tx20_RingBuffer;
+extern sRingBuffer_Type	spi_tx21_RingBuffer;
+extern sRingBuffer_Type	spi_rx20_RingBuffer;
+extern sRingBuffer_Type	spi_rx21_RingBuffer;
 
 
 #ifdef __cplusplus

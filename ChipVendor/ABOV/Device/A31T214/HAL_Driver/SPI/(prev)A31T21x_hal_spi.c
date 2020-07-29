@@ -37,10 +37,10 @@
 /* Private variable -------------------------------------------------------- */
 
 /* Private Types --------------------------------------------------------------- */
-SPI_Buffer_Type	spi_tx20_Buffer;
-SPI_Buffer_Type	spi_tx21_Buffer;
-SPI_Buffer_Type	spi_rx20_Buffer;
-SPI_Buffer_Type	spi_rx21_Buffer;
+sRingBuffer_Type	spi_tx20_RingBuffer;
+sRingBuffer_Type	spi_tx21_RingBuffer;
+sRingBuffer_Type	spi_rx20_RingBuffer;
+sRingBuffer_Type	spi_rx21_RingBuffer;
 
 
 /* Public Functions ------------------------------------------------------- */
@@ -113,7 +113,10 @@ HAL_Status_Type HAL_SPI_Init(SPI_Type *SPIn, SPI_CFG_Type *SPIConfigStruct, SPI_
 		return HAL_ERROR;
 	}
 
-	
+	/* SPI RingBuffer Initialize */
+	HAL_SPI_RingBuffer_Init(SPIn);
+
+
 	/* Disable SPI */
 	SPIn->EN = 0x00;
 	u32Reg = 0;
@@ -325,90 +328,175 @@ uint32_t HAL_SPI_ReceiveData_POL(SPI_Type* SPIn)
 
 
 /*********************************************************************//**
- * @brief						Initialize Buffer Parameters
+ * @brief						Initialize RingBuffer Parameters
  * @param[in]	SPIn	Pointer to selected SPI peripheral, should be:
  *											- SPI20	:		SPI20 peripheral
  *											- SPI21	:		SPI21 peripheral
  * @return				None
  **********************************************************************/
-void HAL_SPI_Buffer_Init(SPI_Type *SPIn)
+void HAL_SPI_RingBuffer_Init(SPI_Type *SPIn)
 {
 	if(SPIn == SPI20)
 	{
-		spi_tx20_Buffer.HeadPtr = 0;
-		spi_tx20_Buffer.TailPtr = 0;
-		spi_tx20_Buffer.State = SPI_TX_IDLE;
+		spi_tx20_RingBuffer.HeadPtr = 0;
+		spi_tx20_RingBuffer.TailPtr = 0;
+		spi_tx20_RingBuffer.State = SPI_TX_IDLE;
 		
-		spi_rx20_Buffer.HeadPtr = 0;
-		spi_rx20_Buffer.TailPtr = 0;
-		spi_rx20_Buffer.State = SPI_RX_IDLE;
+		spi_rx20_RingBuffer.HeadPtr = 0;
+		spi_rx20_RingBuffer.TailPtr = 0;
+		spi_rx20_RingBuffer.State = SPI_RX_IDLE;
 	}
 	else if(SPIn == SPI21)
 	{
-		spi_tx21_Buffer.HeadPtr = 0;
-		spi_tx21_Buffer.TailPtr = 0;
-		spi_tx21_Buffer.State = SPI_TX_IDLE;
+		spi_tx21_RingBuffer.HeadPtr = 0;
+		spi_tx21_RingBuffer.TailPtr = 0;
+		spi_tx21_RingBuffer.State = SPI_TX_IDLE;
 
-		spi_rx21_Buffer.HeadPtr = 0;
-		spi_rx21_Buffer.TailPtr = 0;
-		spi_rx21_Buffer.State = SPI_RX_IDLE;
+		spi_rx21_RingBuffer.HeadPtr = 0;
+		spi_rx21_RingBuffer.TailPtr = 0;
+		spi_rx21_RingBuffer.State = SPI_RX_IDLE;
 	}
 }
 
 /*********************************************************************//**
- * @brief						SPI Transmit/Receive Data (Interrupt mode)
+ * @brief						SPI Transmit Data (Interrupt mode)
  * @param[in]	SPIn	Pointer to selected SPI peripheral, should be:
  *											- SPI20	:		SPI20 peripheral
  *											- SPI21	:		SPI21 peripheral
- * @param[in]	*p_txdata		This parameter contains the write data of SPI (pointer variable)
- * @param[in]	tx_length		This parameter contains the number of write length.
- * @param[in]	*p_rxdata		This parameter contains the read data of SPI (pointer variable)
- * @param[in]	rx_length		This parameter contains the number of read length.
+ * @param[in]	tx_data		SPI Transmit Data
  * @return				None
  **********************************************************************/
-void HAL_SPI_TransmitReceiveData_INT(SPI_Type *SPIn, uint32_t *p_txdata, uint8_t tx_length, uint32_t *p_rxdata, uint8_t rx_length)
+void HAL_SPI_TransmitData_INT(SPI_Type *SPIn, uint8_t tx_data)
 {
-	uint8_t i;
-	uint32_t timekeeper = 0x5FFFF;
+	SPIn->CR &= ~(SPI_CR_TXIE);		// Disable tx interrupt
 
-	/* SPI Buffer Initialize */
-	HAL_SPI_Buffer_Init(SPIn);
-	
 	/* SPI20 Unit */
 	if(SPIn == SPI20)
 	{
-		// Variable Initialization
-		spi_tx20_Buffer.HeadPtr = tx_length;
-		spi_rx20_Buffer.TailPtr = rx_length;
-		spi_tx20_Buffer.State = SPI_TX_BUSY;
-		spi_rx20_Buffer.State = SPI_RX_BUSY;
-
-		// load tx_data to global buffer from local buffer
-		for(i=0; i<tx_length; i++)
+		if(spi_tx20_RingBuffer.HeadPtr == spi_tx20_RingBuffer.TailPtr)
 		{
-			spi_tx20_Buffer.Buffer[i] = p_txdata[i];
-		}
-
-		// Enable SPI Tx Interrupt
-		SPIn->CR |= (SPI_CR_TXIE);		// Enable tx interrupt
-
-		// SPI timeout check
-		while((spi_tx20_Buffer.State == SPI_TX_BUSY) || (spi_rx20_Buffer.State == SPI_RX_BUSY))
-		{
-			timekeeper--;
-			if(timekeeper == 0)
+			if(spi_tx20_RingBuffer.State == SPI_TX_IDLE)
 			{
-				HAL_SPI_Command(SPIn, DISABLE);
-				SPIn->CR &= ~(SPI_CR_TXIE);		// Disable tx interrupt
-				HAL_SPI_Buffer_Init(SPIn);
+				// First data to transmit
+				while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
+				SPIn->RDR_TDR = tx_data;
+				HAL_SPI_Command(SPIn, ENABLE);
+
+				spi_tx20_RingBuffer.State = SPI_TX_BUSY;
+			}
+			else
+			{
+				spi_tx20_RingBuffer.Buffer[spi_tx20_RingBuffer.HeadPtr++] = tx_data;
+				// Check buffer max length
+				if(spi_tx20_RingBuffer.HeadPtr > sRING_BUFFER_LENGTH)
+				{
+					spi_tx20_RingBuffer.HeadPtr = 0;
+				}
+//				SPIn->CR |= (SPI_CR_TXIE);			// Enable tx interrupt
 			}
 		}
-
-		// load rx_data to local buffer from global buffer
-		for(i=0; i<rx_length; i++)
+		else
 		{
-			p_rxdata[i] = spi_rx20_Buffer.Buffer[i];
+			spi_tx20_RingBuffer.Buffer[spi_tx20_RingBuffer.HeadPtr++] = tx_data;
+			// Check buffer max length
+			if(spi_tx20_RingBuffer.HeadPtr > sRING_BUFFER_LENGTH)
+			{
+				spi_tx20_RingBuffer.HeadPtr = 0;
+			}
+//			SPIn->CR |= (SPI_CR_TXIE);			// Enable tx interrupt
 		}
+	}
+	/* SPI21 Unit */
+	else if(SPIn == SPI21)
+	{
+		if(spi_tx21_RingBuffer.HeadPtr == spi_tx21_RingBuffer.TailPtr)
+		{
+			if(spi_tx21_RingBuffer.State == SPI_TX_IDLE)
+			{
+				// First data to transmit
+				while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
+				SPIn->RDR_TDR = tx_data;
+				HAL_SPI_Command(SPIn, ENABLE);
+
+				spi_tx21_RingBuffer.State = SPI_TX_BUSY;
+			}
+			else
+			{
+				spi_tx21_RingBuffer.Buffer[spi_tx21_RingBuffer.HeadPtr++] = tx_data;
+				// Check buffer max length
+				if(spi_tx21_RingBuffer.HeadPtr > sRING_BUFFER_LENGTH)
+				{
+					spi_tx21_RingBuffer.HeadPtr = 0;
+				}
+				SPIn->CR |= (SPI_CR_TXIE);			// Enable tx interrupt
+			}
+		}
+		else
+		{
+			spi_tx21_RingBuffer.Buffer[spi_tx21_RingBuffer.HeadPtr++] = tx_data;
+			// Check buffer max length
+			if(spi_tx21_RingBuffer.HeadPtr > sRING_BUFFER_LENGTH)
+			{
+				spi_tx21_RingBuffer.HeadPtr = 0;
+			}
+			SPIn->CR |= (SPI_CR_TXIE);			// Enable tx interrupt
+		}
+	}
+}
+
+/*********************************************************************//**
+ * @brief						SPI Get Received Data (Interrupt mode)
+ * @param[in]	SPIn	Pointer to selected SPI peripheral, should be:
+ *											- SPI20	:		SPI20 peripheral
+ *											- SPI21	:		SPI21 peripheral
+ * @return				Received data
+ **********************************************************************/
+int8_t HAL_SPI_ReceivedData_INT(SPI_Type *SPIn)
+{
+	/* SPI20 Unit */
+	if(SPIn == SPI20)
+	{
+		if(spi_rx20_RingBuffer.HeadPtr != spi_rx20_RingBuffer.TailPtr)
+		{
+			// Check buffer max length
+			if(spi_rx20_RingBuffer.TailPtr > sRING_BUFFER_LENGTH)
+			{
+				spi_rx20_RingBuffer.TailPtr = 0;
+				return spi_rx20_RingBuffer.Buffer[spi_rx20_RingBuffer.TailPtr];
+			}
+			return spi_rx20_RingBuffer.Buffer[spi_rx20_RingBuffer.TailPtr++];
+		}
+		else
+		{
+				// No received data
+				spi_rx20_RingBuffer.State = SPI_RX_IDLE;
+				return -1;
+		}
+	}
+	/* SPI21 Unit */
+	else if(SPIn == SPI21)
+	{
+		if(spi_rx21_RingBuffer.HeadPtr != spi_rx21_RingBuffer.TailPtr)
+		{
+			// Check buffer max length
+			if(spi_rx21_RingBuffer.TailPtr > sRING_BUFFER_LENGTH)
+			{
+				spi_rx21_RingBuffer.TailPtr = 0;
+				return spi_rx21_RingBuffer.Buffer[spi_rx21_RingBuffer.TailPtr];
+			}
+			return spi_rx21_RingBuffer.Buffer[spi_rx21_RingBuffer.TailPtr++];
+		}
+		else
+		{
+				// No received data
+				spi_rx21_RingBuffer.State = SPI_RX_IDLE;
+				return -1;
+		}
+	}
+	/* No Unit */
+	else
+	{
+		return -1;
 	}
 }
 
@@ -424,7 +512,7 @@ void HAL_SPI_Handler(SPI_Type *SPIn)
 	volatile uint32_t int_status;
 	
 	int_status = SPIn->SR;
-	
+
 	/* Line Interrupt */
 	if((int_status&SPI_SR_UDRF) || (int_status&SPI_SR_OVRF))
 	{
@@ -432,40 +520,144 @@ void HAL_SPI_Handler(SPI_Type *SPIn)
 	}
 	else
 	{
-		if(SPIn == SPI20)
+		/* Tx Interrupt */
+		if(int_status & SPI_SR_TRDY)
 		{
-			/* TX Process */
-			if(spi_tx20_Buffer.HeadPtr != spi_tx20_Buffer.TailPtr)
+			HAL_SPI_TX_Handler(SPIn);		// Tx Process
+		}
+		/* Rx Interrupt */
+		if(int_status & SPI_SR_RRDY)
+		{
+			HAL_SPI_RX_Handler(SPIn);		// Rx Process
+		}
+	}
+}
+
+/*********************************************************************//**
+ * @brief						SPI Transmit Handler (Interrupt Handler)
+ * @param[in]	SPIn	Pointer to selected SPI peripheral, should be:
+ *											- SPI20	:SPI20 peripheral
+ *											- SPI21	:SPI21 peripheral
+ * @return				None
+ **********************************************************************/
+void HAL_SPI_TX_Handler(SPI_Type *SPIn)
+{
+	/* SPI20 Unit */
+	if(SPIn == SPI20)
+	{
+		if(spi_tx20_RingBuffer.HeadPtr != spi_tx20_RingBuffer.TailPtr)
+		{
+			SPIn->RDR_TDR = spi_tx20_RingBuffer.Buffer[spi_tx20_RingBuffer.TailPtr++];
+
+			// Check buffer max length
+			if(spi_tx20_RingBuffer.TailPtr > sRING_BUFFER_LENGTH)
 			{
-				if(int_status & SPI_SR_TRDY)
-				{
-					if(int_status & SPI_SR_TXIDLE)
-					{
-						HAL_SPI_Command(SPIn, DISABLE);
-						SPIn->RDR_TDR = spi_tx20_Buffer.Buffer[spi_tx20_Buffer.TailPtr++];
-						HAL_SPI_Command(SPIn, ENABLE);
-					}
-					else
-					{
-						SPIn->RDR_TDR = spi_tx20_Buffer.Buffer[spi_tx20_Buffer.TailPtr++];
-					}
-				}
+				spi_tx20_RingBuffer.TailPtr = 0;
 			}
-			/* RX Process */
-			else if(spi_rx20_Buffer.HeadPtr != spi_rx20_Buffer.TailPtr)
+		}
+		else
+		{
+				spi_tx20_RingBuffer.State = SPI_TX_IDLE;
+				SPIn->CR &= ~(SPI_CR_TXIE);		// Disable tx interrupt
+		}
+	}
+	/* SPI21 Unit */
+	else if(SPIn == SPI21)
+	{
+		if(spi_tx21_RingBuffer.HeadPtr != spi_tx21_RingBuffer.TailPtr)
+		{
+			SPIn->RDR_TDR = spi_tx21_RingBuffer.Buffer[spi_tx21_RingBuffer.TailPtr++];
+
+			// Check buffer max length
+			if(spi_tx21_RingBuffer.TailPtr > sRING_BUFFER_LENGTH)
 			{
-				if(int_status & SPI_SR_TRDY)
+				spi_tx21_RingBuffer.TailPtr = 0;
+			}
+		}
+		else
+		{
+				spi_tx21_RingBuffer.State = SPI_TX_IDLE;
+				SPIn->CR &= ~(SPI_CR_TXIE);		// Disable tx interrupt
+		}
+	}
+}
+
+/*********************************************************************//**
+ * @brief						SPI Receive Handler (Interrupt Handler)
+ * @param[in]	SPIn	Pointer to selected SPI peripheral, should be:
+ *											- SPI20	:SPI20 peripheral
+ *											- SPI21	:SPI21 peripheral
+ * @return				None
+ **********************************************************************/
+void HAL_SPI_RX_Handler(SPI_Type *SPIn)
+{
+	/* SPI20 Unit */
+	if(SPIn == SPI20)
+	{
+		if(spi_rx20_RingBuffer.HeadPtr == spi_rx20_RingBuffer.TailPtr)
+		{
+			if(spi_rx20_RingBuffer.State == SPI_RX_IDLE)
+			{
+				spi_rx20_RingBuffer.Buffer[spi_rx20_RingBuffer.HeadPtr++] = SPIn->RDR_TDR;		// First data to receive
+				spi_rx20_RingBuffer.State = SPI_RX_BUSY;
+				// Check buffer max length
+				if(spi_rx20_RingBuffer.HeadPtr > sRING_BUFFER_LENGTH)
 				{
-					SPIn->RDR_TDR = 0x00; // Dummy data
-					if(int_status & SPI_SR_RRDY)
-					{
-						spi_rx20_Buffer.Buffer[spi_rx20_Buffer.HeadPtr++] = SPIn->RDR_TDR;
-					}
+					spi_rx20_RingBuffer.HeadPtr = 0;
 				}
 			}
 			else
 			{
-				SPIn->CR &= ~(SPI_CR_TXIE);		// Disable tx interrupt
+				spi_rx20_RingBuffer.Buffer[spi_rx20_RingBuffer.HeadPtr++] = SPIn->RDR_TDR;
+				// Check buffer max length
+				if(spi_rx20_RingBuffer.HeadPtr > sRING_BUFFER_LENGTH)
+				{
+					spi_rx20_RingBuffer.HeadPtr = 0;
+				}
+			}
+		}
+		else
+		{
+			spi_rx20_RingBuffer.Buffer[spi_rx20_RingBuffer.HeadPtr++] = SPIn->RDR_TDR;
+			// Check buffer max length
+			if(spi_rx20_RingBuffer.HeadPtr > sRING_BUFFER_LENGTH)
+			{
+				spi_rx20_RingBuffer.HeadPtr = 0;
+			}
+		}
+	}
+	/* SPI21 Unit */
+	else if(SPIn == SPI21)
+	{
+		if(spi_rx21_RingBuffer.HeadPtr == spi_rx21_RingBuffer.TailPtr)
+		{
+			if(spi_rx21_RingBuffer.State == SPI_RX_IDLE)
+			{
+				spi_rx21_RingBuffer.Buffer[spi_rx21_RingBuffer.HeadPtr++] = SPIn->RDR_TDR;		// First data to receive
+				spi_rx21_RingBuffer.State = SPI_RX_BUSY;
+				// Check buffer max length
+				if(spi_rx21_RingBuffer.HeadPtr > sRING_BUFFER_LENGTH)
+				{
+					spi_rx21_RingBuffer.HeadPtr = 0;
+				}
+			}
+			else
+			{
+				spi_rx21_RingBuffer.Buffer[spi_rx21_RingBuffer.HeadPtr++] = SPIn->RDR_TDR;
+				// Check buffer max length
+				if(spi_rx21_RingBuffer.HeadPtr > sRING_BUFFER_LENGTH)
+				{
+					spi_rx21_RingBuffer.HeadPtr = 0;
+				}
+			}
+		}
+		else
+		{
+			spi_rx21_RingBuffer.Buffer[spi_rx21_RingBuffer.HeadPtr++] = SPIn->RDR_TDR;
+			// Check buffer max length
+			if(spi_rx21_RingBuffer.HeadPtr > sRING_BUFFER_LENGTH)
+			{
+				spi_rx21_RingBuffer.HeadPtr = 0;
 			}
 		}
 	}
