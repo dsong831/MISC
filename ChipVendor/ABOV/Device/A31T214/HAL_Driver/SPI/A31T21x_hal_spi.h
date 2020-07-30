@@ -102,7 +102,7 @@ extern "C"
 #define SPI_SSMOD_MANUAL		(1)
 
 
-// For Using RingBuffer
+// For Using SPI Buffer
 #define SPI_BUFFER_LENGTH		(20)
 #define SPI_TX_IDLE									(0)
 #define SPI_TX_BUSY								(1)
@@ -141,16 +141,17 @@ typedef enum {
 	SPI_INT_SSCIE,										/**< SS edge change Interrupt Only */
 	SPI_INT_RXIE_SSCIE,						/**< SS edge/RX Interrupt */
 	SPI_INT_TXIE_SSCIE,						/**< SS edge/TX Interrupt */
-	SPI_INT_RXIE_TXIE_SSCIE		/**< SS edge/RX/TX Interrupt */
+	SPI_INT_RXIE_TXIE_SSCIE,	/**< SS edge/RX/TX Interrupt */
+	SPI_INT_MASTER,								/**< Master Interrupt Setting */
+	SPI_INT_SLAVE										/**< Slave Interrupt Setting */
 } SPI_INTCFG_Type;
 
 
-// For Using RingBuffer
+// For Using SPI Buffer
 typedef struct {
 	uint8_t Buffer[SPI_BUFFER_LENGTH];
 	uint8_t State;
-	uint32_t HeadPtr;
-	uint32_t TailPtr;
+	uint32_t DataLength;
 } SPI_Buffer_Type;
 
 

@@ -207,9 +207,11 @@ HAL_Status_Type HAL_SPI_Init(SPI_Type *SPIn, SPI_CFG_Type *SPIConfigStruct, SPI_
 		case SPI_INT_POLLING :
 			u32Reg = 0;
 			break;
+		case SPI_INT_SLAVE :
 		case SPI_INT_RXIE :
 			u32Reg = SPI_CR_RXIE;
 			break;
+		case SPI_INT_MASTER :
 		case SPI_INT_TXIE :
 			// Enable TXIE at Transmit Function
 			break;
@@ -335,22 +337,18 @@ void HAL_SPI_Buffer_Init(SPI_Type *SPIn)
 {
 	if(SPIn == SPI20)
 	{
-		spi_tx20_Buffer.HeadPtr = 0;
-		spi_tx20_Buffer.TailPtr = 0;
+		spi_tx20_Buffer.DataLength = 0;
 		spi_tx20_Buffer.State = SPI_TX_IDLE;
-		
-		spi_rx20_Buffer.HeadPtr = 0;
-		spi_rx20_Buffer.TailPtr = 0;
+
+		spi_rx20_Buffer.DataLength = 0;
 		spi_rx20_Buffer.State = SPI_RX_IDLE;
 	}
 	else if(SPIn == SPI21)
 	{
-		spi_tx21_Buffer.HeadPtr = 0;
-		spi_tx21_Buffer.TailPtr = 0;
+		spi_tx21_Buffer.DataLength = 0;
 		spi_tx21_Buffer.State = SPI_TX_IDLE;
 
-		spi_rx21_Buffer.HeadPtr = 0;
-		spi_rx21_Buffer.TailPtr = 0;
+		spi_rx21_Buffer.DataLength = 0;
 		spi_rx21_Buffer.State = SPI_RX_IDLE;
 	}
 }
@@ -378,8 +376,8 @@ void HAL_SPI_TransmitReceiveData_INT(SPI_Type *SPIn, uint32_t *p_txdata, uint8_t
 	if(SPIn == SPI20)
 	{
 		// Variable Initialization
-		spi_tx20_Buffer.HeadPtr = tx_length;
-		spi_rx20_Buffer.TailPtr = rx_length;
+		spi_tx20_Buffer.DataLength = tx_length;
+		spi_rx20_Buffer.DataLength = rx_length;
 		spi_tx20_Buffer.State = SPI_TX_BUSY;
 		spi_rx20_Buffer.State = SPI_RX_BUSY;
 
@@ -407,7 +405,43 @@ void HAL_SPI_TransmitReceiveData_INT(SPI_Type *SPIn, uint32_t *p_txdata, uint8_t
 		// load rx_data to local buffer from global buffer
 		for(i=0; i<rx_length; i++)
 		{
-			p_rxdata[i] = spi_rx20_Buffer.Buffer[i];
+			p_rxdata[i] = spi_rx20_Buffer.Buffer[i+1];
+		}
+	}
+	/* SPI21 Unit */
+	else if(SPIn == SPI21)
+	{
+		// Variable Initialization
+		spi_tx21_Buffer.DataLength = tx_length;
+		spi_rx21_Buffer.DataLength = rx_length;
+		spi_tx21_Buffer.State = SPI_TX_BUSY;
+		spi_rx21_Buffer.State = SPI_RX_BUSY;
+
+		// load tx_data to global buffer from local buffer
+		for(i=0; i<tx_length; i++)
+		{
+			spi_tx21_Buffer.Buffer[i] = p_txdata[i];
+		}
+
+		// Enable SPI Tx Interrupt
+		SPIn->CR |= (SPI_CR_TXIE);		// Enable tx interrupt
+
+		// SPI timeout check
+		while((spi_tx21_Buffer.State == SPI_TX_BUSY) || (spi_rx21_Buffer.State == SPI_RX_BUSY))
+		{
+			timekeeper--;
+			if(timekeeper == 0)
+			{
+				HAL_SPI_Command(SPIn, DISABLE);
+				SPIn->CR &= ~(SPI_CR_TXIE);		// Disable tx interrupt
+				HAL_SPI_Buffer_Init(SPIn);
+			}
+		}
+
+		// load rx_data to local buffer from global buffer
+		for(i=0; i<rx_length; i++)
+		{
+			p_rxdata[i] = spi_rx21_Buffer.Buffer[i+1];
 		}
 	}
 }
@@ -421,54 +455,158 @@ void HAL_SPI_TransmitReceiveData_INT(SPI_Type *SPIn, uint32_t *p_txdata, uint8_t
  **********************************************************************/
 void HAL_SPI_Handler(SPI_Type *SPIn)
 {
-	volatile uint32_t int_status;
+	uint32_t i;
+	uint32_t spi_status;
 	
-	int_status = SPIn->SR;
-	
-	/* Line Interrupt */
-	if((int_status&SPI_SR_UDRF) || (int_status&SPI_SR_OVRF))
+	spi_status = SPIn->SR;
+
+	/* Line Error Check */
+	if(spi_status & SPI_SR_OVRF)
 	{
-		SPIn->CR |= (3<<19);		// Clear Tx/Rx Buffer
+		SPIn->CR |= SPI_CR_RXBC;	// RX Buffer Clear
 	}
-	else
+	else if(spi_status & SPI_SR_UDRF)
 	{
-		if(SPIn == SPI20)
+		SPIn->CR |= SPI_CR_TXBC;	// TX Buffer Clear
+	}
+
+	/* SPI20 Unit */
+	if(SPIn == SPI20)
+	{
+		/* Master Mode */
+		if(SPIn->CR & SPI_CR_MS)
 		{
-			/* TX Process */
-			if(spi_tx20_Buffer.HeadPtr != spi_tx20_Buffer.TailPtr)
+			// Transmit Only
+			if((spi_tx20_Buffer.DataLength != 0) && (spi_rx20_Buffer.DataLength == 0))
 			{
-				if(int_status & SPI_SR_TRDY)
+				for(i=0; i<spi_tx20_Buffer.DataLength; i++)
 				{
-					if(int_status & SPI_SR_TXIDLE)
-					{
-						HAL_SPI_Command(SPIn, DISABLE);
-						SPIn->RDR_TDR = spi_tx20_Buffer.Buffer[spi_tx20_Buffer.TailPtr++];
-						HAL_SPI_Command(SPIn, ENABLE);
-					}
-					else
-					{
-						SPIn->RDR_TDR = spi_tx20_Buffer.Buffer[spi_tx20_Buffer.TailPtr++];
-					}
+					while(!(SPIn->SR & SPI_SR_TRDY));
+					HAL_SPI_Command(SPIn, DISABLE);
+					SPIn->RDR_TDR = spi_tx20_Buffer.Buffer[i];
+					HAL_SPI_Command(SPIn, ENABLE);
 				}
 			}
-			/* RX Process */
-			else if(spi_rx20_Buffer.HeadPtr != spi_rx20_Buffer.TailPtr)
+			// Transmit then Receive
+			else if((spi_tx20_Buffer.DataLength != 0) && (spi_rx20_Buffer.DataLength != 0))
 			{
-				if(int_status & SPI_SR_TRDY)
+				for(i=0; i<spi_tx20_Buffer.DataLength; i++)
 				{
-					SPIn->RDR_TDR = 0x00; // Dummy data
-					if(int_status & SPI_SR_RRDY)
-					{
-						spi_rx20_Buffer.Buffer[spi_rx20_Buffer.HeadPtr++] = SPIn->RDR_TDR;
-					}
+					while(!(SPIn->SR & SPI_SR_TRDY));
+					HAL_SPI_Command(SPIn, DISABLE);
+					SPIn->RDR_TDR = spi_tx20_Buffer.Buffer[i];
+					HAL_SPI_Command(SPIn, ENABLE);
 				}
+				for(i=0; i<spi_rx20_Buffer.DataLength; i++)
+				{
+					while(!(SPIn->SR & SPI_SR_TRDY));
+					SPIn->RDR_TDR = 0x00;	// Dummy data transmit
+					while(!(SPIn->SR & SPI_SR_RRDY));
+					spi_rx20_Buffer.Buffer[i] = (SPIn->RDR_TDR);
+				}
+				while(!(SPIn->SR & SPI_SR_RRDY));
+				spi_rx20_Buffer.Buffer[i] = (SPIn->RDR_TDR);
 			}
+			// Receive Only
 			else
 			{
-				SPIn->CR &= ~(SPI_CR_TXIE);		// Disable tx interrupt
+				for(i=0; i<spi_rx20_Buffer.DataLength; i++)
+				{
+					while(!(SPIn->SR & SPI_SR_TRDY));
+					SPIn->RDR_TDR = 0x00;	// Dummy data transmit
+					while(!(SPIn->SR & SPI_SR_RRDY));
+					spi_rx20_Buffer.Buffer[i] = (SPIn->RDR_TDR);
+				}
+			}
+			// END TRX (Buffer Clear)
+			SPIn->CR |= (SPI_CR_TXBC) | (SPI_CR_RXBC);
+			HAL_SPI_Buffer_Init(SPIn);
+		}
+		/* Slave Mode */
+		else
+		{
+			while(!(SPIn->SR & SPI_SR_RRDY));
+			spi_rx20_Buffer.Buffer[spi_rx20_Buffer.DataLength] = (SPIn->RDR_TDR);
+			spi_rx20_Buffer.DataLength++;
+
+			// User specific code
+			if(spi_rx20_Buffer.Buffer[spi_rx20_Buffer.DataLength-1] == 0x5A)
+			{
+				while(!(SPIn->SR & SPI_SR_TRDY));
+				SPIn->RDR_TDR = 0x5A;	// Dummy data transmit
 			}
 		}
 	}
+	/* SPI21 Unit */
+	else if(SPIn == SPI21)
+	{
+		/* Master Mode */
+		if(SPIn->CR & SPI_CR_MS)
+		{
+			// Transmit Only
+			if((spi_tx21_Buffer.DataLength != 0) && (spi_rx21_Buffer.DataLength == 0))
+			{
+				for(i=0; i<spi_tx21_Buffer.DataLength; i++)
+				{
+					while(!(SPIn->SR & SPI_SR_TRDY));
+					HAL_SPI_Command(SPIn, DISABLE);
+					SPIn->RDR_TDR = spi_tx21_Buffer.Buffer[i];
+					HAL_SPI_Command(SPIn, ENABLE);
+				}
+			}
+			// Transmit then Receive
+			else if((spi_tx21_Buffer.DataLength != 0) && (spi_rx21_Buffer.DataLength != 0))
+			{
+				for(i=0; i<spi_tx21_Buffer.DataLength; i++)
+				{
+					while(!(SPIn->SR & SPI_SR_TRDY));
+					HAL_SPI_Command(SPIn, DISABLE);
+					SPIn->RDR_TDR = spi_tx21_Buffer.Buffer[i];
+					HAL_SPI_Command(SPIn, ENABLE);
+				}
+				for(i=0; i<spi_rx21_Buffer.DataLength; i++)
+				{
+					while(!(SPIn->SR & SPI_SR_TRDY));
+					SPIn->RDR_TDR = 0x00;	// Dummy data transmit
+					while(!(SPIn->SR & SPI_SR_RRDY));
+					spi_rx21_Buffer.Buffer[i] = (SPIn->RDR_TDR);
+				}
+				while(!(SPIn->SR & SPI_SR_RRDY));
+				spi_rx21_Buffer.Buffer[i] = (SPIn->RDR_TDR);
+			}
+			// Receive Only
+			else
+			{
+				for(i=0; i<spi_rx21_Buffer.DataLength; i++)
+				{
+					while(!(SPIn->SR & SPI_SR_TRDY));
+					SPIn->RDR_TDR = 0x00;	// Dummy data transmit
+					while(!(SPIn->SR & SPI_SR_RRDY));
+					spi_rx21_Buffer.Buffer[i] = (SPIn->RDR_TDR);
+				}
+			}
+			// END TRX (Buffer Clear)
+			SPIn->CR |= (SPI_CR_TXBC) | (SPI_CR_RXBC);
+			HAL_SPI_Buffer_Init(SPIn);
+		}
+		/* Slave Mode */
+		else
+		{
+			while(!(SPIn->SR & SPI_SR_RRDY));
+			spi_rx21_Buffer.Buffer[spi_rx21_Buffer.DataLength] = (SPIn->RDR_TDR);
+			spi_rx21_Buffer.DataLength++;
+
+			// User specific code
+			if(spi_rx21_Buffer.Buffer[spi_rx21_Buffer.DataLength-1] == 0x5A)
+			{
+				while(!(SPIn->SR & SPI_SR_TRDY));
+				SPIn->RDR_TDR = 0x5A;	// Dummy data transmit
+			}
+		}
+	}
+
+	/* Disable Tx interrupt */
+	SPIn->CR &= ~(SPI_CR_TXIE);
 }
 
 
