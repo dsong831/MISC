@@ -132,9 +132,9 @@ SUCCESS_FAIL_Type HAL_SCU_LSE_ClockMonitoring(void)
 	/* Wait till SOSC is ready and if timeout is reached exit */
 	do
 	{
-		status = (SCU->CMR & SCU_CMR_SOSCSTS_Msk);
+		status = (SCU->CMR & (1<<8));
 		StartUpCounter++;
-	} while((StartUpCounter != SOSC_STARTUP_TIMEOUT) && (status != SCU_CMR_SOSCSTS_Msk));
+	} while((StartUpCounter != SOSC_STARTUP_TIMEOUT) && (status != (1<<8)));
 
 	/* Need more Wait for SOSC stable, check SXOUT pin oscillation  */
 	for(i=0; i<0x800; i++)
@@ -142,8 +142,8 @@ SUCCESS_FAIL_Type HAL_SCU_LSE_ClockMonitoring(void)
 		__NOP();
 	}
 
-	status = (SCU->CMR & SCU_CMR_SOSCSTS_Msk);
-	if(status != SCU_CMR_SOSCSTS_Msk){
+	status = (SCU->CMR & (1<<8));
+	if(status != (1<<8)){
 		return FAIL;
 	}
 	else{
@@ -169,9 +169,9 @@ SUCCESS_FAIL_Type HAL_SCU_HSE_ClockMonitoring(void)
 	/* Wait till MOSC is ready and if timeout is reached exit */
 	do
 	{
-		status = (SCU->CMR & SCU_CMR_MOSCSTS_Msk);
+		status = (SCU->CMR & (1<<0));
 		StartUpCounter++;
-	} while((StartUpCounter != MOSC_STARTUP_TIMEOUT) && (status != SCU_CMR_MOSCSTS_Msk));
+	} while((StartUpCounter != MOSC_STARTUP_TIMEOUT) && (status != (1<<0)));
 
 	/* Need more Wait for MOSC stable, check XOUT pin oscillation  */	
 	for(i=0; i<0x800; i++)
@@ -179,8 +179,8 @@ SUCCESS_FAIL_Type HAL_SCU_HSE_ClockMonitoring(void)
 		__NOP();
 	}
 
-	status = (SCU->CMR & SCU_CMR_MOSCSTS_Msk);
-	if(status != SCU_CMR_MOSCSTS_Msk){
+	status = (SCU->CMR & (1<<0));
+	if(status != (1<<0)){
 		return FAIL;
 	}
 	else{

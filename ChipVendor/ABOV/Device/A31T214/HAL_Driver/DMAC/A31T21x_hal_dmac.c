@@ -47,14 +47,14 @@
 HAL_Status_Type HAL_DMAC_Init(DMA_Type *DMACx, DMAC_CFG_Type *DMAC_Config, EN_DIS_Type dmac_en)
 {
 	/* DMA function and clock disable */
-	SCU->PER1 &= ~SCU_PER1_DMA_Msk;				// (1<<4) DMA peri enable
-	SCU->PCER1 &= ~SCU_PCER1_DMA_Msk;	// (1<<4) DMA peri clock enable
+	SCU->PER1 &= ~(1<<4);				// DMA peri enable
+	SCU->PCER1 &= ~(1<<4);	// DMA peri clock enable
 
 	if(dmac_en == ENABLE)
 	{
 		/* DMA function and clock enable */
-		SCU->PER1 |= SCU_PER1_DMA_Msk;				// (1<<4) DMA peri enable
-		SCU->PCER1 |= SCU_PCER1_DMA_Msk;		// (1<<4) DMA peri clock enable
+		SCU->PER1 |= (1<<4);				// DMA peri enable
+		SCU->PCER1 |= (1<<4);		// DMA peri clock enable
 
 		/* Set DMA configuration */
 		DMACx->CR = ((DMAC_Config->TransferCnt & 0x0FFF) << 16)

@@ -155,7 +155,7 @@ void HAL_WDT_ClearStatus(uint32_t int_flag)
 
 	reg32 = (WDT->SR & 0xFF);
 
-	if((reg32 & WDT_SR_UNFIFLAG_Msk) || (reg32 & WDT_SR_WINMIFLAG_Msk))
+	if((reg32 & (1<<0)) || (reg32 & (1<<1)))
 	{
 		WDT->SR |= int_flag;
 	}
