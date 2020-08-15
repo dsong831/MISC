@@ -53,13 +53,32 @@ extern "C"
 #define USART_ST_FE												((uint8_t)(1<<1)) 		/*!<Frame Error occur */
 #define USART_ST_PE												((uint8_t)(1<<0)) 		/*!<Parity Error occur */
 
-
 // For Using RingBuffer
 #define ustRING_BUFFER_LENGTH		(256)
 #define USART_UART_TX_IDLE					(0)
 #define USART_UART_TX_BUSY				(1)
 #define USART_UART_RX_IDLE					(0)
 #define USART_UART_RX_BUSY				(1)
+
+
+// Macro defines for SPIConfigStruct
+#define USART_CPOL_ActiveLow				(0)
+#define USART_CPOL_ActiveHigh			(1)
+#define USART_CPHA_ODD								(0)
+#define USART_CPHA_EVEN							(1)
+#define USART_MSBF_LSB								(0)
+#define USART_MSBF_MSB								(1)
+#define USART_MS_SLAVE								(0)
+#define USART_MS_MASTER							(1)
+#define USART_SS_DISABLE							(0)
+#define USART_SS_ENABLE							(1)
+
+// For Using SPI Buffer
+#define ustSPI_BUFFER_LENGTH				(20)
+#define USART_SPI_TX_IDLE							(0)
+#define USART_SPI_TX_BUSY						(1)
+#define USART_SPI_RX_IDLE							(0)
+#define USART_SPI_RX_BUSY						(1)
 
 
 /* Public Types --------------------------------------------------------------- */
@@ -103,6 +122,18 @@ typedef struct {
 																															- USART_PARITY_NONE: No parity
 																															- USART_PARITY_ODD: Odd parity
 																															- USART_PARITY_EVEN: Even parity */
+	uint32_t tCPOL;																			/** Clock polarity
+																															- SPI_CPOL_ActiveLow
+																															- SPI_CPOL_ActiveHigh */
+	uint32_t tCPHA;																			/** Clock phase
+																															- SPI_CPHA_ODD
+																															- SPI_CPHA_EVEN */
+	uint32_t tMSBF;																			/** MSB/LSB select 
+																															- SPI_MSBF_LSB
+																															- SPI_MSBF_MSB */
+	uint32_t tMS;																					/** Master/Slave select 
+																															- SPI_MS_SLAVE
+																															- SPI_MS_MASTER */
 } USART_CFG_Type;
 
 typedef enum {
@@ -113,7 +144,7 @@ typedef enum {
 } USART_INTCFG_Type;
 
 
-// For Using RingBuffer
+// For Using USART-UART RingBuffer
 typedef struct {
 	uint8_t Buffer[ustRING_BUFFER_LENGTH];
 	uint8_t State;
@@ -121,18 +152,33 @@ typedef struct {
 	uint32_t TailPtr;
 } ustRingBuffer_Type;
 
+// For Using USART-SPI Buffer
+typedef struct {
+	uint8_t Buffer[ustSPI_BUFFER_LENGTH];
+	uint8_t State;
+	uint32_t DataLength;
+} ustSPIBuffer_Type;
+
 
 /* Public Functions ----------------------------------------------------------- */
 uint8_t HAL_USART_ReadBuffer(USART_Type* USARTn);
 void HAL_USART_WriteBuffer(USART_Type* USARTn, uint8_t tx_data);
 HAL_Status_Type HAL_USART_Init(USART_Type *USARTn, USART_MODE_Type USARTModeConfig, USART_CFG_Type *USARTConfigStruct, USART_INTCFG_Type USARTIntConfig);
 void HAL_USART_BaudrateSet(USART_Type *USARTn, USART_MODE_Type USARTModeConfig, uint32_t baudrate);
+void HAL_USART_Command(USART_Type* USARTn, EN_DIS_Type usart_en);
+void HAL_USART_SetSSOutput(USART_Type* USARTn, EN_DIS_Type ss_en);
+void HAL_USART_SPI_TransmitData_POL(USART_Type* USARTn, uint32_t tx_data);
+uint32_t HAL_USART_SPI_ReceiveData_POL(USART_Type* USARTn);
 void HAL_USART_RingBuffer_Init(USART_Type *USARTn);
 void HAL_USART_TransmitData(USART_Type *USARTn, uint8_t tx_data);
 int8_t HAL_USART_ReceiveData(USART_Type *USARTn);
-void HAL_USART_Handler(USART_Type *USARTn);
-void HAL_USART_TX_Handler(USART_Type *USARTn);
-void HAL_USART_RX_Handler(USART_Type *USARTn);
+void HAL_USART_UART_Handler(USART_Type *USARTn);
+void HAL_USART_UART_TX_Handler(USART_Type *USARTn);
+void HAL_USART_UART_RX_Handler(USART_Type *USARTn);
+void HAL_USART_SPIBuffer_Init(USART_Type *USARTn);
+void HAL_USART_SPI_TransmitReceiveData_INT(USART_Type *USARTn, uint32_t *p_txdata, uint8_t tx_length, uint32_t *p_rxdata, uint8_t rx_length);
+void HAL_USART_SPI_Handler(USART_Type *USARTn);
+
 
 extern uint8_t u8UstDummy;
 
@@ -140,6 +186,11 @@ extern ustRingBuffer_Type	tx10_RingBuffer;
 extern ustRingBuffer_Type	tx11_RingBuffer;
 extern ustRingBuffer_Type	rx10_RingBuffer;
 extern ustRingBuffer_Type	rx11_RingBuffer;
+
+extern ustSPIBuffer_Type	spi_tx10_Buffer;
+extern ustSPIBuffer_Type	spi_tx11_Buffer;
+extern ustSPIBuffer_Type	spi_rx10_Buffer;
+extern ustSPIBuffer_Type	spi_rx11_Buffer;
 
 
 #ifdef __cplusplus

@@ -43,6 +43,11 @@ ustRingBuffer_Type	tx11_RingBuffer;
 ustRingBuffer_Type	rx10_RingBuffer;
 ustRingBuffer_Type	rx11_RingBuffer;
 
+ustSPIBuffer_Type	spi_tx10_Buffer;
+ustSPIBuffer_Type	spi_tx11_Buffer;
+ustSPIBuffer_Type	spi_rx10_Buffer;
+ustSPIBuffer_Type	spi_rx11_Buffer;
+
 
 /* Public Functions -------------------------------------------------------- */
 /**********************************************************************//**
@@ -54,7 +59,10 @@ ustRingBuffer_Type	rx11_RingBuffer;
  **********************************************************************/
 uint8_t HAL_USART_ReadBuffer(USART_Type* USARTn)
 {
-	u8UstDummy = USARTn->DR;		// Dummy read
+	if(!(USARTn->CR1 & (3<<14)))
+	{
+		u8UstDummy = USARTn->DR;		// Dummy read
+	}
 
 	while(!(USARTn->ST & USART_ST_RXC));
 	return USARTn->DR;
@@ -124,17 +132,32 @@ HAL_Status_Type HAL_USART_Init(USART_Type *USARTn, USART_MODE_Type USARTModeConf
 	USARTn->CR2 = 0;
 	u8UstDummy = USARTn->ST;
 
-	/* UART MODE */
-	if(USARTModeConfig == USART_UART_MODE)
+	///////////////////////////////////////////////////
+	/* UART/USART MODE */
+	if((USARTModeConfig == USART_UART_MODE) || (USARTModeConfig == USART_USART_MODE))
 	{
 		/* USART RingBuffer Initialize */
 		HAL_USART_RingBuffer_Init(USARTn);
 
 		/* Set BaudRate */
-		HAL_USART_BaudrateSet(USARTn, USART_UART_MODE, (USARTConfigStruct->tBaudRate));
+		if(USARTModeConfig == USART_UART_MODE)
+		{
+			HAL_USART_BaudrateSet(USARTn, USART_UART_MODE, (USARTConfigStruct->tBaudRate));
+		}
+		else
+		{
+			HAL_USART_BaudrateSet(USARTn, USART_USART_MODE, (USARTConfigStruct->tBaudRate));
+		}
 
-		/* Set UART Mode */
-		u32Reg &= ~(3<<14);
+		/* Set Mode */
+		if(USARTModeConfig == USART_UART_MODE)
+		{
+			u32Reg &= ~(3<<14);	// UART mode
+		}
+		else
+		{
+			u32Reg |= (1<<14);		// USART mode
+		}
 
 		/* Set Parity */
 		if(USARTConfigStruct->tParity == USART_PARITY_NONE)
@@ -192,7 +215,7 @@ HAL_Status_Type HAL_USART_Init(USART_Type *USARTn, USART_MODE_Type USARTModeConf
 				USARTn->CR2 &= ~(1<<2);
 				break;
 		}
-		USARTn->CR2 |= (1<<9);
+		USARTn->CR2 |= (1<<9);	// Enable USARTn block
 
 		/* UART Interrupt Setting */
 		u32Reg = 0;
@@ -215,14 +238,130 @@ HAL_Status_Type HAL_USART_Init(USART_Type *USARTn, USART_MODE_Type USARTModeConf
 				break;
 		}
 		USARTn->CR1 |= u32Reg;		// Set interrupt
+
+		/* Set USART Additional Function */
+		// MS Config
+		if(USARTConfigStruct->tMS == USART_MS_MASTER)
+		{
+			USARTn->CR2 |= (1<<7);			// Master mode
+			USARTn->CR2 |= (1<<5);			// Config SCK output (0: free-running, 1: SCK is active while any frame is on transferring.)
+		}
+		else
+		{
+			USARTn->CR2 &= ~(1<<7);		// Slave mode
+			USARTn->CR2 |= (1<<5);			// Config SCK output (0: free-running, 1: SCK is active while any frame is on transferring.)
+		}
+		// CPOL Config
+		if(USARTConfigStruct->tCPOL == USART_CPOL_ActiveLow)
+		{
+			u32Reg &= ~(1<<7);
+		}
+		else
+		{
+			u32Reg |= (1<<7);
+		}
 	}
+
+	///////////////////////////////////////////////////
+	/* SPI MODE */
 	else if(USARTModeConfig == USART_SPI_MODE)
 	{
+		u32Reg = 0;
+
+		// Set SPI Mode
+		u32Reg = (3<<14);
 		
+		// DataLength Config
+		switch(USARTConfigStruct->tDataLength)
+		{
+			case USART_DATALEN_5 :
+				u32Reg &= ~(7<<9);
+				break;
+			case USART_DATALEN_6 :
+				u32Reg |= (1<<9);
+				break;
+			case USART_DATALEN_7 :
+				u32Reg |= (2<<9);
+				break;
+			case USART_DATALEN_8 :
+				u32Reg |= (3<<9);
+				break;
+			case USART_DATALEN_9 :
+				u32Reg |= (7<<9);
+				break;
+			default :
+				u32Reg |= (3<<9);
+				break;
+		}
+		// MSBF Config
+		if(USARTConfigStruct->tMSBF == USART_MSBF_MSB)
+		{
+			u32Reg |= (1<<8);
+		}
+		else
+		{
+			u32Reg &= ~(1<<8);
+		}
+		// CPOL Config
+		if(USARTConfigStruct->tCPOL == USART_CPOL_ActiveLow)
+		{
+			u32Reg &= ~(1<<7);
+		}
+		else
+		{
+			u32Reg |= (1<<7);
+		}
+		// CPHA Config
+		if(USARTConfigStruct->tCPHA == USART_CPHA_EVEN)
+		{
+			u32Reg |= (1<<6);
+		}
+		else
+		{
+			u32Reg &= ~(1<<6);
+		}
+		USARTn->CR1 = u32Reg | (3<<0);	// Set Mode/DataLength/ORD/CPOL/CPHA/TRX
+
+		// MS Config
+		if(USARTConfigStruct->tMS == USART_MS_MASTER)
+		{
+			USARTn->CR2 |= (1<<7);			// Master mode
+		}
+		else
+		{
+			USARTn->CR2 &= ~(1<<7);		// Slave mode
+		}
+
+		/* Set BaudRate */
+		HAL_USART_BaudrateSet(USARTn, USART_SPI_MODE, (USARTConfigStruct->tBaudRate));
+
+		/* SPI Interrupt Setting */
+		u32Reg = 0;
+		switch(USARTIntConfig)
+		{
+			case USART_INT_POLLING:
+				u32Reg = 0;
+				break;
+			case USART_INT_RXCIE:
+				u32Reg |= (1<<3);
+				break;
+			case USART_INT_TXCIE:
+				// Enable TXIE at Transmit Function
+				break;
+			case USART_INT_RXCIE_TXCIE:
+				u32Reg |= (1<<3);
+				// Enable TXIE at Transmit Function
+				break;
+			default :
+				u32Reg = 0;
+				break;
+		}
+		USARTn->CR1 |= u32Reg;		// Set interrupt
 	}
+
 	else
 	{
-		
+		return HAL_ERROR;
 	}
 
 	return HAL_OK;
@@ -275,14 +414,87 @@ void HAL_USART_BaudrateSet(USART_Type *USARTn, USART_MODE_Type USARTModeConfig, 
 
 		USARTn->BDR= (uint16_t)(bdr&0xffff);
 	}
-	else if(USARTModeConfig == USART_SPI_MODE)
+	else if((USARTModeConfig == USART_SPI_MODE) || (USARTModeConfig == USART_USART_MODE))
 	{
-		
+		//------------------------------------------------------------------------------
+		// Baud Rate = PCLK / (2(USTnBD+1))	@ SPI Mode
+		//------------------------------------------------------------------------------
+		numerator = SystemPeriClock;
+		denominator = 2 * baudrate;		// SPI Mode
+		bdr = (numerator / denominator) - 1;
+		USARTn->BDR= (uint16_t)(bdr&0xffff);
+	}
+}
+
+/**********************************************************************//**
+ * @brief						Enable or disable USART peripheral's operation (For using SPI mode)
+ * @param[in]	USARTn	USART peripheral, should be:
+ *											- USART	: USARTI10~11 peripheral
+ * @param[in]	usart_en New State of USARTn peripheral's operation, should be:
+ *											- ENABLE
+ *											- DISABLE
+ * @return				None
+ **********************************************************************/
+void HAL_USART_Command(USART_Type* USARTn, EN_DIS_Type usart_en)
+{
+	if(usart_en == ENABLE)
+	{
+		USARTn->CR2 |= (1<<9);	// Data must be written to the DR before this bit is set enable @ SPI mode
 	}
 	else
 	{
-
+		USARTn->CR2 &= ~(1<<9);
 	}
+}
+
+/**********************************************************************//**
+ * @brief						control SS Output in SPI peripheral (Only SPI Slave Mode)
+ * @param[in]	USARTn	USART peripheral selected, should be:
+ *											- USARTn	:	USART10~11 peripheral
+ * @param[in]	ss_en	 State of Slave Output , should be:
+ *											- ENABLE
+ *											- DISABLE
+ * @return				None
+ **********************************************************************/
+void HAL_USART_SetSSOutput(USART_Type* USARTn, EN_DIS_Type ss_en)
+{
+	if(ss_en == ENABLE)
+	{
+		USARTn->CR2 |= (1<<4);
+	}
+	else
+	{
+		USARTn->CR2 &= ~(1<<4);
+	}
+}
+
+/**********************************************************************//**
+ * @brief						Transmit a single data through USART_SPIn peripheral (Polling mode)
+ * @param[in]	USARTn	USART peripheral selected, should be:
+ *											- USARTn	:		USART10~11 peripheral
+ * @param[in]	tx_data		Data to transmit
+ * @return				None
+ **********************************************************************/
+void HAL_USART_SPI_TransmitData_POL(USART_Type* USARTn, uint32_t tx_data)
+{
+	while(!(USARTn->ST & USART_ST_DRE));	// Wait until transmit buffer is ready for use.
+	HAL_USART_Command(USARTn, DISABLE);
+	USARTn->DR = tx_data;
+	HAL_USART_Command(USARTn, ENABLE);
+}
+
+/**********************************************************************//**
+ * @brief						Receive a single data from USART_SPIn peripheral (Polling mode)
+ * @param[in]	USARTn	USART peripheral selected, should be
+ *											- USARTn	:		USART10~11 peripheral
+ * @return				Received data
+ **********************************************************************/
+uint32_t HAL_USART_SPI_ReceiveData_POL(USART_Type* USARTn)
+{
+	while(!(USARTn->ST & USART_ST_DRE));	// Wait until transmit buffer is ready for use.
+	USARTn->DR = 0x00;																	// Dummy data
+	while(!(USARTn->ST & USART_ST_RXC));	// Wait until receive buffer holds data.
+	return ((uint32_t) (USARTn->DR));
 }
 
 
@@ -460,7 +672,7 @@ int8_t HAL_USART_ReceiveData(USART_Type *USARTn)
  *											- USART11	:USART11 peripheral
  * @return				None
  **********************************************************************/
-void HAL_USART_Handler(USART_Type *USARTn)
+void HAL_USART_UART_Handler(USART_Type *USARTn)
 {
 	volatile uint32_t int_status;
 	volatile uint32_t line_error;
@@ -476,13 +688,13 @@ void HAL_USART_Handler(USART_Type *USARTn)
 	/* Rx Interrupt */
 	if(int_status & 0x20)
 	{
-		HAL_USART_RX_Handler(USARTn);		// Rx Process
+		HAL_USART_UART_RX_Handler(USARTn);		// Rx Process
 	}
 	
 	/* Tx Interrupt */
 	if(int_status & 0x40)
 	{
-		HAL_USART_TX_Handler(USARTn);		// Tx Process
+		HAL_USART_UART_TX_Handler(USARTn);		// Tx Process
 		USARTn->ST &= ~(0x80);										// Clear TXC Flag
 	}
 }
@@ -494,7 +706,7 @@ void HAL_USART_Handler(USART_Type *USARTn)
  *											- USART11	:USART11 peripheral
  * @return				None
  **********************************************************************/
-void HAL_USART_TX_Handler(USART_Type *USARTn)
+void HAL_USART_UART_TX_Handler(USART_Type *USARTn)
 {
 	/* USART10 Unit */
 	if(USARTn == USART10)
@@ -545,7 +757,7 @@ void HAL_USART_TX_Handler(USART_Type *USARTn)
  *											- USART11	:USART11 peripheral
  * @return				None
  **********************************************************************/
-void HAL_USART_RX_Handler(USART_Type *USARTn)
+void HAL_USART_UART_RX_Handler(USART_Type *USARTn)
 {
 	/* USART10 Unit */
 	if(USARTn == USART10)
@@ -619,9 +831,287 @@ void HAL_USART_RX_Handler(USART_Type *USARTn)
 	}
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*********************************************************************//**
+ * @brief						Initialize Buffer Parameters
+ * @param[in]	USARTn	Pointer to selected USART-SPI peripheral, should be:
+ *											- USART10	:		USART10 peripheral
+ *											- USART11	:		USART11 peripheral
+ * @return				None
+ **********************************************************************/
+void HAL_USART_SPIBuffer_Init(USART_Type *USARTn)
+{
+	if(USARTn == USART10)
+	{
+		spi_tx10_Buffer.DataLength = 0;
+		spi_tx10_Buffer.State = USART_SPI_TX_IDLE;
+
+		spi_rx10_Buffer.DataLength = 0;
+		spi_rx10_Buffer.State = USART_SPI_RX_IDLE;
+	}
+	else if(USARTn == USART11)
+	{
+		spi_tx11_Buffer.DataLength = 0;
+		spi_tx11_Buffer.State = USART_SPI_TX_IDLE;
+
+		spi_rx11_Buffer.DataLength = 0;
+		spi_rx11_Buffer.State = USART_SPI_RX_IDLE;
+	}
+}
+
+/*********************************************************************//**
+ * @brief						USART-SPI Transmit/Receive Data (Interrupt mode)
+ * @param[in]	USARTn	Pointer to selected USART peripheral, should be:
+ *											- USART10	:		USART10 peripheral
+ *											- USART11	:		USART11 peripheral
+ * @param[in]	*p_txdata		This parameter contains the write data of SPI (pointer variable)
+ * @param[in]	tx_length		This parameter contains the number of write length.
+ * @param[in]	*p_rxdata		This parameter contains the read data of SPI (pointer variable)
+ * @param[in]	rx_length		This parameter contains the number of read length.
+ * @return				None
+ **********************************************************************/
+void HAL_USART_SPI_TransmitReceiveData_INT(USART_Type *USARTn, uint32_t *p_txdata, uint8_t tx_length, uint32_t *p_rxdata, uint8_t rx_length)
+{
+	uint8_t i;
+	uint32_t timekeeper = 0x5FFFF;
+
+	/* SPI Buffer Initialize */
+	HAL_USART_SPIBuffer_Init(USARTn);
+	
+	/* USART10 Unit */
+	if(USARTn == USART10)
+	{
+		// Variable Initialization
+		spi_tx10_Buffer.DataLength = tx_length;
+		spi_rx10_Buffer.DataLength = rx_length;
+		spi_tx10_Buffer.State = USART_SPI_TX_BUSY;
+		spi_rx10_Buffer.State = USART_SPI_RX_BUSY;
+
+		// load tx_data to global buffer from local buffer
+		for(i=0; i<tx_length; i++)
+		{
+			spi_tx10_Buffer.Buffer[i] = p_txdata[i];
+		}
+
+		// Enable SPI Tx Interrupt
+		USARTn->CR1 |= (1<<5);		// Enable tx interrupt
+
+		// SPI timeout check
+		while((spi_tx10_Buffer.State == USART_SPI_TX_BUSY) || (spi_rx10_Buffer.State == USART_SPI_RX_BUSY))
+		{
+			timekeeper--;
+			if(timekeeper == 0)
+			{
+				HAL_USART_Command(USARTn, DISABLE);
+				USARTn->CR1 &= ~(1<<5);		// Disable tx interrupt
+				HAL_USART_SPIBuffer_Init(USARTn);
+			}
+		}
+
+		// load rx_data to local buffer from global buffer
+		for(i=0; i<rx_length; i++)
+		{
+			p_rxdata[i] = spi_rx10_Buffer.Buffer[i+1];
+		}
+	}
+	/* USART11 Unit */
+	else if(USARTn == USART11)
+	{
+		// Variable Initialization
+		spi_tx11_Buffer.DataLength = tx_length;
+		spi_rx11_Buffer.DataLength = rx_length;
+		spi_tx11_Buffer.State = USART_SPI_TX_BUSY;
+		spi_rx11_Buffer.State = USART_SPI_RX_BUSY;
+
+		// load tx_data to global buffer from local buffer
+		for(i=0; i<tx_length; i++)
+		{
+			spi_tx11_Buffer.Buffer[i] = p_txdata[i];
+		}
+
+		// Enable SPI Tx Interrupt
+		USARTn->CR1 |= (1<<5);		// Enable tx interrupt
+
+		// SPI timeout check
+		while((spi_tx11_Buffer.State == USART_SPI_TX_BUSY) || (spi_rx11_Buffer.State == USART_SPI_RX_BUSY))
+		{
+			timekeeper--;
+			if(timekeeper == 0)
+			{
+				HAL_USART_Command(USARTn, DISABLE);
+				USARTn->CR1 &= ~(1<<5);		// Disable tx interrupt
+				HAL_USART_SPIBuffer_Init(USARTn);
+			}
+		}
+
+		// load rx_data to local buffer from global buffer
+		for(i=0; i<rx_length; i++)
+		{
+			p_rxdata[i] = spi_rx11_Buffer.Buffer[i+1];
+		}
+	}
+}
+
+/*********************************************************************//**
+ * @brief						USART-SPI Handler (Interrupt Handler)
+ * @param[in]	USARTn	Pointer to selected SPI peripheral, should be:
+ *											- USART10	:USART10 peripheral
+ *											- USART11	:USART11 peripheral
+ * @return				None
+ **********************************************************************/
+void HAL_USART_SPI_Handler(USART_Type *USARTn)
+{
+	uint32_t i;
+	uint32_t spi_status;
+	
+	spi_status = USARTn->ST;
+
+	/* Line Error Check */
+	if(spi_status & 0x07)
+	{
+		USARTn->ST |= 0x07;	// Clear Flags
+	}
+
+	/* USART10 Unit */
+	if(USARTn == USART10)
+	{
+		/* Master Mode */
+		if(USARTn->CR2 & (1<<7))
+		{
+			// Transmit Only
+			if((spi_tx10_Buffer.DataLength != 0) && (spi_rx10_Buffer.DataLength == 0))
+			{
+				for(i=0; i<spi_tx10_Buffer.DataLength; i++)
+				{
+					while(!(USARTn->ST & USART_ST_DRE));
+					HAL_USART_Command(USARTn, DISABLE);
+					USARTn->DR = spi_tx10_Buffer.Buffer[i];
+					HAL_USART_Command(USARTn, ENABLE);
+				}
+			}
+			// Transmit then Receive
+			else if((spi_tx10_Buffer.DataLength != 0) && (spi_rx10_Buffer.DataLength != 0))
+			{
+				for(i=0; i<spi_tx10_Buffer.DataLength; i++)
+				{
+					while(!(USARTn->ST & USART_ST_DRE));
+					HAL_USART_Command(USARTn, DISABLE);
+					USARTn->DR = spi_tx10_Buffer.Buffer[i];
+					HAL_USART_Command(USARTn, ENABLE);
+				}
+				for(i=0; i<spi_rx10_Buffer.DataLength; i++)
+				{
+					while(!(USARTn->ST & USART_ST_DRE));
+					USARTn->DR = 0x00;	// Dummy data transmit
+					while(!(USARTn->ST & USART_ST_RXC));
+					spi_rx10_Buffer.Buffer[i] = (USARTn->DR);
+				}
+				while(!(USARTn->ST & USART_ST_RXC));
+				spi_rx10_Buffer.Buffer[i] = (USARTn->DR);
+			}
+			// Receive Only
+			else
+			{
+				for(i=0; i<spi_rx10_Buffer.DataLength; i++)
+				{
+					while(!(USARTn->ST & USART_ST_DRE));
+					USARTn->DR = 0x00;	// Dummy data transmit
+					while(!(USARTn->ST & USART_ST_RXC));
+					spi_rx10_Buffer.Buffer[i] = (USARTn->DR);
+				}
+			}
+			// END TRX (Buffer Clear)
+			HAL_USART_SPIBuffer_Init(USARTn);
+		}
+		/* Slave Mode */
+		else
+		{
+			while(!(USARTn->ST & USART_ST_RXC));
+			spi_rx10_Buffer.Buffer[spi_rx10_Buffer.DataLength] = (USARTn->DR);
+			spi_rx10_Buffer.DataLength++;
+
+			// User specific code
+			if(spi_rx10_Buffer.Buffer[spi_rx10_Buffer.DataLength-1] == 0x5A)
+			{
+				while(!(USARTn->ST & USART_ST_DRE));
+				USARTn->DR = 0x5A;	// Dummy data transmit
+			}
+		}
+	}
+	/* USART11 Unit */
+	else if(USARTn == USART11)
+	{
+		/* Master Mode */
+		if(USARTn->CR2 & (1<<7))
+		{
+			// Transmit Only
+			if((spi_tx11_Buffer.DataLength != 0) && (spi_rx11_Buffer.DataLength == 0))
+			{
+				for(i=0; i<spi_tx11_Buffer.DataLength; i++)
+				{
+					while(!(USARTn->ST & USART_ST_DRE));
+					HAL_USART_Command(USARTn, DISABLE);
+					USARTn->DR = spi_tx11_Buffer.Buffer[i];
+					HAL_USART_Command(USARTn, ENABLE);
+				}
+			}
+			// Transmit then Receive
+			else if((spi_tx11_Buffer.DataLength != 0) && (spi_rx11_Buffer.DataLength != 0))
+			{
+				for(i=0; i<spi_tx11_Buffer.DataLength; i++)
+				{
+					while(!(USARTn->ST & USART_ST_DRE));
+					HAL_USART_Command(USARTn, DISABLE);
+					USARTn->DR = spi_tx11_Buffer.Buffer[i];
+					HAL_USART_Command(USARTn, ENABLE);
+				}
+				for(i=0; i<spi_rx11_Buffer.DataLength; i++)
+				{
+					while(!(USARTn->ST & USART_ST_DRE));
+					USARTn->DR = 0x00;	// Dummy data transmit
+					while(!(USARTn->ST & USART_ST_RXC));
+					spi_rx11_Buffer.Buffer[i] = (USARTn->DR);
+				}
+				while(!(USARTn->ST & USART_ST_RXC));
+				spi_rx11_Buffer.Buffer[i] = (USARTn->DR);
+			}
+			// Receive Only
+			else
+			{
+				for(i=0; i<spi_rx11_Buffer.DataLength; i++)
+				{
+					while(!(USARTn->ST & USART_ST_DRE));
+					USARTn->DR = 0x00;	// Dummy data transmit
+					while(!(USARTn->ST & USART_ST_RXC));
+					spi_rx11_Buffer.Buffer[i] = (USARTn->DR);
+				}
+			}
+			// END TRX (Buffer Clear)
+			HAL_USART_SPIBuffer_Init(USARTn);
+		}
+		/* Slave Mode */
+		else
+		{
+			while(!(USARTn->ST & USART_ST_RXC));
+			spi_rx11_Buffer.Buffer[spi_rx11_Buffer.DataLength] = (USARTn->DR);
+			spi_rx11_Buffer.DataLength++;
+
+			// User specific code
+			if(spi_rx11_Buffer.Buffer[spi_rx11_Buffer.DataLength-1] == 0x5A)
+			{
+				while(!(USARTn->ST & USART_ST_DRE));
+				USARTn->DR = 0x5A;	// Dummy data transmit
+			}
+		}
+	}
+
+	/* Disable Tx interrupt */
+	USARTn->CR1 &= ~(1<<5);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /* --------------------------------- End Of File ------------------------------ */
