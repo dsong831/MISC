@@ -1,11 +1,13 @@
 /**********************************************************************//**
-* @file		A31G21x_hal_timer1n.h
-* @brief	       Contains all macro definitions and function prototypes support
+* @file				A31T21x_hal_timer1n.h
+* @brief			Contains all functions support for firmware library on A31T21x
 * @version	1.00
-* @date: 
-* @author	ABOV Application Team
+* @date			26. JUNE. 2020
+* @author	ABOV M team
 *
-* Copyright(C) 2019, ABOV Semiconductor. All rights reserved.
+* Copyright(C) 2019, ABOV Semiconductor
+* All rights reserved.
+*
 ************************************************************************
 * ABOV Disclaimer
 *
@@ -15,7 +17,7 @@
 *ABOV does not give warranties as to the accuracy or completeness of the information included herein.
 *Purchasers should obtain the latest relevant information of ABOV products before placing orders. 
 *Purchasers are entirely responsible for the choice, selection, and use of ABOV products and 
-*ABOV assumes no liability for application assistance or the design of purchasers¡¯ products. No license, 
+*ABOV assumes no liability for application assistance or the design of purchasers?? products. No license, 
 *express or implied, to any intellectual property rights is granted by ABOV herein. 
 *ABOV disclaims all express and implied warranties and shall not be responsible or
 *liable for any injuries or damages related to use of ABOV products in such unauthorized applications. 
@@ -28,18 +30,21 @@
 **********************************************************************/
 
 
-#ifndef _TIMER1n_H_
-#define _TIMER1n_H_
+#ifndef A31T21X_HAL_TIMER1N_H
+#define A31T21X_HAL_TIMER1N_H
 
-//------------------------------- Includes ----------------------------
-#include "A31G21x.h"
-#include "A31G21x_hal_aa_types.h"
+
+/* Includes -------------------------------------------------------------- */
+#include "A31T21x.h"
+#include "A31T21x_hal_aa_types.h"
+
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+/* Private macros -------------------------------------------------------- */
 /** Timer 1n Enable/Disable Definition  */
 #define TIMER1n_DISABLE                    	(0x0uL<<15)
 #define TIMER1n_ENABLE                    	(0x1uL<<15)
@@ -188,8 +193,8 @@ HAL_Status_Type HAL_TIMER1n_Init(TIMER1n_Type *TIMER1n, TIMER1n_MODE_OPT TimerCo
 HAL_Status_Type HAL_TIMER1n_DeInit (TIMER1n_Type *TIMER1n);
 
 /* TIMER1n configuration functions --------*/
-HAL_Status_Type HAL_TIMER1n_Cmd(TIMER1n_Type *TIMER1n, FunctionalState NewState);
-HAL_Status_Type HAL_TIMER1n_ConfigInterrupt(TIMER1n_Type *TIMER1n, TIMER1n_INT_Type TIMERIntCfg, FunctionalState NewState);
+HAL_Status_Type HAL_TIMER1n_Cmd(TIMER1n_Type *TIMER1n, EN_DIS_Type NewState);
+HAL_Status_Type HAL_TIMER1n_ConfigInterrupt(TIMER1n_Type *TIMER1n, TIMER1n_INT_Type TIMERIntCfg, EN_DIS_Type NewState);
 HAL_Status_Type HAL_TIMER1n_ClearCounter(TIMER1n_Type *TIMER1n);
 uint32_t HAL_TIMER1n_GetMatchInterrupt(TIMER1n_Type *TIMER1n);
 HAL_Status_Type HAL_TIMER1n_ClearMatchInterrupt(TIMER1n_Type *TIMER1n);
@@ -201,5 +206,7 @@ HAL_Status_Type HAL_TIMER1n_ClearCaptureInterrupt(TIMER1n_Type *TIMER1n);
 }
 #endif
 
-#endif /*_TIMER1n_H_ */
+#endif		/* A31T21X_HAL_TIMER1N_H */
 
+
+/* --------------------------------- End Of File ------------------------------ */

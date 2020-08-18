@@ -1,12 +1,13 @@
 /**********************************************************************//**
-* @file		A31G21x_hal_timer1n.c
-* @brief	       Contains all macro definitions and function prototypes support
+* @file				A31T21x_hal_timer1n.c
+* @brief			Contains all functions support for firmware library on A31T21x
 * @version	1.00
-* @date: 
-* @author	ABOV Application Team
+* @date			29. JUNE. 2020
+* @author	ABOV M team
 *
-* Copyright(C) 2019, ABOV Semiconductor. All rights reserved.
-
+* Copyright(C) 2019, ABOV Semiconductor
+* All rights reserved.
+*
 ************************************************************************
 * ABOV Disclaimer
 *
@@ -29,12 +30,12 @@
 **********************************************************************/
 
 
-
-#include "A31G21x_hal_timer1n.h"
-#include "A31G21x_hal_scu.h"
-
+/* Includes ------------------------------------------------------------ */
+#include "A31T21x_hal_timer1n.h"
 
 
+/* Private variable -------------------------------------------------------- */
+/* Private Types --------------------------------------------------------------- */
 /* Public Functions ------------------------------------------------------- */
 /**********************************************************************//**
  * @brief 		Initial Timer/Counter device
@@ -195,7 +196,7 @@ HAL_Status_Type HAL_TIMER1n_DeInit (TIMER1n_Type *TIMER1n)
  * 					- DISABLE 	:Disable timer
  * @return 		HAL Satus
  **********************************************************************/
-HAL_Status_Type HAL_TIMER1n_Cmd(TIMER1n_Type *TIMER1n, FunctionalState NewState)
+HAL_Status_Type HAL_TIMER1n_Cmd(TIMER1n_Type *TIMER1n, EN_DIS_Type NewState)
 {
 	if (NewState == ENABLE) {
 		TIMER1n->CR |=  TIMER1n_ENABLE;	
@@ -220,7 +221,7 @@ HAL_Status_Type HAL_TIMER1n_Cmd(TIMER1n_Type *TIMER1n, FunctionalState NewState)
  * 					- DISALBE :Disable this interrupt type.
  * @return 		HAL Satus
  *********************************************************************/
-HAL_Status_Type HAL_TIMER1n_ConfigInterrupt(TIMER1n_Type *TIMER1n, TIMER1n_INT_Type TIMERIntCfg, FunctionalState NewState)
+HAL_Status_Type HAL_TIMER1n_ConfigInterrupt(TIMER1n_Type *TIMER1n, TIMER1n_INT_Type TIMERIntCfg, EN_DIS_Type NewState)
 {
 	uint8_t tmp;
 
@@ -331,5 +332,5 @@ HAL_Status_Type HAL_TIMER1n_ClearCaptureInterrupt(TIMER1n_Type *TIMER1n)
 }
 
 
-
+/* --------------------------------- End Of File ------------------------------ */
 

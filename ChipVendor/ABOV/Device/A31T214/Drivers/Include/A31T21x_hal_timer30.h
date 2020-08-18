@@ -1,12 +1,13 @@
 /**********************************************************************//**
-* @file		A31G21x_hal_timer30.h
-* @brief	       Contains all macro definitions and function prototypes support
-*                     Timer 30 function header file.
+* @file				A31T21x_hal_timer30.h
+* @brief			Contains all functions support for firmware library on A31T21x
 * @version	1.00
-* @date:       
-* @author	ABOV Application Team
+* @date			26. JUNE. 2020
+* @author	ABOV M team
 *
-* Copyright(C) 2019, ABOV Semiconductor. All rights reserved.
+* Copyright(C) 2019, ABOV Semiconductor
+* All rights reserved.
+*
 ************************************************************************
 * ABOV Disclaimer
 *
@@ -16,7 +17,7 @@
 *ABOV does not give warranties as to the accuracy or completeness of the information included herein.
 *Purchasers should obtain the latest relevant information of ABOV products before placing orders. 
 *Purchasers are entirely responsible for the choice, selection, and use of ABOV products and 
-*ABOV assumes no liability for application assistance or the design of purchasers¡¯ products. No license, 
+*ABOV assumes no liability for application assistance or the design of purchasers?? products. No license, 
 *express or implied, to any intellectual property rights is granted by ABOV herein. 
 *ABOV disclaims all express and implied warranties and shall not be responsible or
 *liable for any injuries or damages related to use of ABOV products in such unauthorized applications. 
@@ -29,17 +30,21 @@
 **********************************************************************/
 
 
-#ifndef _TIMER30_H_
-#define _TIMER30_H_
+#ifndef A31T21X_HAL_TIMER30_H
+#define A31T21X_HAL_TIMER30_H
 
-//------------------------------- Includes ----------------------------
-#include "A31G21x.h"
-#include "A31G21x_hal_aa_types.h"
+
+/* Includes -------------------------------------------------------------- */
+#include "A31T21x.h"
+#include "A31T21x_hal_aa_types.h"
+
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+/* Private macros -------------------------------------------------------- */
 //************* T30CR******************************************************
 //*************************************************************************
 
@@ -483,5 +488,7 @@ HAL_Status_Type HAL_TIMER3n_Init(TIMER3n_Type *TIMER3n);
 }
 #endif
 
-#endif /* _T30_H_ */
+#endif		/* A31T21X_HAL_TIMER30_H */
 
+
+/* --------------------------------- End Of File ------------------------------ */

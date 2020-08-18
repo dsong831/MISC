@@ -1,11 +1,13 @@
 /**********************************************************************//**
-* @file		A31G21x_hal_timer30.h
-* @brief	        Contains all functions support for timer30 dirver on A31G21x
+* @file				A31T21x_hal_timer30.c
+* @brief			Contains all functions support for firmware library on A31T21x
 * @version	1.00
-* @date:       
-* @author	ABOV Application Team
+* @date			29. JUNE. 2020
+* @author	ABOV M team
 *
-* Copyright(C) 2019, ABOV Semiconductor. All rights reserved.
+* Copyright(C) 2019, ABOV Semiconductor
+* All rights reserved.
+*
 ************************************************************************
 * ABOV Disclaimer
 *
@@ -28,8 +30,13 @@
 **********************************************************************/
 
 
-#include "A31G21x_hal_timer30.h"
+/* Includes ------------------------------------------------------------ */
+#include "A31T21x_hal_timer30.h"
 
+
+/* Private variable -------------------------------------------------------- */
+/* Private Types --------------------------------------------------------------- */
+/* Public Functions ------------------------------------------------------- */
 /********************************************************************//**
  * @brief		Initializes the Timer30 peripheral according to the specified
  *               parameters.
@@ -164,7 +171,7 @@ HAL_Status_Type HAL_TIMER3n_OutputCtrl(TIMER3n_Type* TIMER3n,  uint32_t NewState
 {
 	uint32_t temp;
 	temp = 0
-	| (0xE06CuL<<TIMER30_OUTCR_WTIDKY_Pos) 
+	| (0xE06CuL<<16) 	// WTIDKY
 	| (pwmApol | pwmBpol)
 	;	
 	if(NewState == ENABLE){
@@ -294,3 +301,7 @@ HAL_Status_Type HAL_TIMER3n_SetADCTrigger(TIMER3n_Type* TIMER3n, uint32_t u32tri
 	TIMER3n->ADTDR = u32triggertime;
 	return HAL_OK;
 }
+
+
+/* --------------------------------- End Of File ------------------------------ */
+

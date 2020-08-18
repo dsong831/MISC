@@ -1,12 +1,13 @@
 /**********************************************************************//**
-* @file		A31G21x_hal_timer2n.c
-* @brief	       Contains all functions support for timer2n dirver on A31G21x
-*                      for Timer 2n functions
+* @file				A31T21x_hal_timer2n.c
+* @brief			Contains all functions support for firmware library on A31T21x
 * @version	1.00
-* @date
-* @author	ABOV Application Team
+* @date			29. JUNE. 2020
+* @author	ABOV M team
 *
-* Copyright(C) 2016, ABOV Semiconductor. All rights reserved.
+* Copyright(C) 2019, ABOV Semiconductor
+* All rights reserved.
+*
 ************************************************************************
 * ABOV Disclaimer
 *
@@ -29,9 +30,13 @@
 **********************************************************************/
 
 
-#include "A31G21x_hal_timer2n.h"
+/* Includes ------------------------------------------------------------ */
+#include "A31T21x_hal_timer2n.h"
 
-/* Public Functions ------------------------------------------------------ */
+
+/* Private variable -------------------------------------------------------- */
+/* Private Types --------------------------------------------------------------- */
+/* Public Functions ------------------------------------------------------- */
 /**********************************************************************//**
  * @brief 		Initial Timer/Counter device
  * 				 	Set Clock frequency for Timer
@@ -166,7 +171,7 @@ HAL_Status_Type HAL_TIMER2n_DeInit (TIMER2n_Type *TIMER2n)
  * 					- DISABLE 	:Disable timer
  * @return 		 HAL Satus
  **********************************************************************/
-HAL_Status_Type HAL_TIMER2n_Cmd(TIMER2n_Type *TIMER2n, FunctionalState NewState)
+HAL_Status_Type HAL_TIMER2n_Cmd(TIMER2n_Type *TIMER2n, EN_DIS_Type NewState)
 {
 	if (NewState == ENABLE) {
 		TIMER2n->CR |= (1<<15);
@@ -192,7 +197,7 @@ HAL_Status_Type HAL_TIMER2n_Cmd(TIMER2n_Type *TIMER2n, FunctionalState NewState)
  * 					- DISALBE	:Disable this interrupt type.
  * @return 		 HAL Satus
  *********************************************************************/
-HAL_Status_Type HAL_TIMER2n_ConfigInterrupt(TIMER2n_Type *TIMER2n, TIMER2n_INT_Type TIMERIntCfg, FunctionalState NewState)
+HAL_Status_Type HAL_TIMER2n_ConfigInterrupt(TIMER2n_Type *TIMER2n, TIMER2n_INT_Type TIMERIntCfg, EN_DIS_Type NewState)
 {
 	switch(TIMERIntCfg){
 		case TIMER2n_CR_MATCH_INTR:
@@ -301,4 +306,6 @@ HAL_Status_Type HAL_TIMER2n_ClearCaptureInterrupt(TIMER2n_Type *TIMER2n)
 	return HAL_OK;
 }
 
+
 /* --------------------------------- End Of File ------------------------------ */
+
