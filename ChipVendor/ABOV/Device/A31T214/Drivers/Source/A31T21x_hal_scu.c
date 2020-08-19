@@ -351,5 +351,99 @@ void HAL_SCU_WakeUpSourceConfig(uint32_t wakeup_source, EN_DIS_Type wakeup_en)
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**********************************************************************//**
+   @brief        Set Timer1n Clock
+   @param[in]    t1nclk                           T1NCLK_MCCR1, T1NCLK_PCLK
+   @explain      This macro sets timer1n clock
+ **********************************************************************/
+void HAL_SCU_Timer1n_ClockConfig(uint32_t t1nclk)
+{
+	uint32_t temp;
+	
+	temp = SCU->PPCLKSR;
+	temp &= ~(1<<22);
+	temp |= (t1nclk<<22);
+	SCU->PPCLKSR = temp;	      
+}
+
+/**********************************************************************//**
+   @brief        Set Timer20 Clock
+   @param[in]    t20clk                           TIMER20CLK_MCCR2, TIMER20CLK_PCLK
+   @explain      This macro sets timer20 clock
+ **********************************************************************/
+void HAL_SCU_Timer20_ClockConfig(uint32_t t20clk)
+{
+	uint32_t temp;
+	
+	temp = SCU->PPCLKSR;
+	temp &= ~(1<<20);
+	temp |= (t20clk<<20);
+	SCU->PPCLKSR = temp;	      
+}
+
+/**********************************************************************//**
+   @brief        Set Timer30 Clock
+   @param[in]    t30clk                           T30CLK_MCCR2, T30CLK_PCLK
+   @explain      This macro sets timer30 clock
+ **********************************************************************/
+void HAL_SCU_Timer30_ClockConfig(uint32_t t30clk)
+{
+	uint32_t temp;
+	
+	temp = SCU->PPCLKSR;
+	temp &= ~(1<<17);
+	temp |= (t30clk<<17);
+	SCU->PPCLKSR = temp;	      
+}
+
+/**********************************************************************//**
+   @brief        Set LED Clock
+   @param[in]    ledclk                           LEDCLK_MCCR5, LEDCLK_PCLK
+   @explain      This macro sets LED clock
+ **********************************************************************/
+void HAL_SCU_LED_ClockConfig(uint32_t ledclk)
+{
+	uint32_t temp;
+	
+	temp = SCU->PPCLKSR;
+	temp &= ~(1<<10);
+	temp |= (ledclk<<10);
+	SCU->PPCLKSR = temp;	      
+}
+
+/**********************************************************************//**
+   @brief        Set Watch Timer Clock
+   @param[in]    wtclk                           WTCLK_MCCR3, WTCLK_SOSC, WTCLK_WDTRC
+   @explain      This macro sets watch timer clock
+ **********************************************************************/
+void HAL_SCU_WT_ClockConfig(uint32_t wtclk)
+{
+	uint32_t temp;
+	
+	temp = SCU->PPCLKSR;
+	temp &= ~(3<<3);
+	temp |= (wtclk<<3);
+	SCU->PPCLKSR = temp;	      
+}
+
+/**********************************************************************//**
+
+   @brief        Set WatchDog Timer Clock
+   @param[in]    wdtclk                           WDTCLK_WDTRC, WDTCLK_MCCR3
+   @explain      This macro sets watchdog timer clock
+ **********************************************************************/
+void HAL_SCU_WDT_ClockConfig(uint32_t wdtclk)
+{
+	uint32_t temp;
+	
+	temp = SCU->PPCLKSR;
+	temp &= ~(1<<0);
+	temp |= (wdtclk<<0);
+	SCU->PPCLKSR = temp;	      
+}
+
 
 /* --------------------------------- End Of File ------------------------------ */

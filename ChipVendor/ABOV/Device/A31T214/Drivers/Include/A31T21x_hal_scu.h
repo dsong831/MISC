@@ -137,6 +137,27 @@
 #define SCU_WUER_I2C1WUE					(1<<15)
 
 
+//----------------- T1N SCU Clock Constant Definition -----------------
+#define TIMER1nCLK_MCCR1						(0)
+#define TIMER1nCLK_PCLK							(1)
+//----------------- T20 SCU Clock Constant Definition -----------------
+#define TIMER20CLK_MCCR2						(0)
+#define TIMER20CLK_PCLK							(1)
+//----------------- T30 SCU Clock Constant Definition -----------------
+#define TIMER30CLK_MCCR2						(0)
+#define TIMER30CLK_PCLK							(1)
+//----------------- LED SCU Clock Constant Definition -----------------
+#define LEDCLK_MCCR5									(0)
+#define LEDCLK_PCLK											(1)
+//--------------- Watch Timer Clock Constant Definition ---------------
+#define WTCLK_MCCR3										(0)
+#define WTCLK_SOSC											(1)
+#define WTCLK_WDTRC										(2)
+//------------- Watch-Dog Timer Clock Constant Definition -------------
+#define WDTCLK_WDTRC									(0)
+#define WDTCLK_MCCR3									(1)
+
+
 /* Public Functions ----------------------------------------------------------- */
 void HAL_SCU_LSI_ClockConfig(uint32_t lsicon);
 void HAL_SCU_HSI_ClockConfig(uint32_t hsicon);
@@ -150,6 +171,12 @@ void HAL_SCU_ClockOutConfig(uint8_t clkodiv, EN_DIS_Type clkoen);
 SUCCESS_FAIL_Type HAL_SCU_PLL_ClockConfig(EN_DIS_Type PLLEN, uint8_t BYPASSB, uint8_t PLLMODE, uint8_t PREDIV, uint8_t POSTDIV1, uint8_t POSTDIV2, uint8_t OUTDIV);
 void HAL_SCU_ResetSourceConfig(uint32_t reset_source, EN_DIS_Type reset_en);
 void HAL_SCU_WakeUpSourceConfig(uint32_t wakeup_source, EN_DIS_Type wakeup_en);
+void HAL_SCU_Timer1n_ClockConfig(uint32_t t1nclk);
+void HAL_SCU_Timer20_ClockConfig(uint32_t t20clk);
+void HAL_SCU_Timer30_ClockConfig(uint32_t t30clk);
+void HAL_SCU_LED_ClockConfig(uint32_t ledclk);
+void HAL_SCU_WT_ClockConfig(uint32_t wtclk);
+void HAL_SCU_WDT_ClockConfig(uint32_t wdtclk);
 
 
 #endif		/* A31T21X_HAL_SCU_H */
