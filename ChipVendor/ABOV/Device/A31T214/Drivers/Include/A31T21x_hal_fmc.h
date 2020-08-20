@@ -85,6 +85,8 @@ int ErasePage(unsigned long target_addr);
 int EraseSector1KB(unsigned long target_addr);
 int EraseSector4KB(unsigned long target_addr);
 int ProgramPage(unsigned long target_addr, unsigned long page_size, unsigned char *data_buffer);
+int SelfErasePage(unsigned long target_addr);
+int SelfProgramPage(unsigned long target_addr, unsigned long page_size, unsigned char *data_buffer);
 
 
 #endif		/* A31T21X_HAL_FMC_H */

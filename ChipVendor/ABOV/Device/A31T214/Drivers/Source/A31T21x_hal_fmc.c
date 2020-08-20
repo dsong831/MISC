@@ -307,4 +307,82 @@ int ProgramPage(unsigned long target_addr, unsigned long page_size, unsigned cha
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*********************************************************************//**
+ * @brief						Self Page Erase (512Byte)
+ * @param[in]	target_addr
+ * @return				0: success / 1: fail
+ **********************************************************************/
+int SelfErasePage(unsigned long target_addr)
+{
+	ClearWriteProtection();
+
+	ConfigFlashAccessTime();
+	EnterFlashMode();
+
+	FMCR_SELFPGM_SET;
+	FMCR_ERS_SET;
+	NOP();	NOP();	NOP();	NOP();	NOP();
+	
+	*(unsigned long*)(target_addr) = 0xFFFFFFFF;
+	NOP();	NOP();	NOP();	NOP();	NOP();
+
+	FMCR_ERS_CLR;
+	FMCR_SELFPGM_CLR;
+
+	ExitFlashMode();
+	ConfigFlashAccessTime();
+
+	return (0);		// success
+}
+
+/*********************************************************************//**
+ * @brief						SelfProgram Page (512Byte)
+ * @param[in]	target_addr
+ * @param[in]	page_size
+ * @param[in]	data_buffer[512]
+ * @return				0: success / 1: fail
+ **********************************************************************/
+int SelfProgramPage(unsigned long target_addr, unsigned long page_size, unsigned char *data_buffer)
+{
+	int	i;
+	unsigned long *ptr;
+
+	/* Check address and size alignment */
+	if((target_addr & 0x03) || (page_size & 0x03))
+	{
+		return (1);		// fail
+	}
+
+	/* Data Load */
+	ptr = (unsigned long *)data_buffer;
+
+	/* PGM Sequence Start */
+	ClearWriteProtection();
+
+	ConfigFlashAccessTime();
+	EnterFlashMode();
+
+	FMCR_SELFPGM_SET;
+	FMCR_PGM_SET;
+	NOP();	NOP();	NOP();	NOP();	NOP();
+
+	for(i=0; i<page_size; i+=4)
+	{
+		*(unsigned long *)(target_addr) = *ptr;
+		target_addr += 4;
+		ptr++;
+	}
+	NOP();	NOP();	NOP();	NOP();	NOP();
+	
+	FMCR_PGM_CLR;
+	FMCR_SELFPGM_CLR;
+	
+	ExitFlashMode();
+	ConfigFlashAccessTime();
+
+	return (0);		// success
+}
+
+
+
 /************************ (C) COPYRIGHT ABOV SEMICONDUCTOR *****END OF FILE****/
