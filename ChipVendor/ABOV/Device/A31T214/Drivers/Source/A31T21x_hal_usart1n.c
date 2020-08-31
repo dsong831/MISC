@@ -254,11 +254,11 @@ HAL_Status_Type HAL_USART_Init(USART_Type *USARTn, USART_MODE_Type USARTModeConf
 		// CPOL Config
 		if(USARTConfigStruct->tCPOL == USART_CPOL_ActiveLow)
 		{
-			u32Reg &= ~(1<<7);
+			USARTn->CR1 &= ~(1<<7);
 		}
 		else
 		{
-			u32Reg |= (1<<7);
+			USARTn->CR1 |= (1<<7);
 		}
 	}
 
@@ -404,7 +404,7 @@ void HAL_USART_BaudrateSet(USART_Type *USARTn, USART_MODE_Type USARTModeConfig, 
 		bdr = (numerator / denominator) - 1;
 
 		/* Baudrate Error Check */
-		if(bdr <= 3)
+		if(bdr <= 5)
 		{
 			// Error then to change speed mode
 			USARTn->CR2 |= (1<<8);
@@ -916,6 +916,7 @@ void HAL_USART_SPI_TransmitReceiveData_INT(USART_Type *USARTn, uint32_t *p_txdat
 			p_rxdata[i] = spi_rx10_Buffer.Buffer[i+1];
 		}
 	}
+
 	/* USART11 Unit */
 	else if(USARTn == USART11)
 	{
@@ -1033,11 +1034,6 @@ void HAL_USART_SPI_Handler(USART_Type *USARTn)
 			spi_rx10_Buffer.DataLength++;
 
 			// User specific code
-			if(spi_rx10_Buffer.Buffer[spi_rx10_Buffer.DataLength-1] == 0x5A)
-			{
-				while(!(USARTn->ST & USART_ST_DRE));
-				USARTn->DR = 0x5A;	// Dummy data transmit
-			}
 		}
 	}
 	/* USART11 Unit */
@@ -1099,11 +1095,6 @@ void HAL_USART_SPI_Handler(USART_Type *USARTn)
 			spi_rx11_Buffer.DataLength++;
 
 			// User specific code
-			if(spi_rx11_Buffer.Buffer[spi_rx11_Buffer.DataLength-1] == 0x5A)
-			{
-				while(!(USARTn->ST & USART_ST_DRE));
-				USARTn->DR = 0x5A;	// Dummy data transmit
-			}
 		}
 	}
 

@@ -268,8 +268,8 @@ void HAL_UART_BaudrateSet(UART_Type *UARTn, uint32_t baudrate)
 
 	fd = numerator - (bdr * denominator); 
 	bfr = (fd * 256) / denominator; 
-	UARTn->BDR= (uint16_t)(bdr&0xffff);
-	UARTn->BFR= (uint8_t)(bfr&0xff);
+	UARTn->BDR = (uint16_t)(bdr&0xffff);
+	UARTn->BFR = (uint8_t)(bfr&0xff);
 }
 
 

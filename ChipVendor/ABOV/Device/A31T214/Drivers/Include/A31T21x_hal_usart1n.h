@@ -132,8 +132,8 @@ typedef struct {
 																															- SPI_MSBF_LSB
 																															- SPI_MSBF_MSB */
 	uint32_t tMS;																					/** Master/Slave select 
-																															- SPI_MS_SLAVE
-																															- SPI_MS_MASTER */
+																															- SPI_MS_SLAVE / USART_MS_SLAVE
+																															- SPI_MS_MASTER / USART_MS_MASTER */
 } USART_CFG_Type;
 
 typedef enum {

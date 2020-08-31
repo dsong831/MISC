@@ -597,11 +597,6 @@ void HAL_SPI_Handler(SPI_Type *SPIn)
 			spi_rx21_Buffer.DataLength++;
 
 			// User specific code
-			if(spi_rx21_Buffer.Buffer[spi_rx21_Buffer.DataLength-1] == 0x5A)
-			{
-				while(!(SPIn->SR & SPI_SR_TRDY));
-				SPIn->RDR_TDR = 0x5A;	// Dummy data transmit
-			}
 		}
 	}
 

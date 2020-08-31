@@ -47,7 +47,7 @@
  **********************************************************************/
 HAL_Status_Type HAL_WT_Init(WT_CFG_Type wt_cfg, unsigned char wt_en, unsigned char int_en)
 {
-	uint32_t reg32;
+	uint32_t reg32 = 0;
 
 	/* Disable WT block and clock */
 	SCU->PER1 &= ~(0x01UL << 31);
@@ -64,12 +64,12 @@ HAL_Status_Type HAL_WT_Init(WT_CFG_Type wt_cfg, unsigned char wt_en, unsigned ch
 		WT->DR = wt_cfg.WTDR & 0x0FFF;
 
 		/* Set WT Interval */
-		reg32 = ((wt_cfg.WTCLKDIV & 0x03UL) << 4) | (0x01UL<<0);
+		reg32 = ((wt_cfg.WTCLKDIV & 0x03UL) << 4);
 
 		/* Set WT Interrupt */
 		if(int_en == WT_INT_ENABLE)
 		{
-			reg32 |= 0x0A;	// Enable interrupt & Clear INT Flag
+			reg32 |= 0x08;	// Enable interrupt
 		}
 		
 		WT->CR = reg32;
@@ -95,7 +95,7 @@ void HAL_WT_TimerStart(EN_DIS_Type wt_en)
 	if(wt_en == ENABLE)
 	{
 		reg32 |= (0x01UL << 7);		// Enable watch timer counter
-		reg32 |= (0x01UL << 0);		// Clear counter and divider
+		reg32 |= (0x01UL << 0);		// Clear counter
 	}
 
 	WT->CR = reg32;
@@ -108,7 +108,7 @@ void HAL_WT_TimerStart(EN_DIS_Type wt_en)
  *********************************************************************/
 void HAL_WT_ClearStatus(void)
 {
-	WT->CR |= ((uint32_t)(1<<1));	// WTIFLAG[bit1] Clear to '0' when write '1'.
+	WT->CR |= ((uint32_t)(3<<0));	// WTIFLAG[bit1], WTCLR[bit0] Clear to '0' when write '1'.
 }
 
 

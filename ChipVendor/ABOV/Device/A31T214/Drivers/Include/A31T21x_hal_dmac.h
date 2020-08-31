@@ -63,12 +63,20 @@
 
 /* Public Macros -------------------------------------------------------------- */
 /** PERISEL Selection */
-#define DMAC_PERISEL_IDLE					(0UL)		/**< CHANNEL IDLE */
-#define DMAC_PERISEL_U0RX				(1UL)		/**< UART0 RX */
-#define DMAC_PERISEL_U0TX				(2UL)		/**< UART0 TX */
-#define DMAC_PERISEL_U1RX				(3UL)		/**< UART1 RX */
-#define DMAC_PERISEL_U1TX				(4UL)		/**< UART1 TX */
-#define DMAC_PERISEL_CRC					(5UL)		/**< CRC */
+#define DMAC_PERISEL_IDLE								(0UL)		/**< CHANNEL IDLE */
+#define DMAC_PERISEL_UART0RX				(1UL)		/**< UART0 RX */
+#define DMAC_PERISEL_UART0TX				(2UL)		/**< UART0 TX */
+#define DMAC_PERISEL_UART1RX				(3UL)		/**< UART1 RX */
+#define DMAC_PERISEL_UART1TX				(4UL)		/**< UART1 TX */
+#define DMAC_PERISEL_USART10RX		(5UL)		/**< USART10 RX */
+#define DMAC_PERISEL_USART10TX		(6UL)		/**< USART10 TX */
+#define DMAC_PERISEL_USART11RX		(7UL)		/**< USART11 RX */
+#define DMAC_PERISEL_USART11TX		(8UL)		/**< USART11 TX */
+#define DMAC_PERISEL_SPI20RX				(9UL)		/**< SPI20 RX */
+#define DMAC_PERISEL_SPI20TX					(10UL)	/**< SPI20 TX */
+#define DMAC_PERISEL_SPI21RX				(11UL)	/**< SPI21 RX */
+#define DMAC_PERISEL_SPI21TX					(12UL)	/**< SPI21 TX */
+#define DMAC_PERISEL_CRC								(13UL)	/**< CRC */
 /** Size in Source transfer width and Destination transfer width definitions */
 #define DMAC_SIZE_BYTE							(0UL)		/**< Width = 1 byte */
 #define DMAC_SIZE_HALFWORD		(1UL)		/**< Width = 2 bytes */
