@@ -95,6 +95,7 @@ HAL_Status_Type HAL_I2C_Init(uint8_t ch, uint32_t speed, uint8_t addr, uint8_t a
 		HAL_I2C_ConfigureAcknowledge(ch, ack);												// I2C Ack Enable
 
 		I2C0->SAR1 = addr;																													// Set slave own address
+		I2C0->SAR2 = addr;																													// Set slave own address
 
 		I2C0->SCLR = ((SystemPeriClock/speed) - 2) / 4;						// Set I2C speed_low
 		I2C0->SCHR = ((SystemPeriClock/speed) - 2) / 4;						// Set I2C speed_high
@@ -119,6 +120,7 @@ HAL_Status_Type HAL_I2C_Init(uint8_t ch, uint32_t speed, uint8_t addr, uint8_t a
 		HAL_I2C_ConfigureAcknowledge(ch, I2C_ACK_ENABLE);	// I2C Ack Enable
 
 		I2C1->SAR1 = addr;																													// Set slave own address
+		I2C1->SAR2 = addr;																													// Set slave own address
 
 		I2C1->SCLR = ((SystemPeriClock/speed) - 2) / 4;						// Set I2C speed_low
 		I2C1->SCHR = ((SystemPeriClock/speed) - 2) / 4;						// Set I2C speed_high
@@ -517,15 +519,18 @@ void HAL_I2C_MasterTransferData(uint8_t ch, uint8_t dev_addr, uint8_t *write_dat
 void HAL_I2C_InterruptHandler(uint8_t ch)
 {
 	uint8_t i2c_status;
+	uint8_t i2c_control;
 
 	/* To check i2c status register */
 	if(ch == I2C_CH0)
 	{
 		i2c_status = I2C0->ST;
+		i2c_control = I2C0->CR;
 	}
 	else if(ch == I2C_CH1)
 	{
 		i2c_status = I2C1->ST;
+		i2c_control = I2C1->CR;
 	}
 
 	/* To check i2c error */
@@ -546,7 +551,7 @@ void HAL_I2C_InterruptHandler(uint8_t ch)
 	/* To enter i2c irq process */
 	else
 	{
-		if(!(i2c_status & fSSEL))
+		if(i2c_control & fIMASTERn)
 		{
 			HAL_I2C_MasterProcess(ch);	// I2C Master Mode
 		}
@@ -715,7 +720,7 @@ void HAL_I2C_SetSlaveData(uint8_t ch)
 
 	timekeeper = 0x5FFFF;								// i2c timeout setting 60ms @ Sysclk 40MHz
 	i2c_mode[ch] = I2C_BUSY;				// i2c mode setting
-	
+
 	/* I2C Slave Tx/Rx Buffer Set */
 	if(ch == I2C_CH0)
 	{
@@ -730,13 +735,14 @@ void HAL_I2C_SetSlaveData(uint8_t ch)
 		for(i=0; i<I2C_MAX_BUFFER_SIZE; i++)
 		{
 			transmitBuffer1[i] = (0x00 + i);
-			receiveBuffer0[i] = 0x00;
+			receiveBuffer1[i] = 0x00;
 		}
 	}
+
 	/* i2c timeout check */
 	while(i2c_mode[ch] == I2C_BUSY)
 	{
-		timekeeper--;
+//		timekeeper--;
 		if(timekeeper == 0)
 		{
 			i2c_mode[ch] = I2C_IDLE;
