@@ -35,6 +35,7 @@
 
 
 /* Includes -------------------------------------------------------------- */
+#include <stdarg.h>
 #include "A31T21x.h"
 #include "A31T21x_hal_aa_types.h"
 
@@ -179,6 +180,7 @@ uint8_t agetc(UART_Type *UARTn);
 uint8_t agets(UART_Type *UARTn, uint8_t *p_data);
 uint8_t agethex(UART_Type *UARTn, uint8_t *p_data);
 void RegisterWrite_Handler(UART_Type *UARTn);
+void aprintf(UART_Type *UARTn, const  char *format, ...);
 
 
 #ifdef __cplusplus

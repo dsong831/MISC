@@ -909,5 +909,22 @@ void RegisterWrite_Handler(UART_Type *UARTn)
 	}
 }
 
+#if 1
+/*********************************************************************//**
+ * @brief		print function that supports format as same as printf()
+ * 				function of <stdio.h> library
+ * @param[in]	format formated string to be print
+ * @return		None
+ **********************************************************************/
+void aprintf(UART_Type *UARTn, const  char *format, ...)
+{
+    char  buffer[512 + 1];
+            va_list     vArgs;
+    va_start(vArgs, format);
+    vsprintf((char *)buffer, (char const *)format, vArgs);
+    va_end(vArgs);
 
+    aputs(UARTn, (uint8_t*)buffer);
+}
+#endif
 /* --------------------------------- End Of File ------------------------------ */
