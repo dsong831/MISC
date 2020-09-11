@@ -53,8 +53,10 @@ SPI_Buffer_Type	spi_rx21_Buffer;
  **********************************************************************/
 void HAL_SPI_WriteBuffer(SPI_Type* SPIn, uint32_t tx_data)
 {
-	while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
-	SPIn->RDR_TDR = tx_data;
+	while(!(SPIn->SR & SPI_SR_TRDY));		// Wait until transmit buffer is ready for use.
+	HAL_SPI_Command(SPIn, DISABLE);
+	SPIn->RDR_TDR = tx_data;									// Transmit data
+	HAL_SPI_Command(SPIn, ENABLE);
 }
 
 /**********************************************************************//**
@@ -65,6 +67,8 @@ void HAL_SPI_WriteBuffer(SPI_Type* SPIn, uint32_t tx_data)
  **********************************************************************/
 uint32_t HAL_SPI_ReadBuffer(SPI_Type* SPIn)
 {
+	while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
+	SPIn->RDR_TDR = 0xFF;										// Dummy data
 	while(!(SPIn->SR & SPI_SR_RRDY));	// Wait until receive buffer holds data.
 	return ((uint32_t) (SPIn->RDR_TDR));
 }
@@ -292,35 +296,6 @@ void HAL_SPI_SetSSOutput(SPI_Type* SPIn, uint8_t ss_output)
 	}
 }
 
-/**********************************************************************//**
- * @brief						Transmit a single data through SPIn peripheral (Polling mode)
- * @param[in]	SPIn	SPI peripheral selected, should be:
- *											- SP	:SPI20~21 peripheral
- * @param[in]	tx_data		Data to transmit
- * @return				None
- **********************************************************************/
-void HAL_SPI_TransmitData_POL(SPI_Type* SPIn, uint32_t tx_data)
-{
-	while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
-	HAL_SPI_Command(SPIn, DISABLE);
-	SPIn->RDR_TDR = tx_data;
-	HAL_SPI_Command(SPIn, ENABLE);
-}
-
-/**********************************************************************//**
- * @brief						Receive a single data from SPIx peripheral (Polling mode)
- * @param[in]	SPIn	SPI peripheral selected, should be
- *											- SP	:SPI20~21 peripheral
- * @return				Received data
- **********************************************************************/
-uint32_t HAL_SPI_ReceiveData_POL(SPI_Type* SPIn)
-{
-	while(!(SPIn->SR & SPI_SR_TRDY));	// Wait until transmit buffer is ready for use.
-	SPIn->RDR_TDR = 0x00;										// Dummy data
-	while(!(SPIn->SR & SPI_SR_RRDY));	// Wait until receive buffer holds data.
-	return ((uint32_t) (SPIn->RDR_TDR));
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -528,13 +503,6 @@ void HAL_SPI_Handler(SPI_Type *SPIn)
 			while(!(SPIn->SR & SPI_SR_RRDY));
 			spi_rx20_Buffer.Buffer[spi_rx20_Buffer.DataLength] = (SPIn->RDR_TDR);
 			spi_rx20_Buffer.DataLength++;
-
-			// User specific code
-			if(spi_rx20_Buffer.Buffer[spi_rx20_Buffer.DataLength-1] == 0x5A)
-			{
-				while(!(SPIn->SR & SPI_SR_TRDY));
-				SPIn->RDR_TDR = 0x5A;	// Dummy data transmit
-			}
 		}
 	}
 	/* SPI21 Unit */
@@ -595,8 +563,6 @@ void HAL_SPI_Handler(SPI_Type *SPIn)
 			while(!(SPIn->SR & SPI_SR_RRDY));
 			spi_rx21_Buffer.Buffer[spi_rx21_Buffer.DataLength] = (SPIn->RDR_TDR);
 			spi_rx21_Buffer.DataLength++;
-
-			// User specific code
 		}
 	}
 

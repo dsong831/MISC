@@ -36,6 +36,8 @@
 
 /* Includes -------------------------------------------------------------- */
 #include <stdarg.h>
+#include <stdio.h>
+
 #include "A31T21x.h"
 #include "A31T21x_hal_aa_types.h"
 

@@ -88,14 +88,14 @@ extern "C"
 #define TIMER30_UPBOTTOM					(0x2uL<<4)
 
 /**   Timer 30 Period Match Interrupt Occurrence Selection Definition */
-#define TIMER30_E1PERIOD					(0x00uL<<0)
-#define TIMER30_E2PERIOD					(0x01uL<<0)
-#define TIMER30_E3PERIOD					(0x02uL<<0)
-#define TIMER30_E4PERIOD					(0x03uL<<0)
-#define TIMER30_E5PERIOD					(0x04uL<<0)
-#define TIMER30_E6PERIOD					(0x05uL<<0)
-#define TIMER30_E7PERIOD					(0x06uL<<0)
-#define TIMER30_E8PERIOD					(0x07uL<<0)
+#define TIMER30_E1PERIOD					(0x00uL<<1)
+#define TIMER30_E2PERIOD					(0x01uL<<1)
+#define TIMER30_E3PERIOD					(0x02uL<<1)
+#define TIMER30_E4PERIOD					(0x03uL<<1)
+#define TIMER30_E5PERIOD					(0x04uL<<1)
+#define TIMER30_E6PERIOD					(0x05uL<<1)
+#define TIMER30_E7PERIOD					(0x06uL<<1)
+#define TIMER30_E8PERIOD					(0x07uL<<1)
 
 //************* T30OUTCR ************************************************
 //****************************************************************************
@@ -480,10 +480,11 @@ HAL_Status_Type HAL_TIMER3n_OutputCtrl(TIMER3n_Type* TIMER3n,  uint32_t NewState
 HAL_Status_Type HAL_TIMER3n_ConfigInterrupt(TIMER3n_Type* TIMER3n,uint32_t NewState,uint32_t T30IntCfg);
 HAL_Status_Type HAL_TIMER3n_ClearStatus_IT(TIMER3n_Type* TIMER3n,uint32_t T30IntCfg);
 uint32_t HAL_TIMER3n_GetStatus_IT(TIMER3n_Type* TIMER3n);
-HAL_Status_Type HAL_TIMER3n_MPWMCmd(TIMER3n_Type* TIMER3n, uint32_t updatedata, uint32_t intcount);
+HAL_Status_Type HAL_TIMER3n_MPWMCmd(TIMER3n_Type* TIMER3n, uint32_t T30CLK, uint32_t T30MS, uint32_t FORCA, uint32_t UPDT, uint32_t PMOC);
 HAL_Status_Type HAL_TIMER3n_SetHizReg(TIMER3n_Type* TIMER3n, uint32_t u32T30HizSet);
 HAL_Status_Type HAL_TIMER3n_SetADCTrigger(TIMER3n_Type* TIMER3n, uint32_t u32triggerpoint, uint32_t u32triggertime);
 HAL_Status_Type HAL_TIMER3n_Init(TIMER3n_Type *TIMER3n);
+HAL_Status_Type HAL_TIMER3n_ClockPrescaler(TIMER3n_Type* TIMER3n, uint32_t prescale);
 #ifdef __cplusplus
 }
 #endif

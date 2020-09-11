@@ -114,23 +114,32 @@ HAL_Status_Type HAL_TIMER3n_ClearStatus_IT(TIMER3n_Type* TIMER3n,uint32_t T30Int
 }
 
 /*********************************************************************//**
-* @brief		T30 PWM Mode Setting (Initial : Back to Back Mode, Internal Clock, 6channel Mode) 
+ * @brief		T30 PWM Mode Setting (Initial : Back to Back Mode, Internal Clock, 6channel Mode) 
  * @param[in]	TIMER30	Timer 30 peripheral selected, should be:
  * 					- TIMER30	:Timer30 peripheral
- * @param[in]	updatedata PWM Duty Update Timing
- * @param[in]	intcount	  Period Match Interrupt Occurence Seletion  
+ * @param[in]	T30CLK				:		TIMER30_CLKINT / TIMER30_CLKEXT
+ * @param[in]	T30MS					:		TIMER30_INVM / TIMER30_CAPM / TIMER30_BTOB
+ * @param[in]	T30FORCA		:		TIMER30_6CHMOD / TIMER30_FORAMOD
+ * @param[in]	UPDT						:		TIMER30_UPWRITE / TIMER30_UPMATCH / TIMER30_UPBOTTOM
+ * @param[in]	PMOC					:		TIMER30_E1PERIOD to TIMER30_E8PERIOD
  * @return  HAL Satus
  **********************************************************************/
-HAL_Status_Type HAL_TIMER3n_MPWMCmd(TIMER3n_Type* TIMER3n, uint32_t updatedata, uint32_t intcount)
+HAL_Status_Type HAL_TIMER3n_MPWMCmd(TIMER3n_Type* TIMER3n, uint32_t T30CLK, uint32_t T30MS, uint32_t FORCA, uint32_t UPDT, uint32_t PMOC)
 {
+	uint32_t prev_value;
+	
+	prev_value = TIMER3n->CR;
+
 	TIMER3n->CR = 0
-	| TIMER30_CLKINT
-	| TIMER30_BTOB
-	| TIMER30_6CHMOD
-	| updatedata
-	| intcount
-	| 1 				//Clear T30 & Precaler
+	| prev_value
+	| T30CLK
+	| T30MS
+	| FORCA
+	| UPDT
+	| PMOC
+	| 1 				// Clear T30 Counter
 	;
+
 	return HAL_OK;
 }
 

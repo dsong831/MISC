@@ -492,7 +492,7 @@ void HAL_USART_SPI_TransmitData_POL(USART_Type* USARTn, uint32_t tx_data)
 uint32_t HAL_USART_SPI_ReceiveData_POL(USART_Type* USARTn)
 {
 	while(!(USARTn->ST & USART_ST_DRE));	// Wait until transmit buffer is ready for use.
-	USARTn->DR = 0x00;																	// Dummy data
+	USARTn->DR = 0xFF;																	// Dummy data
 	while(!(USARTn->ST & USART_ST_RXC));	// Wait until receive buffer holds data.
 	return ((uint32_t) (USARTn->DR));
 }
@@ -1032,8 +1032,6 @@ void HAL_USART_SPI_Handler(USART_Type *USARTn)
 			while(!(USARTn->ST & USART_ST_RXC));
 			spi_rx10_Buffer.Buffer[spi_rx10_Buffer.DataLength] = (USARTn->DR);
 			spi_rx10_Buffer.DataLength++;
-
-			// User specific code
 		}
 	}
 	/* USART11 Unit */
@@ -1093,8 +1091,6 @@ void HAL_USART_SPI_Handler(USART_Type *USARTn)
 			while(!(USARTn->ST & USART_ST_RXC));
 			spi_rx11_Buffer.Buffer[spi_rx11_Buffer.DataLength] = (USARTn->DR);
 			spi_rx11_Buffer.DataLength++;
-
-			// User specific code
 		}
 	}
 
