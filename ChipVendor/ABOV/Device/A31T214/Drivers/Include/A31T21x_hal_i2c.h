@@ -52,7 +52,7 @@
 /*******************************************************************************
 * Public Macro
 *******************************************************************************/
-#define I2C_DEVICE_ADDRESS			0x00				// at master mode, slave device address
+#define I2C_DEVICE_ADDRESS			0xA0				// at master mode, slave device address
 #define I2C_SLAVE_OWN_ADDR		0xA1				// at slave mode, its own address
 #define I2C_SPEED											10000			// i2c speed (10kHz)
 

@@ -156,6 +156,13 @@
 //------------- Watch-Dog Timer Clock Constant Definition -------------
 #define WDTCLK_WDTRC									(0)
 #define WDTCLK_MCCR3									(1)
+//------------- LCD Clock Constant Definition -------------
+#define LCDCLK_MCCR5									(0)
+#define LCDCLK_SOSC										(1)
+#define LCDCLK_WDTRC									(2)
+//------------- LED Clock Constant Definition -------------
+#define LEDCLK_MCCR5									(0)
+#define LEDCLK_PCLK											(1)
 
 
 /* Public Functions ----------------------------------------------------------- */
@@ -177,6 +184,7 @@ void HAL_SCU_Timer30_ClockConfig(uint32_t t30clk);
 void HAL_SCU_LED_ClockConfig(uint32_t ledclk);
 void HAL_SCU_WT_ClockConfig(uint32_t wtclk);
 void HAL_SCU_WDT_ClockConfig(uint32_t wdtclk);
+void HAL_SCU_LCD_ClockConfig(uint32_t lcdclk);
 
 
 #endif		/* A31T21X_HAL_SCU_H */

@@ -144,7 +144,7 @@ HAL_Status_Type HAL_SPI_Init(SPI_Type *SPIn, SPI_CFG_Type *SPIConfigStruct, SPI_
 			break;
 	}
 	// CPOL Config
-	if(SPIConfigStruct->tCPOL == SPI_CPOL_ActiveLow)
+	if(SPIConfigStruct->tCPOL == SPI_CPOL_ActiveHigh)
 	{
 		u32Reg |= SPI_CR_CPOL;
 	}

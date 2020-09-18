@@ -430,7 +430,6 @@ void HAL_SCU_WT_ClockConfig(uint32_t wtclk)
 }
 
 /**********************************************************************//**
-
    @brief        Set WatchDog Timer Clock
    @param[in]    wdtclk                           WDTCLK_WDTRC, WDTCLK_MCCR3
    @explain      This macro sets watchdog timer clock
@@ -443,6 +442,21 @@ void HAL_SCU_WDT_ClockConfig(uint32_t wdtclk)
 	temp &= ~(1<<0);
 	temp |= (wdtclk<<0);
 	SCU->PPCLKSR = temp;	      
+}
+
+/**********************************************************************//**
+   @brief        Set LCD Clock
+   @param[in]    lcdclk                           LCDCLK_MCCR5, LCDCLK_SOSC, LCDCLK_WDTRC
+   @explain      This macro sets lcd clock
+ **********************************************************************/
+void HAL_SCU_LCD_ClockConfig(uint32_t lcdclk)
+{
+	uint32_t temp;
+
+	temp = SCU->PPCLKSR;
+	temp &= ~(1<<6);
+	temp |= (lcdclk<<6);
+	SCU->PPCLKSR = temp;
 }
 
 
