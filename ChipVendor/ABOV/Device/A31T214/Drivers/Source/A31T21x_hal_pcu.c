@@ -51,9 +51,6 @@ void HAL_GPIO_ModeConfig(PORT_Type *Pn, uint8_t pin_no, PIN_MODE_Type pin_mode)
 	uint32_t reg32;
 	uint32_t output_type;
 
-	/* Port Access Enable */
-	PORT_ACCESS_EN();
-
 	/* Cal. Pin Offset */
 	output_type = pin_mode;
 	if(output_type == OPEN_DRAIN_OUTPUT)
@@ -76,9 +73,6 @@ void HAL_GPIO_ModeConfig(PORT_Type *Pn, uint8_t pin_no, PIN_MODE_Type pin_mode)
 		reg32 |= (1 << pin_no);
 	}
 	Pn->TYP = reg32;
-
-	/* Port Access Disable */
-	PORT_ACCESS_DIS();
 }
 
 /**********************************************************************//**
@@ -100,9 +94,6 @@ void HAL_GPIO_AlternativeConfig(PORT_Type *Pn, uint8_t pin_no, uint32_t func_no)
 	uint8_t pin_offset2;
 	uint32_t reg32;
 	
-	/* Port Access Enable */
-	PORT_ACCESS_EN();
-
 	/* Set Alternative function selection register */
 	if(pin_no < 8)	// Pin0~Pin7
 	{
@@ -124,9 +115,6 @@ void HAL_GPIO_AlternativeConfig(PORT_Type *Pn, uint8_t pin_no, uint32_t func_no)
 
 		Pn->AFSR2 = reg32;
 	}
-
-	/* Port Access Disable */
-	PORT_ACCESS_DIS();
 }
 
 /**********************************************************************//**
@@ -145,9 +133,6 @@ void HAL_GPIO_PUPDConfig(PORT_Type *Pn, uint8_t pin_no, uint8_t pupd_sel)
 	uint8_t pin_offset;
 	uint32_t reg32; 
 
-	/* Port Access Enable */
-	PORT_ACCESS_EN();
-
 	/* Cal. Pin Offset */
 	pin_offset = (pin_no << 1);		// pin_offset = pin_no *2
 	
@@ -156,9 +141,6 @@ void HAL_GPIO_PUPDConfig(PORT_Type *Pn, uint8_t pin_no, uint8_t pupd_sel)
 	reg32 &= ~(PORT_PUPD_MASK << pin_offset); 
 	reg32 |= (pupd_sel << pin_offset);
 	Pn->PUPD = reg32;
-
-	/* Port Access Disable */
-	PORT_ACCESS_DIS();
 }
 
 /**********************************************************************//**
@@ -180,12 +162,8 @@ uint16_t HAL_GPIO_ReadPin(PORT_Type *Pn)
  * @return				None
  **********************************************************************/
 void HAL_GPIO_WritePin(PORT_Type *Pn, uint16_t Value)
-{		
-	PORT_ACCESS_EN();
-
+{
 	Pn->OUTDR = Value;
-
-	PORT_ACCESS_DIS();
 }
 
 /**********************************************************************//**
@@ -198,11 +176,7 @@ void HAL_GPIO_WritePin(PORT_Type *Pn, uint16_t Value)
  **********************************************************************/
 void HAL_GPIO_SetOutput(PORT_Type *Pn, uint16_t bitValue)
 {
-	PORT_ACCESS_EN();
-
 	Pn->BSR |= (1 << bitValue);
-
-	PORT_ACCESS_DIS();
 }
 
 
@@ -216,11 +190,7 @@ void HAL_GPIO_SetOutput(PORT_Type *Pn, uint16_t bitValue)
  **********************************************************************/
 void HAL_GPIO_ClearOutput(PORT_Type *Pn, uint16_t bitValue)
 {
-	PORT_ACCESS_EN();
-
 	Pn->BCR |= (1 << bitValue);
-
-	PORT_ACCESS_DIS();
 }
 
 /**********************************************************************//**
@@ -236,14 +206,10 @@ void HAL_GPIO_OutDataMaskConfig(PORT_Type *Pn, uint8_t pin_no, uint8_t mask_sel)
 {
 	uint32_t reg32; 
 
-	PORT_ACCESS_EN();
-	
 	reg32 = Pn->OUTDMSK;
 	reg32 &= ~(1 << pin_no);
 	reg32 |= (mask_sel << pin_no);
 	Pn->OUTDMSK = reg32;
-	
-	PORT_ACCESS_DIS();
 }
 
 /**********************************************************************//**
@@ -256,13 +222,9 @@ void HAL_GPIO_SetDebouncePin(PORT_Type *Pn, uint8_t pin_no)
 {
 	uint32_t reg32;
 
-	PORT_ACCESS_EN();
-
 	reg32 = (Pn->DBCR & 0x00FF);
 	reg32 |= (0x01 << pin_no);
 	Pn->DBCR = reg32;
-
-	PORT_ACCESS_DIS();
 }
 
 /**********************************************************************//**
@@ -289,9 +251,6 @@ void HAL_GPIO_EXTI_Config(PORT_Type *Pn, uint8_t pin_no, uint8_t eint_en, uint8_
 	uint8_t pin_offset;
 	uint32_t reg32;
 
-	/* Port Access Enable */
-	PORT_ACCESS_EN();
-
 	/* Cal. Pin Offset */
 	pin_offset = (pin_no << 1);		// pin_offset = pin_no * 2
 
@@ -311,9 +270,6 @@ void HAL_GPIO_EXTI_Config(PORT_Type *Pn, uint8_t pin_no, uint8_t eint_en, uint8_
 	{
 		Pn->ICR = Pn->ICR & (uint32_t)(~(3 << pin_offset));
 	}
-
-	/* Port Access Disable */
-	PORT_ACCESS_DIS();
 }
 
 /**********************************************************************//**
@@ -336,17 +292,11 @@ void HAL_GPIO_EXTI_ClearStatus(PORT_Type *Pn, uint8_t pin_no)
 {
 	uint8_t pin_offset;
 
-	/* Port Access Enable */
-	PORT_ACCESS_EN();
-
 	/* Cal. Pin Offset */
 	pin_offset = (pin_no << 1);		// pin_offset = pin_no * 2
 
 	/* Clear interrupt flag */
-	Pn->ISR |= (uint32_t)(3 << pin_offset);		
-
-	/* Port Access Disable */
-	PORT_ACCESS_DIS();
+	Pn->ISR |= (uint32_t)(3 << pin_offset);
 }
 
 
