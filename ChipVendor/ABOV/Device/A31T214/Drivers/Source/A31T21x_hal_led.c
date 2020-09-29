@@ -66,7 +66,7 @@ void HAL_LED_Init(LED_Type *LEDn, LED_CFG_Type *LED_Config)
 	}
 
 	/* Set Overlap time */
-	if(LED_Config->tOVERLAP)
+	if(LED_Config->tOVERLAP < 8)
 	{
 		LEDn->LEDCON2 &= ~(1<<3);
 		LEDn->LEDCON2 |= (LED_Config->tOVERLAP << 0);
@@ -107,7 +107,7 @@ void HAL_LED_DISP_OFF(void)
  *********************************************************************/
 void HAL_LED_ClearStatus(void)
 {
-	LED->SR |= (1<<2);		// LED INTF [bit2]
+	LED->SR &= ~(1<<2);		// LED INTF [bit2]
 }
 
 
