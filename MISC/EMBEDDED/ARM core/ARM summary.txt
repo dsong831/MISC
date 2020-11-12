@@ -1,0 +1,34 @@
+
+* ARM : Advanced RISC Machine
+* word : CPU가 한번에 처리할 수 있는 크기
+* ARM 상태 모드 (ARM core가 몇 bit로 동작할 것이냐의 상태 모드)
+  - ARM mode : 32-bit 
+  - THUMB mode : 16-bit data bus line을 가진 메모리에서도 효율적으로 사용할 수 있도록 ARM 명령어들을 16-bit로 압축한 명령어 set
+
+* ARM 동작 모드 (ARM core의 몇가지 동작 모드)
+  - SVC / USR / SYS / ABT / IRQ / FIQ / UND
+  - USR 모드 외에는 모두 Privileged mode 임
+  - ARM core는 총 37개의 register를 가짐
+    : R0~R7, R15(PC), CPSR 은 mode마다 모두 공용으로 사용
+	: R8~14, SPSR 은 banked register로써 각 mode별로 따로 있음
+    : USR vs SYS 모드는 레지스터가 동일 (CPSR의 mode bit만 다름)
+  - Thumb mode는 R0~R7만 쓰고, ARM mode는 R0~R12까지 모두 씀 (R13~R15는 둘다 씀)
+
+* CPSR (Current Program Status Register)
+[31:28] |  [27:8]  | [7:6] | [5] | [4:0]
+ NZCV   | Reserved |   IF  |  T  |  MODE
+                     IRQ[7] 0:Enable/1:Disable
+                     FIQ[6] 0:Enable/1:Disable
+
+* APCS (ARM Procedure Call Standard)
+ - ARM core 레지스터들의 사용법 약속 (이 기준에 맞춰 컴파일러는 기계어 만들어냄)
+ - R0~R3 : 함수 인자(파라미터)용 레지스터, 4개 이상의 인자는 Stack에 할당
+ - R0 : 함수의 결과 값(리턴 값)을 넣어주는 레지스터
+ - R13 : SP / R14 : LR / R15 : PC
+
+* AMBA Protocol : 내부 IP들끼리 Bus를 통해서 서로 잘 통신할 수 있도록 하는 Bus Protocol(ARM에서 무료로 제공)
+(Advanced Microcontroller Bus Architecture)
+ - AHB(Advanced High Performance Bus)
+ - ASB(Advanced System Bus)
+ - APB(Advanced Peripheral Bus)
+ > Arbiter에 의해 누가 버스를 쓸 건지가 결정 됨(일종의 신호등 역할)
