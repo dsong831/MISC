@@ -174,20 +174,6 @@
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
-              <name>I2C1WUE</name>
-              <description>Enable wakeup source of I2C1 event</description>
-              <bitOffset>15</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>I2C0WUE</name>
-              <description>Enable wakeup source of I2C0 event</description>
-              <bitOffset>14</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
               <name>GPIOFWUE</name>
               <description>Enable wakeup source of GPIOF port pin change event</description>
               <bitOffset>13</bitOffset>
@@ -275,20 +261,6 @@
           <access>read-only</access>
           <resetValue>0x00000000</resetValue>
           <fields>
-            <field>
-              <name>I2C1WU</name>
-              <description>Status of wakeup source of I2C1 event</description>
-              <bitOffset>15</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
-            <field>
-              <name>I2C0WU</name>
-              <description>Status of wakeup source of I2C0 event</description>
-              <bitOffset>14</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-only</access>
-            </field>
             <field>
               <name>GPIOFWU</name>
               <description>Status of wakeup source of GPIOF port pin change event</description>
@@ -668,6 +640,13 @@
               <access>read-write</access>
             </field>
             <field>
+              <name>TSENSE</name>
+              <description>TSENSE reset mask</description>
+              <bitOffset>27</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
               <name>TOUCH</name>
               <description>TOUCH reset mask</description>
               <bitOffset>25</bitOffset>
@@ -880,6 +859,13 @@
               <name>LCD</name>
               <description>LCD function enable</description>
               <bitOffset>28</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>TSENSE</name>
+              <description>TSENSE function enable</description>
+              <bitOffset>27</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
@@ -1100,6 +1086,13 @@
               <access>read-write</access>
             </field>
             <field>
+              <name>TSENSE</name>
+              <description>TSENSE clock enable</description>
+              <bitOffset>27</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
               <name>TOUCH</name>
               <description>TOUCH clock enable</description>
               <bitOffset>25</bitOffset>
@@ -1206,6 +1199,13 @@
               <description>LED Clock Selection bit</description>
               <bitOffset>10</bitOffset>
               <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LCDCLK</name>
+              <description>LCD Clock Selection bit</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>2</bitWidth>
               <access>read-write</access>
             </field>
             <field>
@@ -1513,6 +1513,13 @@ CLKO=MCLK/2(CLKODIV+1)  (CLKODIV &gt; 0)</description>
               <access>read-only</access>
             </field>
             <field>
+              <name>TIMEOUT</name>
+              <description>PLL timeout</description>
+              <bitOffset>30</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-only</access>
+            </field>
+            <field>
               <name>PLLRSTB</name>
               <description>PLL reset</description>
               <bitOffset>23</bitOffset>
@@ -1779,7 +1786,7 @@ The amount of delay can be defined with this register value 7F : 4msec </descrip
             </field>
             <field>
               <name>CLKCNT</name>
-              <description>Noise Cancel delay Option for External HSE</description>
+              <description>Noise Cancel delay Option for LSI</description>
               <bitOffset>8</bitOffset>
               <bitWidth>6</bitWidth>
               <access>read-write</access>
@@ -2011,28 +2018,22 @@ To change the value, set 0x0 first without changing LEDCSEL</description>
           <resetMask>0xFFFFFFFF</resetMask>
           <fields>
             <field>
-              <name>T3CAPSEL</name>
-              <description>Timer30 Capture Enable bit</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>TS_MODE</name>
-              <description>Temp-sensor mode selection</description>
-              <bitOffset>6</bitOffset>
+              <name>TS_REF_SEL</name>
+              <description>Temp-Sensor reference clock selection</description>
+              <bitOffset>14</bitOffset>
               <bitWidth>2</bitWidth>
             </field>
             <field>
-              <name>TS_EN</name>
-              <description>Temperature Sensor enable</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>1</bitWidth>
+              <name>TS_CLK_SEL</name>
+              <description>Temp-Sensor clock selection</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>2</bitWidth>
             </field>
             <field>
-              <name>TS_PRES</name>
-              <description>Temperature Sensor period</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>3</bitWidth>
+              <name>LSI_TS_EN</name>
+              <description>Temp-Sensor Oscillator enable selection</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
             </field>
           </fields>
         </register>
@@ -2081,11 +2082,11 @@ To change the value, set 0x0 first without changing LEDCSEL</description>
           <addressOffset>0x04</addressOffset>
           <size>32</size>
           <access>read-only</access>
-          <resetValue>0x4d31A008</resetValue>
+          <resetValue>0x4d31A01e</resetValue>
           <fields>
             <field>
               <name>CHIPID</name>
-              <description>Chip Identification bits. 0x4D31A008: 64k bytes flash memory for program 0x4D31A009: 32k bytes flash memory for program</description>
+              <description>Chip Identification bits. 0x4D31A01E: 256KB flash memory for program</description>
               <bitRange>[31:00]</bitRange>
               <access>read-only</access>
             </field>
@@ -3695,223 +3696,13 @@ On writes, write 0x72A5 to these bits, otherwise the write is ignored.</descript
         <usage>registers</usage>
       </addressBlock>
       <registers>
-        <!--KEYR : Port LED KEY Register -->
-        <register>
-          <name>KEYR</name>
-          <description>Port LED KEY Register</description>
-          <addressOffset>0x00</addressOffset>
-          <size>32</size>
-          <access>read-write</access>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xffffffff</resetMask>
-          <fields>
-            <field>
-              <name>COMENKEY</name>
-              <description>Writing 0xA087 in  Operation Key register</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>16</bitWidth>
-            </field>
-            <field>
-              <name>SEGENKEY</name>
-              <description>Writing 0x0702 in Operation Key register</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>16</bitWidth>
-            </field>
-          </fields>
-        </register>
-        <!--SEGR : Port LED SEG Register -->
-        <register>
-          <name>SEGR</name>
-          <description>Port LED SEG Register </description>
-          <addressOffset>0x04</addressOffset>
-          <size>32</size>
-          <access>read-write</access>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xffffffff</resetMask>
-          <fields>
-            <field>
-              <name>SEG9</name>
-              <description>LED SEG9x Signal bit</description>
-              <bitOffset>9</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>SEG8</name>
-              <description>LED SEG8 Signal bit</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>SEG7</name>
-              <description>LED SEG7 Signal bit</description>
-              <bitOffset>7</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>SEG6</name>
-              <description>LED SEG6 Signal bit</description>
-              <bitOffset>6</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>SEG5</name>
-              <description>LED SEG5 Signal bit</description>
-              <bitOffset>5</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>SEG4</name>
-              <description>LED SEG4 Signal bit</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>SEG3</name>
-              <description>LED SEG3 Signal bit</description>
-              <bitOffset>3</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>SEG2</name>
-              <description>LED SEG2 Signal bit</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>SEG1</name>
-              <description>LED SEG1 Signal bit</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>SEG0</name>
-              <description>LED SEGx Signal bit</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-          </fields>
-        </register>
-        <!--COMR : Port LED COM Register-->
-        <register>
-          <name>COMR</name>
-          <description>Port LED COM Register </description>
-          <addressOffset>0x08</addressOffset>
-          <size>32</size>
-          <access>read-write</access>
-          <resetValue>0x00000000</resetValue>
-          <resetMask>0xffffffff</resetMask>
-          <fields>
-            <field>
-              <name>LED_ENDF</name>
-              <description>Led signal output control</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM15</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>15</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM14</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>14</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM13</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>13</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM12</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>12</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM11</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>11</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM10</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>10</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM9</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>9</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM8</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM7</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>7</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM6</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>6</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM5</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>5</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM4</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>4</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM3</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>3</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM2</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>2</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM1</name>
-              <description>LED COM1 Signal</description>
-              <bitOffset>1</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-            <field>
-              <name>COM0</name>
-              <description>LED COMx Signal</description>
-              <bitOffset>0</bitOffset>
-              <bitWidth>1</bitWidth>
-            </field>
-          </fields>
-        </register>
         <!-- PORTEN: Port Access Enable -->
         <register>
           <name>PORTEN</name>
           <description>Port Access Enable 0x15-&gt;0x51</description>
           <addressOffset>0xF0</addressOffset>
           <size>32</size>
-          <access>read-write</access>
+          <access>write-only</access>
           <resetValue>0x00000000</resetValue>
           <resetMask>0x000000ff</resetMask>
           <fields>
@@ -4160,7 +3951,7 @@ CRC value will be calculated at every flash read timing</description>
             <field>
               <name>WPROT</name>
               <description>Write protection
-each 8 KB segments for whole memory address (needs 16 bits for 128KB flash)</description>
+each 8 KB segments for whole memory address</description>
               <bitOffset>0</bitOffset>
               <bitWidth>32</bitWidth>
             </field>
@@ -4192,10 +3983,10 @@ To unlock, user must erase LOCK area of Flash next to MAS(bulk) erase
         <register>
           <name>HWID</name>
           <description>Flash Size option check register</description>
-          <addressOffset>0x40</addressOffset>
+          <addressOffset>0x58</addressOffset>
           <size>32</size>
           <access>read-only</access>
-          <resetValue>0x00313140</resetValue>
+          <resetValue>0x31316000</resetValue>
           <fields>
             <field>
               <name>HWID</name>
@@ -6486,8 +6277,14 @@ If DIR is "1", this address is destination address of data transfer.</descriptio
           <size>32</size>
           <access>read-write</access>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x000000ff</resetMask>
+          <resetMask>0x000003ff</resetMask>
           <fields>
+            <field>
+              <name>INTERVAL</name>
+              <description>I2C bus internal delay between address and data transfer</description>
+              <bitRange>[09:08]</bitRange>
+              <access>read-write</access>
+            </field>
             <field>
               <name>I2CnEN</name>
               <description>Activate I2Cn Block by supplying</description>
@@ -6510,7 +6307,7 @@ If DIR is "1", this address is destination address of data transfer.</descriptio
               <name>I2CnIFLAG</name>
               <description>I2Cn Interrupt Flag bit. This bit is cleared when write any values in the I2CnST register.</description>
               <bitRange>[04:04]</bitRange>
-              <access>read-write</access>
+              <access>read-only</access>
             </field>
             <field>
               <name>ACKnEN</name>
@@ -6547,6 +6344,12 @@ If DIR is "1", this address is destination address of data transfer.</descriptio
           <resetValue>0x00000000</resetValue>
           <resetMask>0x000000ff</resetMask>
           <fields>
+            <field>
+              <name>SLT</name>
+              <description>This bit shows SCL low timeout status</description>
+              <bitRange>[31:31]</bitRange>
+              <access>read-write</access>
+            </field>
             <field>
               <name>GCALLn</name>
               <description>This bit has different meaning depending on whether I2C is master or slave. When I2C is a master, this bit represents whether it received AACK (address ACK) from slave.</description>
@@ -6707,6 +6510,93 @@ If DIR is "1", this address is destination address of data transfer.</descriptio
               <name>SCLH</name>
               <description>This register defines the high period of SCL in master mode. The base clock is PCLK and the period is calculated by the formula: tPCLK X (4 X I2CnSCHR + 2) where tPCLK is the period of PCLK.</description>
               <bitRange>[11:00]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>SLTCR</name>
+          <description>I2Cn SCL low timeout control register</description>
+          <addressOffset>0x20</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <resetMask>0x000000ff</resetMask>
+          <fields>
+            <field>
+              <name>SLTINT</name>
+              <description>Selection of SCL low timeout interrupt</description>
+              <bitRange>[01:01]</bitRange>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SLTEN</name>
+              <description>SCL low timeout enable bit</description>
+              <bitRange>[00:00]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>SLTPDR</name>
+          <description>I2Cn SCL low timeout period data register</description>
+          <addressOffset>0x24</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00FFFFFF</resetValue>
+          <resetMask>0x00000000</resetMask>
+          <fields>
+            <field>
+              <name>PDATA</name>
+              <description>This register defines the period of SCL low timeout</description>
+              <bitRange>[23:00]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <register>
+          <name>MBCR</name>
+          <description>I2Cn manual bus control register</description>
+          <addressOffset>0x28</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x0000030C</resetValue>
+          <resetMask>0x00000CF3</resetMask>
+          <fields>
+            <field>
+              <name>SCLS</name>
+              <description>SCL status bit</description>
+              <bitRange>[09:09]</bitRange>
+              <access>read-only</access>
+            </field>
+            <field>
+              <name>SDAS</name>
+              <description>SDA status bit</description>
+              <bitRange>[08:08]</bitRange>
+              <access>read-only</access>
+            </field>
+            <field>
+              <name>SCLO</name>
+              <description>SCL output data bit</description>
+              <bitRange>[03:03]</bitRange>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SDAO</name>
+              <description>SDA output data bit</description>
+              <bitRange>[02:02]</bitRange>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SCLMCE</name>
+              <description>SCL manual control enable bit</description>
+              <bitRange>[01:01]</bitRange>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SDAMCE</name>
+              <description>SDA manual control enable bit</description>
+              <bitRange>[00:00]</bitRange>
               <access>read-write</access>
             </field>
           </fields>
@@ -8590,6 +8480,13 @@ If DIR is "1", this address is destination address of data transfer.</descriptio
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
+              <name>LED_FLAG</name>
+              <description>LED Start Signal Sensing</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
               <name>TS_IF</name>
               <description>Touch Sensor Interrupt Flag</description>
               <bitOffset>2</bitOffset>
@@ -8612,8 +8509,29 @@ If DIR is "1", this address is destination address of data transfer.</descriptio
           <addressOffset>0x124</addressOffset>
           <size>32</size>
           <access>read-write</access>
-          <resetValue>0x00000010</resetValue>
+          <resetValue>0x00000020</resetValue>
           <fields>
+            <field>
+              <name>SADJ_OPT</name>
+              <description>Channel-Adjust path enable</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LED_FLAG_EN</name>
+              <description>LED FLAG enable bit</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>PORT_OPT</name>
+              <description>Determine the channel and timing to apply PORT[1:0]</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
             <field>
               <name>SC_GAIN</name>
               <description>Gain Calibration Capacitor Enable
@@ -9093,6 +9011,52 @@ If DIR is "1", this address is destination address of data transfer.</descriptio
             </field>
           </fields>
         </register>
+        <!--SHLD_CON : Touch Sensor Shield Channel Control Register-->
+        <register>
+          <name>SHLD_CON</name>
+          <description>Touch Sensor Shield Channel Control Register</description>
+          <addressOffset>0x160</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>MESH</name>
+              <description>Shield mesh enable bit</description>
+              <bitOffset>31</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>MESH_ADD</name>
+              <description>Additional shield mesh enable bit</description>
+              <bitOffset>30</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>MODE</name>
+              <description>Shield mode bit</description>
+              <bitOffset>29</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SHLD_EN</name>
+              <description>Shield enable bit</description>
+              <bitOffset>24</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SHLD_Chx</name>
+              <description>Shield channel selection bits</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>24</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
       </registers>
     </peripheral>
     <!--LED-->
@@ -9106,7 +9070,7 @@ If DIR is "1", this address is destination address of data transfer.</descriptio
       <access>read-write</access>
       <addressBlock>
         <offset>0</offset>
-        <size>0x044</size>
+        <size>0x100</size>
         <usage>registers</usage>
       </addressBlock>
       <interrupt>
@@ -9124,17 +9088,94 @@ If DIR is "1", this address is destination address of data transfer.</descriptio
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
-              <name>COMOE2</name>
-              <description>Port Mode Select2</description>
+              <name>COMOE12</name>
+              <description>COMn Output Enable</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMOE11</name>
+              <description>COMn Output Enable</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMOE10</name>
+              <description>COMn Output Enable</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMOE9</name>
+              <description>COMn Output Enable</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMOE8</name>
+              <description>COMn Output Enable</description>
               <bitOffset>8</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMOE7</name>
+              <description>COMn Output Enable</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMOE6</name>
+              <description>COMn Output Enable</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMOE5</name>
+              <description>COMn Output Enable</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMOE4</name>
+              <description>COMn Output Enable</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMOE3</name>
+              <description>COMn Output Enable</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMOE2</name>
+              <description>COMn Output Enable</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>COMOE1</name>
-              <description>Port Mode Select1</description>
+              <description>COMn Output Enable</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMOE0</name>
+              <description>COMn Output Enable</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -9149,17 +9190,115 @@ If DIR is "1", this address is destination address of data transfer.</descriptio
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
-              <name>SEGOE2</name>
-              <description>Port Mode Select2</description>
+              <name>SEGOE15</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE14</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE13</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE12</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE11</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE10</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE9</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE8</name>
+              <description>SEGn Output Enable</description>
               <bitOffset>8</bitOffset>
-              <bitWidth>3</bitWidth>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE7</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE6</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE5</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE4</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE3</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE2</name>
+              <description>SEGn Output Enable</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SEGOE1</name>
-              <description>Port Mode Select1</description>
+              <description>SEGn Output Enable</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEGOE0</name>
+              <description>SEGn Output Enable</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>8</bitWidth>
+              <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -9179,7 +9318,7 @@ If DIR is "1", this address is destination address of data transfer.</descriptio
 LED Clock = fCLK/(PRESD + 1)
 (fCLK is a selected input clock)</description>
               <bitOffset>0</bitOffset>
-              <bitWidth>16</bitWidth>
+              <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -9187,120 +9326,99 @@ LED Clock = fCLK/(PRESD + 1)
         <!--COMER : COM EnableRegister-->
         <register>
           <name>COMER</name>
-          <description>COM EnableRegister</description>
+          <description>COM Enable Register</description>
           <addressOffset>0x0c</addressOffset>
           <size>32</size>
           <access>read-write</access>
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
-              <name>COM15</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
-              <bitOffset>15</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>COM14</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
-              <bitOffset>14</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>COM13</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
-              <bitOffset>13</bitOffset>
-              <bitWidth>1</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>COM12</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER12</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>12</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COM11</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER11</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>11</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COM10</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER10</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>10</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COM9</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER9</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>9</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COM8</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER8</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>8</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COM7</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER7</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>7</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COM6</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER6</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>6</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COM5</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER5</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>5</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COM4</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER4</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>4</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COM3</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER3</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>3</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COM2</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER2</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>2</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COM1</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER1</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>1</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COM0</name>
-              <description>Only Selected COM of COM0 and COM26 is active.</description>
+              <name>COMER0</name>
+              <description>Select COM or SEG Enable.</description>
               <bitOffset>0</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -9327,190 +9445,153 @@ COM Width= LED CLK/(COMPWID + 1)
             </field>
           </fields>
         </register>
-        <!--DIMM1 : COM Dimming Control Register1-->
+        <!--COMDIMM0 : LED COM Dimming 0 Register-->
         <register>
-          <name>DIMM1</name>
-          <description>COM Dimming Control Register1</description>
+          <name>COMDIMM0</name>
+          <description>LED COM Dimming 0 Register</description>
           <addressOffset>0x14</addressOffset>
           <size>32</size>
           <access>read-write</access>
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
-              <name>COMDIMM3</name>
-              <description>COM3 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM3</description>
+              <name>COM3DIMM</name>
+              <description>Dimming Control for COM3</description>
               <bitOffset>24</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COMDIMM2</name>
-              <description>COM2 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime- LEDCLK*COMDIMM2</description>
+              <name>COM2DIMM</name>
+              <description>Dimming Control for COM2</description>
               <bitOffset>16</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COMDIMM1</name>
-              <description>COM1 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM1</description>
+              <name>COM1DIMM</name>
+              <description>Dimming Control for COM1</description>
               <bitOffset>8</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COMDIMM0</name>
-              <description>COM0 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM0</description>
+              <name>COM0DIMM</name>
+              <description>Dimming Control for COM0</description>
               <bitOffset>0</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
         </register>
-        <!--DIMM2 : COM Dimming Control Register2-->
+        <!--COMDIMM1 : LED COM Dimming 1 Register-->
         <register>
-          <name>DIMM2</name>
-          <description>COM Dimming Control Register2</description>
+          <name>COMDIMM1</name>
+          <description>LED COM Dimming 1 Register</description>
           <addressOffset>0x18</addressOffset>
           <size>32</size>
           <access>read-write</access>
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
-              <name>COMDIMM7</name>
-              <description>COM7 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM7</description>
+              <name>COM7DIMM</name>
+              <description>Dimming Control for COM7</description>
               <bitOffset>24</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COMDIMM6</name>
-              <description>COM6 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM6</description>
+              <name>COM6DIMM</name>
+              <description>Dimming Control for COM6</description>
               <bitOffset>16</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COMDIMM5</name>
-              <description>COM5 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM5</description>
+              <name>COM5DIMM</name>
+              <description>Dimming Control for COM5</description>
               <bitOffset>8</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COMDIMM4</name>
-              <description>COM4 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM4</description>
+              <name>COM4DIMM</name>
+              <description>Dimming Control for COM4</description>
               <bitOffset>0</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
         </register>
-        <!--DIMM3 : COM Dimming Control Register3-->
+        <!--COMDIMM2 : LED COM Dimming 2 Register-->
         <register>
-          <name>DIMM3</name>
-          <description>COM Dimming Control Register3</description>
+          <name>COMDIMM2</name>
+          <description>LED COM Dimming 2 Register</description>
           <addressOffset>0x1c</addressOffset>
           <size>32</size>
           <access>read-write</access>
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
-              <name>COMDIMM11</name>
-              <description>COM11 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM11</description>
+              <name>COM11DIMM</name>
+              <description>Dimming Control for COM11</description>
               <bitOffset>24</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COMDIMM10</name>
-              <description>COM10 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM10</description>
+              <name>COM10DIMM</name>
+              <description>Dimming Control for COM10</description>
               <bitOffset>16</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COMDIMM9</name>
-              <description>COM9 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM9</description>
+              <name>COM9DIMM</name>
+              <description>Dimming Control for COM9</description>
               <bitOffset>8</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>COMDIMM8</name>
-              <description>COM8 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM8</description>
+              <name>COM8DIMM</name>
+              <description>Dimming Control for COM8</description>
               <bitOffset>0</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
         </register>
-        <!--DIMM4 : COM Dimming Control Register4-->
+        <!--COMDIMM3 : LED COM Dimming 3 Register-->
         <register>
-          <name>DIMM4</name>
-          <description>COM Dimming Control Register4</description>
+          <name>COMDIMM3</name>
+          <description>LED COM Dimming 3 Register</description>
           <addressOffset>0x20</addressOffset>
           <size>32</size>
           <access>read-write</access>
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
-              <name>COMDIMM15</name>
-              <description>COM15 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM15</description>
-              <bitOffset>24</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>COMDIMM14</name>
-              <description>COM14 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM14</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>COMDIMM13</name>
-              <description>COM13 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM13</description>
-              <bitOffset>8</bitOffset>
-              <bitWidth>8</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>COMDIMM12</name>
-              <description>COM12 Dimming Control bits
-Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM12</description>
+              <name>COM12DIMM</name>
+              <description>Dimming Control for COM12</description>
               <bitOffset>0</bitOffset>
               <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
         </register>
-        <!--STPD : LED STOP Duration Register-->
+        <!--LEDPD : LED Period Data Register-->
         <register>
-          <name>STPD</name>
-          <description>LED STOP Duration Register</description>
-          <addressOffset>0x30</addressOffset>
+          <name>LEDPD</name>
+          <description>LED Period Data Register</description>
+          <addressOffset>0x24</addressOffset>
           <size>32</size>
           <access>read-write</access>
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
-              <name>LEDSTPD</name>
-              <description>LED STOP Duration Register (since LED Start)</description>
+              <name>LEDPD</name>
+              <description>LED Period. Determine interval between COMx on-time</description>
               <bitOffset>0</bitOffset>
               <bitWidth>20</bitWidth>
               <access>read-write</access>
@@ -9521,20 +9602,20 @@ Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM12</description>
         <register>
           <name>SR</name>
           <description>LED STATUS Register</description>
-          <addressOffset>0x34</addressOffset>
+          <addressOffset>0x28</addressOffset>
           <size>32</size>
           <access>read-write</access>
           <resetValue>0x00000001</resetValue>
           <fields>
             <field>
               <name>MATCHF</name>
-              <description>Flag to occur when LEDSTPD reg match with counter</description>
+              <description>LED stop counter match flag</description>
               <bitOffset>3</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>LED_INT</name>
+              <name>LED_INTF</name>
               <description>LED Interrupt Flag(in LED_INTE=1)</description>
               <bitOffset>2</bitOffset>
               <bitWidth>1</bitWidth>
@@ -9556,59 +9637,1930 @@ Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM12</description>
             </field>
           </fields>
         </register>
-        <!--CON2 : LED Control Register2-->
+        <!--LEDCON3 : LED Control 3 Register-->
         <register>
-          <name>CON2</name>
-          <description>LED Control Register2</description>
-          <addressOffset>0x38</addressOffset>
+          <name>LEDCON3</name>
+          <description>LED Control 3 Register</description>
+          <addressOffset>0x2c</addressOffset>
           <size>32</size>
           <access>read-write</access>
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
+              <name>SET_TIME</name>
+              <description>SEG GND start timing</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>4</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>CLR_TIME</name>
+              <description>SET GND clear timing</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>4</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--LEDCON2 : LED Control 2 Register-->
+        <register>
+          <name>LEDCON2</name>
+          <description>LED Control 2 Register</description>
+          <addressOffset>0x30</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SRTEN</name>
+              <description>SEG-GND function enable</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
               <name>OVERLAP</name>
-              <description>OVERLAP TIME Select</description>
+              <description>Overlap time configuration</description>
               <bitOffset>3</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OVERTS</name>
-              <description>OVERLAP TIME Select</description>
+              <description>Overlap time selection</description>
               <bitOffset>0</bitOffset>
               <bitWidth>3</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
         </register>
-        <!--CON1 : LED Control Register1-->
+        <!--LEDCON1 : LED Control 1 Register-->
         <register>
-          <name>CON1</name>
-          <description>LED Control Register1</description>
-          <addressOffset>0x3c</addressOffset>
+          <name>LEDCON1</name>
+          <description>LED Control 1 Register</description>
+          <addressOffset>0x34</addressOffset>
           <size>32</size>
           <access>read-write</access>
           <resetValue>0x00000000</resetValue>
           <fields>
             <field>
-              <name>MD</name>
-              <description>Mode Select</description>
+              <name>LED_MODE</name>
+              <description>LED operation mode selection</description>
               <bitOffset>2</bitOffset>
-              <bitWidth>2</bitWidth>
+              <bitWidth>3</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>LEDEN</name>
+              <name>LED_EN</name>
               <description>LED Enable</description>
               <bitOffset>1</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
-              <name>LEDST</name>
-              <description>LED START, STOP Operation</description>
+              <name>LED_ST</name>
+              <description>LED Start or Stop under LEDEN=1 condition</description>
               <bitOffset>0</bitOffset>
               <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM0 : LED Display RAM0-->
+        <register>
+          <name>DISPRAM0</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x40</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM1 : LED Display RAM1-->
+        <register>
+          <name>DISPRAM1</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x44</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM2 : LED Display RAM2-->
+        <register>
+          <name>DISPRAM2</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x48</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM3 : LED Display RAM3-->
+        <register>
+          <name>DISPRAM3</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x4c</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM4 : LED Display RAM4-->
+        <register>
+          <name>DISPRAM4</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x50</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM5 : LED Display RAM5-->
+        <register>
+          <name>DISPRAM5</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x54</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM6 : LED Display RAM6-->
+        <register>
+          <name>DISPRAM6</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x58</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM7 : LED Display RAM7-->
+        <register>
+          <name>DISPRAM7</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x5c</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM8 : LED Display RAM8-->
+        <register>
+          <name>DISPRAM8</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x60</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM9 : LED Display RAM9-->
+        <register>
+          <name>DISPRAM9</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x64</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM10 : LED Display RAM10-->
+        <register>
+          <name>DISPRAM10</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x68</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM11 : LED Display RAM11-->
+        <register>
+          <name>DISPRAM11</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x6c</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DISPRAM12 : LED Display RAM12-->
+        <register>
+          <name>DISPRAM12</name>
+          <description>LED Display RAM</description>
+          <addressOffset>0x70</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SEG15_COMx</name>
+              <description>SEG15-COMx LED lane display value</description>
+              <bitOffset>15</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG14_COMx</name>
+              <description>SEG14-COMx LED lane display value</description>
+              <bitOffset>14</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG13_COMx</name>
+              <description>SEG13-COMx LED lane display value</description>
+              <bitOffset>13</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG12_COMx</name>
+              <description>SEG12-COMx LED lane display value</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG11_COMx</name>
+              <description>SEG11-COMx LED lane display value</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG10_COMx</name>
+              <description>SEG10-COMx LED lane display value</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG9_COMx</name>
+              <description>SEG9-COMx LED lane display value</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG8_COMx</name>
+              <description>SEG8-COMx LED lane display value</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG7_COMx</name>
+              <description>SEG7-COMx LED lane display value</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG6_COMx</name>
+              <description>SEG6-COMx LED lane display value</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG5_COMx</name>
+              <description>SEG5-COMx LED lane display value</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG4_COMx</name>
+              <description>SEG4-COMx LED lane display value</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG3_COMx</name>
+              <description>SEG3-COMx LED lane display value</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG2_COMx</name>
+              <description>SEG2-COMx LED lane display value</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG1_COMx</name>
+              <description>SEG1-COMx LED lane display value</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>SEG0_COMx</name>
+              <description>SEG0-COMx LED lane display value</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--LOGDE : LED Log-scale Dimming Enable Register-->
+        <register>
+          <name>LOGDE</name>
+          <description>LED Log-scale Dimming Enable Register</description>
+          <addressOffset>0x80</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>LOGD_EN12</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LOGD_EN11</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LOGD_EN10</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LOGD_EN9</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LOGD_EN8</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LOGD_EN7</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LOGD_EN6</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LOGD_EN5</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LOGD_EN4</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LOGD_EN3</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LOGD_EN2</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LOGD_EN1</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>LOGD_EN0</name>
+              <description>Enable COMx log-scale dimming</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--COMDRIVE : LED COM additional driving Register-->
+        <register>
+          <name>COMDRIVE</name>
+          <description>LED COM additional driving Register</description>
+          <addressOffset>0x84</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>COMDRIVE12</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>12</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMDRIVE11</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>11</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMDRIVE10</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>10</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMDRIVE9</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMDRIVE8</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMDRIVE7</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMDRIVE6</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMDRIVE5</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMDRIVE4</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMDRIVE3</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>3</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMDRIVE2</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>2</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMDRIVE1</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>COMDRIVE0</name>
+              <description>Enable COMx additional NMOS driver</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--PORTCTRL : LED Port Control Register-->
+        <register>
+          <name>PORTCTRL</name>
+          <description>LED Port Control Register</description>
+          <addressOffset>0x88</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>PORTx_DIR</name>
+              <description>Select LED Port Status(0: Floating / 1: Output)</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>16</bitWidth>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--DLYCNT : LED run signal Delay Count Register-->
+        <register>
+          <name>DLYCNT</name>
+          <description>LED run signal Delay Count Register</description>
+          <addressOffset>0x8c</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>DLYCNT</name>
+              <description>Delay time before LED_PORTCTRL</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>8</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -9953,6 +11905,53 @@ Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM12</description>
                   <value>15</value>
                 </enumeratedValue>
               </enumeratedValues>
+            </field>
+          </fields>
+        </register>
+        <!--BSSR : LCD source selection register-->
+        <register>
+          <name>BSSR</name>
+          <description>LCD source selection register</description>
+          <addressOffset>0x08</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>LCDDR</name>
+              <description>LCD external bias path enable bit</description>
+              <bitOffset>9</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>PVLC_OPEN</name>
+              <description>LCD external bias path enable bit</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>VLC_PE3</name>
+              <description>External bias VLC3 enable bit</description>
+              <bitOffset>7</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>VLC_PE2</name>
+              <description>External bias VLC2 enable bit</description>
+              <bitOffset>6</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>VLC_PE1</name>
+              <description>External bias VLC1 enable bit</description>
+              <bitOffset>5</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>VLC_PE0</name>
+              <description>External bias VLC0 enable bit</description>
+              <bitOffset>4</bitOffset>
+              <bitWidth>1</bitWidth>
             </field>
           </fields>
         </register>
@@ -10404,6 +12403,107 @@ Dimmed COM Width = COM Width - Overlaptime - LEDCLK*COMDIMM12</description>
               <description>CRC Initial Data bit</description>
               <bitRange>[15:00]</bitRange>
               <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+      </registers>
+    </peripheral>
+    <!--TempSensor-->
+    <peripheral>
+      <name>TSENSE</name>
+      <version>1.0</version>
+      <description>Temp Sensor</description>
+      <groupName>TSENSE</groupName>
+      <baseAddress>0x40006300</baseAddress>
+      <size>32</size>
+      <access>read-write</access>
+      <addressBlock>
+        <offset>0</offset>
+        <size>0x020</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <interrupt>
+        <name>TSENSE</name>
+        <value>27</value>
+      </interrupt>
+      <registers>
+        <!--CR : Temp sensor control register-->
+        <register>
+          <name>CR</name>
+          <description>Temp sensor control register</description>
+          <addressOffset>0x00</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>INTEN</name>
+              <description>Temp sensor interrupt enable</description>
+              <bitRange>[08:08]</bitRange>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>START</name>
+              <description>Start reference clock counting</description>
+              <bitRange>[00:00]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--RCCNT : Temp sensor reference clock counter register-->
+        <register>
+          <name>RCCNT</name>
+          <description>Temp sensor reference clock counter register</description>
+          <addressOffset>0x04</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>RCCV</name>
+              <description>Reference clock counter initial value</description>
+              <bitRange>[31:00]</bitRange>
+              <access>read-write</access>
+            </field>
+          </fields>
+        </register>
+        <!--SCCNT : Temp sensor sensing clock counter register-->
+        <register>
+          <name>SCCNT</name>
+          <description>Temp sensor sensing clock counter register</description>
+          <addressOffset>0x08</addressOffset>
+          <size>32</size>
+          <access>read-only</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>SCCV</name>
+              <description>Temp sensor counter value</description>
+              <bitRange>[31:00]</bitRange>
+              <access>read-only</access>
+            </field>
+          </fields>
+        </register>
+        <!--SR : Temp sensor status register-->
+        <register>
+          <name>SR</name>
+          <description>Temp sensor status register</description>
+          <addressOffset>0x0c</addressOffset>
+          <size>32</size>
+          <access>read-write</access>
+          <resetValue>0x00000000</resetValue>
+          <fields>
+            <field>
+              <name>DONE</name>
+              <description>Reference clock counting is running</description>
+              <bitRange>[08:08]</bitRange>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>BUSY</name>
+              <description>The status of the reference clock counter</description>
+              <bitRange>[00:00]</bitRange>
+              <access>read-only</access>
             </field>
           </fields>
         </register>

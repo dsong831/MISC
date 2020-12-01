@@ -5,7 +5,7 @@
  * @brief    CMSIS Cortex-M0PLUS Peripheral Access Layer Header File for
  *           A31T21x from ABOV Semiconductor Co., Ltd..
  *
- * @version  V0.91
+ * @version  V0.92
 
  *
 
@@ -34,8 +34,8 @@
   * @{
   */
 
-#ifndef A31T21X_H
-#define A31T21X_H
+#ifndef __A31T21X_H
+#define __A31T21X_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -77,6 +77,7 @@ typedef enum {
   TIMER13_IRQn                  =  21,              /*!<  21  TIMER13                                                          */
   SPI20_IRQn                    =  25,              /*!<  25  SPI20                                                            */
   SPI21_IRQn                    =  26,              /*!<  26  SPI21                                                            */
+  TSENSE_IRQn                   =  27,              /*!<  27  TSENSE                                                           */
   LED_IRQn                      =  28,              /*!<  28  LED                                                              */
   TOUCH_IRQn                    =  29,              /*!<  29  TOUCH                                                            */
   CRC_IRQn                      =  31               /*!<  31  CRC                                                              */
@@ -253,10 +254,7 @@ typedef struct {                                    /*!< (@ 0x40001000) PA Struc
   */
 
 typedef struct {                                    /*!< (@ 0x40001F00) PCU Structure                                          */
-  __IO uint32_t  KEYR;                              /*!< (@ 0x40001F00) Port LED KEY Register                                  */
-  __IO uint32_t  SEGR;                              /*!< (@ 0x40001F04) Port LED SEG Register                                  */
-  __IO uint32_t  COMR;                              /*!< (@ 0x40001F08) Port LED COM Register                                  */
-  __I  uint32_t  RESERVED[57];
+  __I  uint32_t  RESERVED[60];
   __IO uint32_t  PORTEN;                            /*!< (@ 0x40001FF0) Port Access Enable 0x15->0x51                          */
 } PCU_Type;
 
@@ -476,6 +474,9 @@ typedef struct {                                    /*!< (@ 0x40004800) I2C0 Str
   __IO uint32_t  SDHR;                              /*!< (@ 0x40004814) I2Cn SDA Hold Time Register                            */
   __IO uint32_t  SCLR;                              /*!< (@ 0x40004818) I2Cn SCL Low Period Register                           */
   __IO uint32_t  SCHR;                              /*!< (@ 0x4000481C) I2Cn SCL High Period Register                          */
+  __IO uint32_t  SLTCR;                             /*!< (@ 0x40004820) I2Cn SCL low timeout control register                  */
+  __IO uint32_t  SLTPDR;                            /*!< (@ 0x40004824) I2Cn SCL low timeout period data register              */
+  __IO uint32_t  MBCR;                              /*!< (@ 0x40004828) I2Cn manual bus control register                       */
 } I2C_Type;
 
 
@@ -639,6 +640,8 @@ typedef struct {                                    /*!< (@ 0x40003600) TOUCH St
   __IO uint32_t  TLED;                              /*!< (@ 0x40003748) LED stable time Register                               */
   __IO uint32_t  VHS;                               /*!< (@ 0x4000374C) Touch Sensor High Sense Voltage Register               */
   __IO uint32_t  VREF;                              /*!< (@ 0x40003750) Touch Sensor COMP Reference Voltage Register           */
+  __I  uint32_t  RESERVED[3];
+  __IO uint32_t  SHLD_CON;                          /*!< (@ 0x40003760) Touch Sensor Shield Channel Control Register           */
 } TOUCH_Type;
 
 
@@ -683,6 +686,8 @@ typedef struct {                                    /*!< (@ 0x40006000) LED Stru
   __I  uint32_t  RESERVED1[3];
   __IO uint32_t  LOGDE;                             /*!< (@ 0x40006080) LED Log-scale Dimming Enable Register                  */
   __IO uint32_t  COMDRIVE;                          /*!< (@ 0x40006084) LED COM additional driving Register                    */
+  __IO uint32_t  PORTCTRL;                          /*!< (@ 0x40006088) LED Port Control Register                              */
+  __IO uint32_t  DLYCNT;                            /*!< (@ 0x4000608C) LED run signal Delay Count Register                    */
 } LED_Type;
 
 
@@ -702,7 +707,8 @@ typedef struct {                                    /*!< (@ 0x40005000) LCD Stru
                                                           66kohm RLCD and on 1/4 bias with 50kohm RLCD 2. The "LCD driver
                                                           contrast control" is disabled during the LCDABC bit (LCD automatic
                                                           bias) is set to "1b".                                                */
-  __I  uint32_t  RESERVED[2];
+  __IO uint32_t  BSSR;                              /*!< (@ 0x40005008) LCD source selection register                          */
+  __I  uint32_t  RESERVED;
   __IO uint8_t   DR0;                               /*!< (@ 0x40005010) LCD Display Data Register 0                            */
   __IO uint8_t   DR1;                               /*!< (@ 0x40005011) LCD Display Data Register 1                            */
   __IO uint8_t   DR2;                               /*!< (@ 0x40005012) LCD Display Data Register 2                            */
@@ -761,6 +767,23 @@ typedef struct {                                    /*!< (@ 0x40000300) CRC Stru
   __I  uint32_t  RLT;                               /*!< (@ 0x40000308) CRC/Checksum Result Data Register                      */
   __IO uint32_t  INIT;                              /*!< (@ 0x4000030C) CRC/Checksum Initial Data Register                     */
 } CRC_Type;
+
+
+/* ================================================================================ */
+/* ================                     TSENSE                     ================ */
+/* ================================================================================ */
+
+
+/**
+  * @brief Temp Sensor (TSENSE)
+  */
+
+typedef struct {                                    /*!< (@ 0x40006300) TSENSE Structure                                       */
+  __IO uint32_t  CR;                                /*!< (@ 0x40006300) Temp sensor control register                           */
+  __IO uint32_t  RCCNT;                             /*!< (@ 0x40006304) Temp sensor reference clock counter register           */
+  __I  uint32_t  SCCNT;                             /*!< (@ 0x40006308) Temp sensor sensing clock counter register             */
+  __IO uint32_t  SR;                                /*!< (@ 0x4000630C) Temp sensor status register                            */
+} TSENSE_Type;
 
 
 /* --------------------  End of section using anonymous unions  ------------------- */
@@ -822,6 +845,7 @@ typedef struct {                                    /*!< (@ 0x40000300) CRC Stru
 #define LED_BASE                        0x40006000UL
 #define LCD_BASE                        0x40005000UL
 #define CRC_BASE                        0x40000300UL
+#define TSENSE_BASE                     0x40006300UL
 
 
 /* ================================================================================ */
@@ -865,6 +889,7 @@ typedef struct {                                    /*!< (@ 0x40000300) CRC Stru
 #define LED                             ((LED_Type                *) LED_BASE)
 #define LCD                             ((LCD_Type                *) LCD_BASE)
 #define CRC                             ((CRC_Type                *) CRC_BASE)
+#define TSENSE                          ((TSENSE_Type             *) TSENSE_BASE)
 
 
 /** @} */ /* End of group Device_Peripheral_Registers */
@@ -876,5 +901,5 @@ typedef struct {                                    /*!< (@ 0x40000300) CRC Stru
 #endif
 
 
-#endif  /* A31T21x_H */
+#endif  /* __A31T21x_H */
 
