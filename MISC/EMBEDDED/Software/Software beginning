@@ -1,0 +1,53 @@
+# Software beginning
+
+* Byte Ordering in words
+ - 프로세서가 메모리에 저장하는 방식
+ - Little Endian : 상위bit(MSB)를 상위 주소에 저장
+ - Big Endian : 상위bit(MSB)를 하위 주소에 저장
+ - ARM의 경우에는 Little Endian을 지원(default)
+(사람이 읽기 편하게 메모리에 저장되면 big endian, 사람이 읽기 불편하면 little endian)
+
+* ADS(ARM Developer's Suit)
+ - ARM에서 동작하는 Software를 만들어 주는 Compiler
+ - 그 외에 GNU 계열의 ARM GCC Compiler도 있음
+
+* 컴파일 시퀀스
+Source file(*.c) ----------> Assembly(*.s) ----------> small ELF(*.o) ----------> big ELF(*.bin)
+            compiler(armcc, tcc)        assembler(armasm)          armlink(armlink)
+              preprocessor(*.i)  
+
+* Library(Archive file[아카이브 파일]) : 미리 컴파일을 해 놓은 Object file의 모음
+오프젝트(*.o) ----------> 라이브러리(*.lib)
+         archive(armar)
+ - example : armar -r *.lib *.o
+		 
+* 컴파일 옵션
+-E : 전처리기 옵션 (tcc -E *.c --> *.i)
+-S : 어셈블리 옵션 (tcc -S *.c --> *.s)
+-D : Define 옵션 (tcc -DTHREE=3 --> #define THREE 3)
+-U : Undefine 옵션 (tcc -UTHREE=3 --> #define THREE 3 삭제)
+-W : Warning Level 옵션 (tcc -Wall --> 모든 Warning을 compile 결과로 받아 봄)
+-I : include path 옵션 (tcc -I../../Drivers/include --> Drivers/include 폴더 참조)
+-J : default include path 옵션 (-JC:/Keil_V5/ARM/include --> default 폴더 변경)
+-c : tcc에게 linker로 하여금 link를 하지 말라는 의미 (tcc -c *.c --> *.o)
+  └ 최종 실행 가능한 file이 아니라, link가 가능한 object file로 만듬
+
+* 변수의 Scope
+auto 변수 유형 -> LOCAL 변수
+ - 함수 안쪽에 정의, auto 생략 가능
+ - 생존기간은 함수 내부
+extern 변수 유형 -> GLOBAL 변수
+ - 함수 바깥쪽에 정의, extern 생략 가능
+ - 생존기간은 *.c 파일 내부
+ - 다른 file에서도 불러다 쓸 수 있음 (다른 file의 쓰고자 하는 위치에 extern 붙여서 선언만 해주면 됨)
+static 변수 유형 -> 값은 항상 유지 하되, 그 변수를 선언한 함수 또는 파일에서만 사용하도록 국한 시키는 속성
+ - Local static : 생존기간은 함수 내부지만, 함수가 끝나더라도 값은 유지
+ - Global static : 생존기간은 *.c 파일 내부지만, 다른 file에서 extern 선언하여 가져갈 수 없음
+  (C++의 protect와 같은 원리)
+
+* Symbol : 전역변수의 이름이나 함수의 이름
+ - Linker가 알아볼 수 있는 기본 단위, Link를 한 후에는 자신만의 주소를 갖게 되는 특별한 단위
+ - Linker만의 pointer
+ - GLOBAL 이라고 보면 됨 (Symbol이 아닌 건 LOCAL)
+ 
+ 
