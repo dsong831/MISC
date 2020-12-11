@@ -50,4 +50,23 @@ static 변수 유형 -> 값은 항상 유지 하되, 그 변수를 선언한 함
  - Linker만의 pointer
  - GLOBAL 이라고 보면 됨 (Symbol이 아닌 건 LOCAL)
  
- 
+* Bootloader
+ - NOR MCP에서는 RW와 ZI를, NAND MCP에서는 RO, RW, ZI를 RAM에 Loading(복사) 해 주는 일을 담당
+ - Linker가 만들어주는 Symbol을 이용해서 RO, RW, ZI 영역을 자유자재로 접근 가능 (/w Scatter loading)
+ - Scatter loading은 Load view(Load)와 Execution view(Image)를 제공
+  ㆍ Load view는 Flash(ROM)에 어떻게 담겨 있을 것이냐, Execution view는 RAM에 어떻게 복사되어서 실행 될 것이냐는 걸 의미
+ - Bootloader가 해야 할 일 정리
+  1) Power-on 또는 reset switch에 의하여 시스템 reset
+  2) Reset handler로 pc 이동.
+  3) Interrupt를 Disable하여 Interrupt가 걸리지 않게 막는다.
+  4) Watch-dog Timer를 initialization
+  5) System clock을 initialization and setting
+  6) Memory controller initialization
+  7) 각 mode들, 즉, SVC, USR, ABT, IRQ, FIQ, Undef 등의 stack을 initialization
+  8) NAND MCP의 경우에 RO/ RW를 Execution 주소에 맞게 제대로 복사하는 일을 해야 하고,
+     NOR MCP의 경우에는 RW를 Execution 주소에 맞게 제대로 복사해 줘야 하고요.
+  8) ZI 영역을 0으로 채우는 일을 해주고요.
+  9) main함수 등의 C함수로 branch하여 System을 Start합니다.
+
+* Stack
+ - 일단 줄 수 있는 만큼 크게 Stack을 준 후에 Test를 해서, 적당한 Stack 크기를 잡게 되는데요, 보통 여러가지 시나리오를 통해서 Stack이 최대 얼마나 사용되는지 확인하고요, 그 최대 크기를 전체 Stack의 크기의 3/4으로 잡아서 System을 만들면 십중 팔구, Stack이 모자라서 Overflow가 나거나 하는 일은 없답니다.
