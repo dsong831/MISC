@@ -68,5 +68,20 @@ static 변수 유형 -> 값은 항상 유지 하되, 그 변수를 선언한 함
   8) ZI 영역을 0으로 채우는 일을 해주고요.
   9) main함수 등의 C함수로 branch하여 System을 Start합니다.
 
-* Stack
- - 일단 줄 수 있는 만큼 크게 Stack을 준 후에 Test를 해서, 적당한 Stack 크기를 잡게 되는데요, 보통 여러가지 시나리오를 통해서 Stack이 최대 얼마나 사용되는지 확인하고요, 그 최대 크기를 전체 Stack의 크기의 3/4으로 잡아서 System을 만들면 십중 팔구, Stack이 모자라서 Overflow가 나거나 하는 일은 없답니다.
+* Stack 사이즈 결정
+ - 일단 줄 수 있는 만큼 크게 Stack을 준 후에 여러가지 시나리오를 통해서 Stack이 최대 얼마나 사용되는지 확인
+ - 그 최대 크기를 전체 Stack의 크기의 3/4으로 잡아서 System을 만듬
+
+* Scheduler
+ - Task(Thread+Process) : 스케쥴링의 기본 단위
+  ㆍ Thread : 공유자원 사용(ex.전역변수 공유)
+  ㆍ Process : 공간 분리(ex.지역변수 사용)
+ - Task는 자기 자신만의 Stack과 TCB(Task Control Block)을 가짐
+ - TCB(Task Control Block) : Task를 꾸미는 구조 데이터로, 사용자가 이 데이터를 직접 이용하지는 않음
+
+* Atomic 영역
+ - 인터럽트가 걸리면 안되는 코드 영역
+ - Critical Section 이라고도 불림
+  ㆍ Semaphore와 Mutex를 이용하여 공유자원 접근
+  ㆍ Semaphore : 철도의 신호기 역할, 세마포어를 획득한 Task만 공유자원 접근 가능
+  ㆍ Mutex(Mutual Exclusive) : Binary semaphore라고도 하며, 단 하나의 세마포어만 획득할 수 있는 형태
