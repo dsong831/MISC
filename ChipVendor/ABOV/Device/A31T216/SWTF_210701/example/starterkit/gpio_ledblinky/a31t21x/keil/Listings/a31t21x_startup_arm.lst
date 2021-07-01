@@ -1,0 +1,1109 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;/******************************************************
+                       ***********************
+    2 00000000         ; * @file:    a31t21x_startup_arm.s
+    3 00000000         ; * @purpose: CMSIS Cortex-M0+ Core Device Startup File 
+                       
+    4 00000000         ; *           for the ARM 'Microcontroller Prototyping S
+                       ystem' 
+    5 00000000         ; * @version: V1.0.1
+    6 00000000         ; * @date:    19. Aug. 2009
+    7 00000000         ; *------- <<< Use Configuration Wizard in Context Menu 
+                       >>> ------------------
+    8 00000000         ; *
+    9 00000000         ; * Copyright (C) 2008-2009 ARM Limited. All rights rese
+                       rved.
+   10 00000000         ; * ARM Limited (ARM) is supplying this software for use
+                        with Cortex-M0 
+   11 00000000         ; * processor based microcontrollers.  This file can be 
+                       freely distributed 
+   12 00000000         ; * within development tools that are supporting such AR
+                       M based processors. 
+   13 00000000         ; *
+   14 00000000         ; * THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, W
+                       HETHER EXPRESS, IMPLIED
+   15 00000000         ; * OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED
+                        WARRANTIES OF
+   16 00000000         ; * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+                        APPLY TO THIS SOFTWARE.
+   17 00000000         ; * ARM SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR S
+                       PECIAL, INCIDENTAL, OR
+   18 00000000         ; * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+   19 00000000         ; *
+   20 00000000         ; ******************************************************
+                       ***********************/
+   21 00000000         
+   22 00000000         
+   23 00000000         ; <h> Stack Configuration
+   24 00000000         ;   <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
+   25 00000000         ; </h>
+   26 00000000         
+   27 00000000 00000400 
+                       Stack_Size
+                               EQU              0x00000400
+   28 00000000         
+   29 00000000                 AREA             STACK, NOINIT, READWRITE, ALIGN
+=3
+   30 00000000         Stack_Mem
+                               SPACE            Stack_Size
+   31 00000400         __initial_sp
+   32 00000400         
+   33 00000400         
+   34 00000400         ; <h> Heap Configuration
+   35 00000400         ;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
+   36 00000400         ; </h>
+   37 00000400         
+   38 00000400 00000400 
+                       Heap_Size
+                               EQU              0x00000400
+   39 00000400         
+   40 00000400                 AREA             HEAP, NOINIT, READWRITE, ALIGN=
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+3
+   41 00000000         __heap_base
+   42 00000000         Heap_Mem
+                               SPACE            Heap_Size
+   43 00000400         __heap_limit
+   44 00000400         
+   45 00000400         
+   46 00000400                 PRESERVE8
+   47 00000400                 THUMB
+   48 00000400         
+   49 00000400         
+   50 00000400         ; Vector Table Mapped to Address 0 at Reset
+   51 00000400         
+   52 00000400                 AREA             RESET, DATA, READONLY
+   53 00000000                 EXPORT           __Vectors
+   54 00000000                 EXPORT           __Vectors_End
+   55 00000000                 EXPORT           __Vectors_Size
+   56 00000000         
+   57 00000000 00000000 
+                       __Vectors
+                               DCD              __initial_sp ; Top of Stack
+   58 00000004 00000000        DCD              Reset_Handler ; Reset Handler
+   59 00000008 00000000        DCD              NMI_Handler ; NMI Handler
+   60 0000000C 00000000        DCD              HardFault_Handler ; Hard Fault 
+                                                            Handler
+   61 00000010 00000000        DCD              0           ; Reserved
+   62 00000014 00000000        DCD              0           ; Reserved
+   63 00000018 00000000        DCD              0           ; Reserved
+   64 0000001C 00000000        DCD              0           ; Reserved
+   65 00000020 00000000        DCD              0           ; Reserved
+   66 00000024 00000000        DCD              0           ; Reserved
+   67 00000028 00000000        DCD              0           ; Reserved
+   68 0000002C 00000000        DCD              SVC_Handler ; SVCall Handler
+   69 00000030 00000000        DCD              0           ; Reserved
+   70 00000034 00000000        DCD              0           ; Reserved
+   71 00000038 00000000        DCD              PendSV_Handler ; PendSV Handler
+                                                            
+   72 0000003C 00000000        DCD              SysTick_Handler 
+                                                            ; SysTick Handler
+   73 00000040         
+   74 00000040         ; External Interrupts
+   75 00000040 00000000        DCD              LVI_IRQHandler ; IRQ0
+   76 00000044 00000000        DCD              SYSCLKFAIL_IRQHandler ; IRQ1
+   77 00000048 00000000        DCD              WDT_IRQHandler ; IRQ2
+   78 0000004C 00000000        DCD              GPIOAB_IRQHandler ; IRQ3
+   79 00000050 00000000        DCD              GPIOCD_IRQHandler ; IRQ4
+   80 00000054 00000000        DCD              GPIOE_IRQHandler ; IRQ5
+   81 00000058 00000000        DCD              GPIOF_IRQHandler ; IRQ6
+   82 0000005C 00000000        DCD              TIMER10_IRQHandler ; IRQ7
+   83 00000060 00000000        DCD              TIMER11_IRQHandler ; IRQ8
+   84 00000064 00000000        DCD              TIMER12_IRQHandler ; IRQ9
+   85 00000068 00000000        DCD              I2C0_IRQHandler ; IRQ10
+   86 0000006C 00000000        DCD              USART10_IRQHandler ; IRQ11
+   87 00000070 00000000        DCD              WT_IRQHandler ; IRQ12
+   88 00000074 00000000        DCD              TIMER30_IRQHandler ; IRQ13
+   89 00000078 00000000        DCD              I2C1_IRQHandler ; IRQ14
+   90 0000007C 00000000        DCD              TIMER20_IRQHandler ; IRQ15
+   91 00000080 00000000        DCD              TIMER21_IRQHandler ; IRQ16
+   92 00000084 00000000        DCD              USART11_IRQHandler ; IRQ17
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+   93 00000088 00000000        DCD              ADC_IRQHandler ; IRQ18
+   94 0000008C 00000000        DCD              UART0_IRQHandler ; IRQ19
+   95 00000090 00000000        DCD              UART1_IRQHandler ; IRQ20
+   96 00000094 00000000        DCD              TIMER13_IRQHandler ; IRQ21
+   97 00000098 00000000        DCD              NULL_IRQHandler ; IRQ22
+   98 0000009C 00000000        DCD              NULL_IRQHandler ; IRQ23
+   99 000000A0 00000000        DCD              NULL_IRQHandler ; IRQ24
+  100 000000A4 00000000        DCD              SPI20_IRQHandler ; IRQ25
+  101 000000A8 00000000        DCD              SPI21_IRQHandler ; IRQ26
+  102 000000AC 00000000        DCD              TSENSE_IRQHandler ; IRQ27
+  103 000000B0 00000000        DCD              LED_IRQHandler ; IRQ28
+  104 000000B4 00000000        DCD              TOUCH_IRQHandler ; IRQ29
+  105 000000B8 00000000        DCD              NULL_IRQHandler ; IRQ30
+  106 000000BC 00000000        DCD              CRC_IRQHandler ; IRQ31
+  107 000000C0         
+  108 000000C0         __Vectors_End
+  109 000000C0 000000C0 
+                       __Vectors_Size
+                               EQU              __Vectors_End - __Vectors
+  110 000000C0         
+  111 000000C0                 AREA             |.text|, CODE, READONLY
+  112 00000000         
+  113 00000000         
+  114 00000000         ; Reset Handler
+  115 00000000         
+  116 00000000         Reset_Handler
+                               PROC
+  117 00000000                 EXPORT           Reset_Handler     [WEAK]
+  118 00000000                 IMPORT           SystemInit
+  119 00000000                 IMPORT           __main
+  120 00000000 4814            LDR              R0, =SystemInit
+  121 00000002 4780            BLX              R0
+  122 00000004 4814            LDR              R0, =__main
+  123 00000006 4700            BX               R0
+  124 00000008                 ENDP
+  125 00000008         
+  126 00000008         
+  127 00000008         ; Dummy Exception Handlers (infinite loops which can be 
+                       modified)
+  128 00000008         
+  129 00000008         NMI_Handler
+                               PROC
+  130 00000008                 EXPORT           NMI_Handler      [WEAK]
+  131 00000008 E7FE            B                .
+  132 0000000A                 ENDP
+  133 0000000A         
+  135 0000000A         HardFault_HandlerC
+                               PROC
+  136 0000000A                 EXPORT           HardFault_HandlerC    [WEAK]
+  137 0000000A E7FE            B                .
+  138 0000000C                 ENDP
+  139 0000000C         
+  141 0000000C         HardFault_Handler
+                               PROC
+  142 0000000C 2004            MOVS             R0, #4
+  143 0000000E 4671            MOV              R1, LR
+  144 00000010 4208            TST              R0, R1
+  145 00000012 D003            BEQ              __HardFault_MSP
+  146 00000014 F3EF 8009       MRS              R0, PSP
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+  147 00000018 4910            LDR              R1,=HardFault_HandlerC
+  148 0000001A 4708            BX               R1
+  149 0000001C         __HardFault_MSP
+  150 0000001C F3EF 8008       MRS              R0, MSP
+  151 00000020 490E            LDR              R1,=HardFault_HandlerC
+  152 00000022 4708            BX               R1
+  153 00000024                 ENDP
+  154 00000024         
+  155 00000024         SVC_Handler
+                               PROC
+  156 00000024                 EXPORT           SVC_Handler      [WEAK]
+  157 00000024 E7FE            B                .
+  158 00000026                 ENDP
+  159 00000026         
+  160 00000026         PendSV_Handler
+                               PROC
+  161 00000026                 EXPORT           PendSV_Handler     [WEAK]
+  162 00000026 E7FE            B                .
+  163 00000028                 ENDP
+  164 00000028         
+  165 00000028         SysTick_Handler
+                               PROC
+  166 00000028                 EXPORT           SysTick_Handler     [WEAK]
+  167 00000028 E7FE            B                .
+  168 0000002A                 ENDP
+  169 0000002A         
+  171 0000002A         WDT_IRQHandlerC
+                               PROC
+  172 0000002A                 EXPORT           WDT_IRQHandlerC           [WEAK
+]
+  173 0000002A E7FE            B                .
+  174 0000002C                 ENDP
+  176 0000002C         WDT_IRQHandler
+                               PROC
+  177 0000002C 2004            MOVS             R0, #4
+  178 0000002E 4671            MOV              R1, LR
+  179 00000030 4208            TST              R0, R1
+  180 00000032 D003            BEQ              __WDT_MSP
+  181 00000034 F3EF 8009       MRS              R0, PSP
+  182 00000038 4909            LDR              R1,=WDT_IRQHandlerC
+  183 0000003A 4708            BX               R1
+  184 0000003C         __WDT_MSP
+  185 0000003C F3EF 8008       MRS              R0, MSP
+  186 00000040 4907            LDR              R1,=WDT_IRQHandlerC
+  187 00000042 4708            BX               R1
+  188 00000044                 ENDP
+  189 00000044         
+  190 00000044         NULL_IRQHandler
+                               PROC
+  191 00000044                 EXPORT           LVI_IRQHandler     [WEAK]
+  192 00000044                 EXPORT           SYSCLKFAIL_IRQHandler   [WEAK]
+  193 00000044                 EXPORT           WDT_IRQHandler     [WEAK]
+  194 00000044                 EXPORT           GPIOAB_IRQHandler    [WEAK]
+  195 00000044                 EXPORT           GPIOCD_IRQHandler    [WEAK]
+  196 00000044                 EXPORT           GPIOE_IRQHandler    [WEAK]
+  197 00000044                 EXPORT           GPIOF_IRQHandler    [WEAK]
+  198 00000044                 EXPORT           TIMER10_IRQHandler    [WEAK]
+  199 00000044                 EXPORT           TIMER11_IRQHandler    [WEAK]
+  200 00000044                 EXPORT           TIMER12_IRQHandler    [WEAK]
+
+
+
+ARM Macro Assembler    Page 5 
+
+
+  201 00000044                 EXPORT           I2C0_IRQHandler     [WEAK]
+  202 00000044                 EXPORT           USART10_IRQHandler    [WEAK]
+  203 00000044                 EXPORT           WT_IRQHandler     [WEAK]
+  204 00000044                 EXPORT           TIMER30_IRQHandler    [WEAK]
+  205 00000044                 EXPORT           I2C1_IRQHandler     [WEAK]
+  206 00000044                 EXPORT           TIMER20_IRQHandler    [WEAK]
+  207 00000044                 EXPORT           TIMER21_IRQHandler    [WEAK]
+  208 00000044                 EXPORT           USART11_IRQHandler    [WEAK]
+  209 00000044                 EXPORT           ADC_IRQHandler     [WEAK]
+  210 00000044                 EXPORT           UART0_IRQHandler    [WEAK]
+  211 00000044                 EXPORT           UART1_IRQHandler    [WEAK]
+  212 00000044                 EXPORT           TIMER13_IRQHandler    [WEAK]
+  213 00000044                 EXPORT           SPI20_IRQHandler    [WEAK]
+  214 00000044                 EXPORT           SPI21_IRQHandler    [WEAK]
+  215 00000044                 EXPORT           TSENSE_IRQHandler    [WEAK]
+  216 00000044                 EXPORT           LED_IRQHandler     [WEAK]
+  217 00000044                 EXPORT           TOUCH_IRQHandler    [WEAK]
+  218 00000044                 EXPORT           CRC_IRQHandler     [WEAK]
+  219 00000044         
+  220 00000044         
+  221 00000044         LVI_IRQHandler                       ; IRQ0
+  222 00000044         SYSCLKFAIL_IRQHandler                ; IRQ1
+  223 00000044         ;WDT_IRQHandler     ; IRQ2
+  224 00000044         GPIOAB_IRQHandler                    ; IRQ3
+  225 00000044         GPIOCD_IRQHandler                    ; IRQ4
+  226 00000044         GPIOE_IRQHandler                     ; IRQ5
+  227 00000044         GPIOF_IRQHandler                     ; IRQ6
+  228 00000044         TIMER10_IRQHandler                   ; IRQ7
+  229 00000044         TIMER11_IRQHandler                   ; IRQ8
+  230 00000044         TIMER12_IRQHandler                   ; IRQ9
+  231 00000044         I2C0_IRQHandler                      ; IRQ10
+  232 00000044         USART10_IRQHandler                   ; IRQ11
+  233 00000044         WT_IRQHandler                        ; IRQ12
+  234 00000044         TIMER30_IRQHandler                   ; IRQ13
+  235 00000044         I2C1_IRQHandler                      ; IRQ14
+  236 00000044         TIMER20_IRQHandler                   ; IRQ15
+  237 00000044         TIMER21_IRQHandler                   ; IRQ16
+  238 00000044         USART11_IRQHandler                   ; IRQ17
+  239 00000044         ADC_IRQHandler                       ; IRQ18
+  240 00000044         UART0_IRQHandler                     ; IRQ19
+  241 00000044         UART1_IRQHandler                     ; IRQ20
+  242 00000044         TIMER13_IRQHandler                   ; IRQ21
+  243 00000044         
+  244 00000044         SPI20_IRQHandler                     ; IRQ25
+  245 00000044         SPI21_IRQHandler                     ; IRQ26
+  246 00000044         TSENSE_IRQHandler                    ; IRQ27
+  247 00000044         LED_IRQHandler                       ; IRQ28
+  248 00000044         TOUCH_IRQHandler                     ; IRQ29
+  249 00000044         
+  250 00000044         CRC_IRQHandler                       ; IRQ31
+  251 00000044         
+  252 00000044 E7FE            B                .
+  253 00000046                 ENDP
+  254 00000046         
+  255 00000046 00 00           ALIGN
+  256 00000048         
+  257 00000048         
+  258 00000048         ; User Initial Stack & Heap
+  259 00000048         
+
+
+
+ARM Macro Assembler    Page 6 
+
+
+  260 00000048                 IF               :DEF:__MICROLIB
+  267 00000048         
+  268 00000048                 IMPORT           __use_two_region_memory
+  269 00000048                 EXPORT           __user_initial_stackheap
+  270 00000048         
+  271 00000048         __user_initial_stackheap
+  272 00000048 4806            LDR              R0, =  Heap_Mem
+  273 0000004A 4907            LDR              R1, =(Stack_Mem + Stack_Size)
+  274 0000004C 4A07            LDR              R2, = (Heap_Mem +  Heap_Size)
+  275 0000004E 4B08            LDR              R3, = Stack_Mem
+  276 00000050 4770            BX               LR
+  277 00000052         
+  278 00000052 00 00           ALIGN
+  279 00000054         
+  280 00000054                 ENDIF
+  281 00000054         
+  282 00000054         
+  283 00000054                 END
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000400 
+              00000400 
+              00000000 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M0+ --apcs=inter
+work --depend=.\objects\a31t21x_startup_arm.d -o.\objects\a31t21x_startup_arm.o
+ -I.\RTE\_A31T21X -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\I
+nclude -IC:\Keil_v5\ARM\CMSIS\Include --predefine="__UVISION_VERSION SETA 525" 
+--predefine="ARMCM0P SETA 1" --list=.\listings\a31t21x_startup_arm.lst ..\..\..
+\..\..\core\device\a31t21x\source\a31t21x_startup_arm.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+STACK 00000000
+
+Symbol: STACK
+   Definitions
+      At line 29 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+   Uses
+      None
+Comment: STACK unused
+Stack_Mem 00000000
+
+Symbol: Stack_Mem
+   Definitions
+      At line 30 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+   Uses
+      At line 273 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+      At line 275 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+__initial_sp 00000400
+
+Symbol: __initial_sp
+   Definitions
+      At line 31 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+   Uses
+      At line 57 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+Comment: __initial_sp used once
+3 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+HEAP 00000000
+
+Symbol: HEAP
+   Definitions
+      At line 40 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+   Uses
+      None
+Comment: HEAP unused
+Heap_Mem 00000000
+
+Symbol: Heap_Mem
+   Definitions
+      At line 42 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+   Uses
+      At line 272 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+      At line 274 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+__heap_base 00000000
+
+Symbol: __heap_base
+   Definitions
+      At line 41 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+   Uses
+      None
+Comment: __heap_base unused
+__heap_limit 00000400
+
+Symbol: __heap_limit
+   Definitions
+      At line 43 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+   Uses
+      None
+Comment: __heap_limit unused
+4 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+RESET 00000000
+
+Symbol: RESET
+   Definitions
+      At line 52 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+   Uses
+      None
+Comment: RESET unused
+__Vectors 00000000
+
+Symbol: __Vectors
+   Definitions
+      At line 57 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+   Uses
+      At line 53 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 109 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+__Vectors_End 000000C0
+
+Symbol: __Vectors_End
+   Definitions
+      At line 108 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 54 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 109 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+3 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 111 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      None
+Comment: .text unused
+ADC_IRQHandler 00000044
+
+Symbol: ADC_IRQHandler
+   Definitions
+      At line 239 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 93 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 209 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+CRC_IRQHandler 00000044
+
+Symbol: CRC_IRQHandler
+   Definitions
+      At line 250 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 106 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+      At line 218 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+GPIOAB_IRQHandler 00000044
+
+Symbol: GPIOAB_IRQHandler
+   Definitions
+      At line 224 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 78 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 194 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+GPIOCD_IRQHandler 00000044
+
+Symbol: GPIOCD_IRQHandler
+   Definitions
+      At line 225 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 79 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 195 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+GPIOE_IRQHandler 00000044
+
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+Symbol: GPIOE_IRQHandler
+   Definitions
+      At line 226 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 80 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 196 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+GPIOF_IRQHandler 00000044
+
+Symbol: GPIOF_IRQHandler
+   Definitions
+      At line 227 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 81 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 197 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+HardFault_Handler 0000000C
+
+Symbol: HardFault_Handler
+   Definitions
+      At line 141 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 60 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+Comment: HardFault_Handler used once
+HardFault_HandlerC 0000000A
+
+Symbol: HardFault_HandlerC
+   Definitions
+      At line 135 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 136 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+      At line 147 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+      At line 151 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+I2C0_IRQHandler 00000044
+
+Symbol: I2C0_IRQHandler
+   Definitions
+      At line 231 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 85 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 201 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+I2C1_IRQHandler 00000044
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+Relocatable symbols
+
+
+Symbol: I2C1_IRQHandler
+   Definitions
+      At line 235 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 89 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 205 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+LED_IRQHandler 00000044
+
+Symbol: LED_IRQHandler
+   Definitions
+      At line 247 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 103 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+      At line 216 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+LVI_IRQHandler 00000044
+
+Symbol: LVI_IRQHandler
+   Definitions
+      At line 221 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 75 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 191 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+NMI_Handler 00000008
+
+Symbol: NMI_Handler
+   Definitions
+      At line 129 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 59 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 130 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+NULL_IRQHandler 00000044
+
+Symbol: NULL_IRQHandler
+   Definitions
+      At line 190 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 97 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 98 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 99 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+
+
+
+ARM Macro Assembler    Page 4 Alphabetic symbol ordering
+Relocatable symbols
+
+tup_arm.s
+      At line 105 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+PendSV_Handler 00000026
+
+Symbol: PendSV_Handler
+   Definitions
+      At line 160 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 71 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 161 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+Reset_Handler 00000000
+
+Symbol: Reset_Handler
+   Definitions
+      At line 116 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 58 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 117 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+SPI20_IRQHandler 00000044
+
+Symbol: SPI20_IRQHandler
+   Definitions
+      At line 244 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 100 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+      At line 213 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+SPI21_IRQHandler 00000044
+
+Symbol: SPI21_IRQHandler
+   Definitions
+      At line 245 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 101 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+      At line 214 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+SVC_Handler 00000024
+
+Symbol: SVC_Handler
+   Definitions
+      At line 155 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+
+
+
+ARM Macro Assembler    Page 5 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 68 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 156 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+SYSCLKFAIL_IRQHandler 00000044
+
+Symbol: SYSCLKFAIL_IRQHandler
+   Definitions
+      At line 222 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 76 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 192 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+SysTick_Handler 00000028
+
+Symbol: SysTick_Handler
+   Definitions
+      At line 165 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 72 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 166 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+TIMER10_IRQHandler 00000044
+
+Symbol: TIMER10_IRQHandler
+   Definitions
+      At line 228 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 82 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 198 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+TIMER11_IRQHandler 00000044
+
+Symbol: TIMER11_IRQHandler
+   Definitions
+      At line 229 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 83 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 199 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+TIMER12_IRQHandler 00000044
+
+Symbol: TIMER12_IRQHandler
+   Definitions
+      At line 230 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+
+
+ARM Macro Assembler    Page 6 Alphabetic symbol ordering
+Relocatable symbols
+
+   Uses
+      At line 84 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 200 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+TIMER13_IRQHandler 00000044
+
+Symbol: TIMER13_IRQHandler
+   Definitions
+      At line 242 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 96 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 212 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+TIMER20_IRQHandler 00000044
+
+Symbol: TIMER20_IRQHandler
+   Definitions
+      At line 236 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 90 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 206 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+TIMER21_IRQHandler 00000044
+
+Symbol: TIMER21_IRQHandler
+   Definitions
+      At line 237 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 91 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 207 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+TIMER30_IRQHandler 00000044
+
+Symbol: TIMER30_IRQHandler
+   Definitions
+      At line 234 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 88 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 204 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+TOUCH_IRQHandler 00000044
+
+Symbol: TOUCH_IRQHandler
+   Definitions
+      At line 248 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+
+
+
+ARM Macro Assembler    Page 7 Alphabetic symbol ordering
+Relocatable symbols
+
+rtup_arm.s
+   Uses
+      At line 104 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+      At line 217 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+TSENSE_IRQHandler 00000044
+
+Symbol: TSENSE_IRQHandler
+   Definitions
+      At line 246 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 102 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+      At line 215 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+UART0_IRQHandler 00000044
+
+Symbol: UART0_IRQHandler
+   Definitions
+      At line 240 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 94 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 210 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+UART1_IRQHandler 00000044
+
+Symbol: UART1_IRQHandler
+   Definitions
+      At line 241 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 95 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 211 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+USART10_IRQHandler 00000044
+
+Symbol: USART10_IRQHandler
+   Definitions
+      At line 232 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 86 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 202 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+USART11_IRQHandler 00000044
+
+Symbol: USART11_IRQHandler
+   Definitions
+
+
+
+ARM Macro Assembler    Page 8 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 238 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 92 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 208 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+WDT_IRQHandler 0000002C
+
+Symbol: WDT_IRQHandler
+   Definitions
+      At line 176 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 77 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 193 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+WDT_IRQHandlerC 0000002A
+
+Symbol: WDT_IRQHandlerC
+   Definitions
+      At line 171 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 172 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+      At line 182 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+      At line 186 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+WT_IRQHandler 00000044
+
+Symbol: WT_IRQHandler
+   Definitions
+      At line 233 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 87 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 203 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+__HardFault_MSP 0000001C
+
+Symbol: __HardFault_MSP
+   Definitions
+      At line 149 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 145 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+Comment: __HardFault_MSP used once
+__WDT_MSP 0000003C
+
+Symbol: __WDT_MSP
+
+
+
+ARM Macro Assembler    Page 9 Alphabetic symbol ordering
+Relocatable symbols
+
+   Definitions
+      At line 184 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 180 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+Comment: __WDT_MSP used once
+__user_initial_stackheap 00000048
+
+Symbol: __user_initial_stackheap
+   Definitions
+      At line 271 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 269 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+Comment: __user_initial_stackheap used once
+41 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+Heap_Size 00000400
+
+Symbol: Heap_Size
+   Definitions
+      At line 38 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+   Uses
+      At line 42 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 274 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+Stack_Size 00000400
+
+Symbol: Stack_Size
+   Definitions
+      At line 27 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+   Uses
+      At line 30 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+      At line 273 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+
+__Vectors_Size 000000C0
+
+Symbol: __Vectors_Size
+   Definitions
+      At line 109 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 55 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_star
+tup_arm.s
+Comment: __Vectors_Size used once
+3 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+SystemInit 00000000
+
+Symbol: SystemInit
+   Definitions
+      At line 118 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 120 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+Comment: SystemInit used once
+__main 00000000
+
+Symbol: __main
+   Definitions
+      At line 119 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      At line 122 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+Comment: __main used once
+__use_two_region_memory 00000000
+
+Symbol: __use_two_region_memory
+   Definitions
+      At line 268 in file ..\..\..\..\..\core\device\a31t21x\source\a31t21x_sta
+rtup_arm.s
+   Uses
+      None
+Comment: __use_two_region_memory unused
+3 symbols
+393 symbols in table

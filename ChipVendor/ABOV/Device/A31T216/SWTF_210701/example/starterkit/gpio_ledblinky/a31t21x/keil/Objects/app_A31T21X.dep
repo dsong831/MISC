@@ -1,0 +1,154 @@
+Dependencies for Project 'app', Target 'A31T21X': (DO NOT MODIFY !)
+F (..\..\main.c)(0x609A0609)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+I (..\..\a31t21x\main.h)(0x609A05C5)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x.h)(0x60891D2C)
+I (..\..\..\..\..\core\cmsis\include\core_cm0plus.h)(0x606AC7B7)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\..\core\cmsis\include\cmsis_version.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_compiler.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_armcc.h)(0x606AC7B7)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x_system.h)(0x607D39DC)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_gpio.h)(0x607D4B2A)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_driver_common.h)(0x608BA4E1)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EBF1C)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x599EBF1C)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_scu.h)(0x607D4DD6)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_uart.h)(0x607E9561)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_dma.h)(0x607E8FDC)
+I (..\..\..\..\..\library\debug\include\debug_log.h)(0x606AC7B7)
+F (..\a31t21x_system_setting.c)(0x607FE136)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\a31t21x_system_setting.o --omf_browse .\objects\a31t21x_system_setting.crf --depend .\objects\a31t21x_system_setting.d)
+I (..\main.h)(0x609A05C5)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x.h)(0x60891D2C)
+I (..\..\..\..\..\core\cmsis\include\core_cm0plus.h)(0x606AC7B7)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\..\core\cmsis\include\cmsis_version.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_compiler.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_armcc.h)(0x606AC7B7)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x_system.h)(0x607D39DC)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_gpio.h)(0x607D4B2A)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_driver_common.h)(0x608BA4E1)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EBF1C)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x599EBF1C)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_scu.h)(0x607D4DD6)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_uart.h)(0x607E9561)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_dma.h)(0x607E8FDC)
+F (..\a31t21x_debug.c)(0x607E7DB4)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\a31t21x_debug.o --omf_browse .\objects\a31t21x_debug.crf --depend .\objects\a31t21x_debug.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x599EBF1C)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x_system.h)(0x607D39DC)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_gpio.h)(0x607D4B2A)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x.h)(0x60891D2C)
+I (..\..\..\..\..\core\cmsis\include\core_cm0plus.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_version.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_compiler.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_armcc.h)(0x606AC7B7)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_driver_common.h)(0x608BA4E1)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EBF1C)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x599EBF1C)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_uart.h)(0x607E9561)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_dma.h)(0x607E8FDC)
+I (..\..\..\..\..\library\debug\include\debug_serial.h)(0x606AC7B7)
+I (..\..\..\..\..\library\debug\include\debug_log.h)(0x606AC7B7)
+I (..\main.h)(0x609A05C5)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_scu.h)(0x607D4DD6)
+F (..\a31t21x_port_init.c)(0x607E993B)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\a31t21x_port_init.o --omf_browse .\objects\a31t21x_port_init.crf --depend .\objects\a31t21x_port_init.d)
+I (..\main.h)(0x609A05C5)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x.h)(0x60891D2C)
+I (..\..\..\..\..\core\cmsis\include\core_cm0plus.h)(0x606AC7B7)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\..\core\cmsis\include\cmsis_version.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_compiler.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_armcc.h)(0x606AC7B7)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x_system.h)(0x607D39DC)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_gpio.h)(0x607D4B2A)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_driver_common.h)(0x608BA4E1)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EBF1C)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x599EBF1C)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_scu.h)(0x607D4DD6)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_uart.h)(0x607E9561)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_dma.h)(0x607E8FDC)
+F (..\..\..\..\..\core\device\a31t21x\source\a31t21x_system.c)(0x60792715)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\a31t21x_system.o --omf_browse .\objects\a31t21x_system.crf --depend .\objects\a31t21x_system.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x.h)(0x60891D2C)
+I (..\..\..\..\..\core\cmsis\include\core_cm0plus.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_version.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_compiler.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_armcc.h)(0x606AC7B7)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x_system.h)(0x607D39DC)
+F (..\..\..\..\..\core\device\a31t21x\source\a31t21x_startup_arm.s)(0x607D470D)(--cpu Cortex-M0+ --li -g --apcs=interwork -I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 525" --pd "ARMCM0P SETA 1"--list .\listings\a31t21x_startup_arm.lst --xref -o .\objects\a31t21x_startup_arm.o --depend .\objects\a31t21x_startup_arm.d)
+F (..\..\..\..\..\driver\a31t21x\source\a31t21x_dma.c)(0x607F8FC7)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\a31t21x_dma.o --omf_browse .\objects\a31t21x_dma.crf --depend .\objects\a31t21x_dma.d)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_dma.h)(0x607E8FDC)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x.h)(0x60891D2C)
+I (..\..\..\..\..\core\cmsis\include\core_cm0plus.h)(0x606AC7B7)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\..\core\cmsis\include\cmsis_version.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_compiler.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_armcc.h)(0x606AC7B7)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x_system.h)(0x607D39DC)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_driver_common.h)(0x608BA4E1)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EBF1C)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x599EBF1C)
+F (..\..\..\..\..\driver\a31t21x\source\a31t21x_gpio.c)(0x607E249C)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\a31t21x_gpio.o --omf_browse .\objects\a31t21x_gpio.crf --depend .\objects\a31t21x_gpio.d)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_gpio.h)(0x607D4B2A)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x.h)(0x60891D2C)
+I (..\..\..\..\..\core\cmsis\include\core_cm0plus.h)(0x606AC7B7)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\..\core\cmsis\include\cmsis_version.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_compiler.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_armcc.h)(0x606AC7B7)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x_system.h)(0x607D39DC)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_driver_common.h)(0x608BA4E1)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EBF1C)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x599EBF1C)
+F (..\..\..\..\..\driver\a31t21x\source\a31t21x_scu.c)(0x6080D382)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\a31t21x_scu.o --omf_browse .\objects\a31t21x_scu.crf --depend .\objects\a31t21x_scu.d)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_scu.h)(0x607D4DD6)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x.h)(0x60891D2C)
+I (..\..\..\..\..\core\cmsis\include\core_cm0plus.h)(0x606AC7B7)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\..\core\cmsis\include\cmsis_version.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_compiler.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_armcc.h)(0x606AC7B7)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x_system.h)(0x607D39DC)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_driver_common.h)(0x608BA4E1)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EBF1C)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x599EBF1C)
+F (..\..\..\..\..\driver\a31t21x\source\a31t21x_uart.c)(0x6093551B)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\a31t21x_uart.o --omf_browse .\objects\a31t21x_uart.crf --depend .\objects\a31t21x_uart.d)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_uart.h)(0x607E9561)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x.h)(0x60891D2C)
+I (..\..\..\..\..\core\cmsis\include\core_cm0plus.h)(0x606AC7B7)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\..\core\cmsis\include\cmsis_version.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_compiler.h)(0x606AC7B7)
+I (..\..\..\..\..\core\cmsis\include\cmsis_armcc.h)(0x606AC7B7)
+I (..\..\..\..\..\core\device\a31t21x\include\a31t21x_system.h)(0x607D39DC)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_driver_common.h)(0x608BA4E1)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EBF1C)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x599EBF1C)
+I (..\..\..\..\..\driver\a31t21x\include\a31t21x_dma.h)(0x607E8FDC)
+F (..\..\..\..\..\library\debug\source\debug_cmd.c)(0x606AC7B7)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\debug_cmd.o --omf_browse .\objects\debug_cmd.crf --depend .\objects\debug_cmd.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EBF1C)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x599EBF1C)
+I (..\..\..\..\..\library\debug\include\debug_log.h)(0x606AC7B7)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\..\library\debug\include\debug_cmd.h)(0x606AC7B7)
+I (..\..\..\..\..\library\debug\include\debug_serial.h)(0x606AC7B7)
+F (..\..\..\..\..\library\debug\source\debug_hardfault.c)(0x606AC7B7)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\debug_hardfault.o --omf_browse .\objects\debug_hardfault.crf --depend .\objects\debug_hardfault.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+F (..\..\..\..\..\library\debug\source\debug_log.c)(0x606AC7B7)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\debug_log.o --omf_browse .\objects\debug_log.crf --depend .\objects\debug_log.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EBF1C)
+I (C:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x599EBF1A)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\..\library\debug\include\debug_log.h)(0x606AC7B7)
+F (..\..\..\..\..\library\debug\source\debug_retarget.c)(0x606AC7B7)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\debug_retarget.o --omf_browse .\objects\debug_retarget.crf --depend .\objects\debug_retarget.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EBF1C)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\..\library\debug\include\debug_serial.h)(0x606AC7B7)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x599EBF1C)
+F (..\..\..\..\..\library\debug\source\debug_serial.c)(0x607E7FA5)(--c99 -c --cpu Cortex-M0+ --li -g -O0 --apcs=interwork -I ..\..\a31t21x -I ..\..\..\..\..\core\cmsis\include -I ..\..\..\..\..\core\device\a31t21x\include -I ..\..\..\..\..\driver\a31t21x\include -I ..\..\..\..\..\library\debug\include-I.\RTE\_A31T21X-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM0plus\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="525" -DARMCM0P -DCONFIG_DEBUG="1" -DCONFIG_DEBUG_SERIAL_FIFO="1"-o .\objects\debug_serial.o --omf_browse .\objects\debug_serial.crf --depend .\objects\debug_serial.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EBF1C)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x599EBF1C)
+I (..\..\..\..\..\core\cmsis\include\cmsis_compiler.h)(0x606AC7B7)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\..\core\cmsis\include\cmsis_armcc.h)(0x606AC7B7)
+I (..\..\..\..\..\library\debug\include\debug_serial.h)(0x606AC7B7)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x599EBF1C)

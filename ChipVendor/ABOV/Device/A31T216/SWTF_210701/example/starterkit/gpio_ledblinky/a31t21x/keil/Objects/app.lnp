@@ -1,0 +1,20 @@
+--cpu Cortex-M0+
+".\objects\main.o"
+".\objects\a31t21x_system_setting.o"
+".\objects\a31t21x_debug.o"
+".\objects\a31t21x_port_init.o"
+".\objects\a31t21x_system.o"
+".\objects\a31t21x_startup_arm.o"
+".\objects\a31t21x_dma.o"
+".\objects\a31t21x_gpio.o"
+".\objects\a31t21x_scu.o"
+".\objects\a31t21x_uart.o"
+".\objects\debug_cmd.o"
+".\objects\debug_hardfault.o"
+".\objects\debug_log.o"
+".\objects\debug_retarget.o"
+".\objects\debug_serial.o"
+--strict --scatter ".\Objects\app.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Listings\app.map" -o .\Objects\app.axf
