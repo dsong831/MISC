@@ -1,0 +1,29 @@
+# UL60730
+* 배경 : 가전제품 품질과 안전을 규정한 국제 표준 규격
+ 1) 국제 품질ㆍ안전 인증 심사(CE/UL) 항목에 SW 기능안전 포함
+ 2) 국제전기기술위원회(IEC)가 IEC60730 표준에 SW 기능안전 포함
+* 목적 : 사용되는 제품을 정기적으로 자기 진단을 실시하여 고장ㆍ불편을 조기에 발견하여 소비자를 위험으로부터 지키는 것을 목적으로 하고 있음
+* 내용 :
+ 1) MCU 업체는 안전 동작을 위한 Self-test S/W Library를 만들어 인증 업체에 인증 진행
+ 2) MCU 업체는 UL60730 인증서를 인터넷에 공개하고 있으며, Self-test S/W Library를 고객에게 제공
+* 규격 Class 구분
+ Class A - 사람에게 해를 끼치지 않는 기능의 제품 (ex. 온도조절기, 조명제어기, 타이머)
+ Class B - 제어 장치의 안전하지 않은 작동을 방지하기 위한 제어 기능 (ex. 세탁기, 식기세척기, 냉장고, 조리기기 등)
+ Class C - 특별한 위험을 방지하도록 설계되어 있는 제어 기능 (ex. 밀폐형 기기의 열 차단)
+ ☞ 가전제품의 대부분이 적용되는 Class B가 인증 대상
+* Class B에서 요구되는 항목
+ 1) CPU registers / CPU program counter
+ 2) Interrupt handling and execution
+ 3) Clock
+ 4) Invariable memory / Variable memory
+ 5) External communications / Timing
+ 6) I/O periphery
+ 7) ADC and DAC / Analog multiplexor
+* Note
+ 1) CPU Test : Disable Interrupt
+ 2) Interrupt Test : To use SysTick(1ms) and GeneralTimer(100us). (Interrupt frequency count : ±30% Pass)
+ 3) ROM Test : To use CRC Algorithm
+ 4) RAM Test : To use March C Algorithm. (and disable interrupt)
+ 5) To use Internal OSC for SystemClock
+ 6) To use Ring OSC for WDT & Clock Monitoring
+
