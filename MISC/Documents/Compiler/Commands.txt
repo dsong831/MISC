@@ -1,0 +1,3 @@
+# Keil IDE에서 bin 파일 생성 사용자 커멘드
+fromelf --bin --output .\Objects\@L.bin !L
+
