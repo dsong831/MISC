@@ -1,0 +1,34 @@
+Following directory structure and template files are given:
+
+  - <Vendor/Device>
+      |
+      +-- <docs>
+      +-- <drivers>
+      |     +-- cmsis					cmsis library
+      |     +-- <device>_hal				device specific hal
+      |     |     +-- inc                               (to use prefix '<device>_hal_')
+      |     |     +-- src				(to use prefix '<device>_hal_')
+      +-- <modules>
+      |     +-- module_template 			unified module
+      |     |     +-- inc
+      |     |     +-- src
+      +-- <projects>
+      |     +-- <device>
+      |     |     +-- app
+      |     |     |    +-- inc
+      |     |     |    |    +- main.h	        	project main header file
+      |	    |	  |    |
+      |     |     |    +-- src
+      |     |     |    |    +- main.c			project main source file
+      |     |	  |    |
+      |     |     |    +-- mdk-arm
+      |     |     |    |    +- <device>_app.uvprojx 	keil toolchain project file
+      |     |
+      +-- <utils>
+            +-- common
+                  +-- inc
+                  |    +- common.h			common used header file
+                  +-- src
+                       +- common.c			common used source file
+
+
