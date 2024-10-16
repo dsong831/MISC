@@ -77,3 +77,54 @@ void SPI_EnableDMA(SSP_TypeDef *SSPx, bool tx_enable, bool rx_enable) {
 void SPI_DisableDMA(SSP_TypeDef *SSPx) {
     SSPx->DMACR = 0;
 }
+
+/*
+
+사용 예시:
+
+```c
+SPI_Config config = {
+    .clock_frequency = 1000000,  // 1 MHz
+    .data_size = 8,              // 8-bit data
+    .clock_phase = false,
+    .clock_polarity = false,
+    .is_master = true
+};
+
+SPI_Init(SPI, &config);
+SPI_SetFormat(SPI, SPI_FORMAT_SPI);
+SPI_Enable(SPI);
+
+// Transmit data
+SPI_TransmitData(SPI, 0xAA);
+
+// Receive data
+uint16_t received_data = SPI_ReceiveData(SPI);
+
+SPI_Disable(SPI);
+```
+
+사용 예시:
+
+```c
+DMA_Config config = {
+    .channel_num = 0,
+    .source = 0x20000000,
+    .destination = 0x20001000,
+    .size = 1024,
+    .increment_source = true,
+    .increment_destination = true
+};
+
+DMA_Init(DMA);
+DMA_ConfigureChannel(DMA, &config);
+DMA_StartTransfer(DMA, 0);
+
+while (!DMA_IsTransferComplete(DMA, 0)) {
+    // Wait for transfer to complete
+}
+
+DMA_ClearInterrupt(DMA, 0);
+```
+
+*/
