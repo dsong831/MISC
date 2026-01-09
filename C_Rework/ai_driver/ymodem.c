@@ -16,12 +16,12 @@
 
 /* Retry counts (platform independent) */
 #define RETRY_INIT_HANDSHAKE  60   /* Initial 'C' handshake retry */
-#define RETRY_PACKET_RX       3    /* Packet reception retry */
-#define RETRY_ERROR_MAX       10   /* Maximum error count */
+#define RETRY_PACKET_RX       5    /* Packet reception retry */
+#define RETRY_ERROR_MAX       15   /* Maximum error count */
 
 /* Timeout values (milliseconds) - used with uart_receive_byte */
-#define TIMEOUT_RX_BYTE       100  /* Per-byte timeout */
-#define TIMEOUT_RX_FIRST      500  /* First byte of packet timeout */
+#define TIMEOUT_RX_BYTE       200  /* Per-byte timeout */
+#define TIMEOUT_RX_FIRST      1000 /* First byte of packet timeout */
 
 /* Internal functions */
 static uint16_t crc16(const uint8_t *data, uint16_t length);
@@ -76,16 +76,8 @@ static ymodem_status_t receive_packet(uint8_t *buffer, uint32_t *packet_size, ui
     uint16_t data_size, crc_recv, crc_calc;
     uint8_t crc_high, crc_low;
     
-    /* Receive header with retry */
-    int retry = 0;
-    while (retry < RETRY_PACKET_RX) {
-        if (uart_receive_byte(&header, TIMEOUT_RX_FIRST) == 0) {
-            break;
-        }
-        retry++;
-    }
-    
-    if (retry >= RETRY_PACKET_RX) {
+    /* Receive header */
+    if (uart_receive_byte(&header, TIMEOUT_RX_FIRST) != 0) {
         return YMODEM_TIMEOUT;
     }
     
@@ -231,7 +223,15 @@ ymodem_status_t ymodem_receive(ymodem_packet_handler_t handler, ymodem_file_info
         uint32_t packet_size;
         uint8_t seq_num;
         
-        status = receive_packet(packet_buf, &packet_size, &seq_num);
+        /* Retry packet reception */
+        int pkt_retry = 0;
+        do {
+            status = receive_packet(packet_buf, &packet_size, &seq_num);
+            if (status != YMODEM_TIMEOUT) {
+                break;
+            }
+            pkt_retry++;
+        } while (pkt_retry < RETRY_PACKET_RX);
         
         /* EOT received */
         if (status == YMODEM_OK && packet_size == 0) {
@@ -272,6 +272,10 @@ ymodem_status_t ymodem_receive(ymodem_packet_handler_t handler, ymodem_file_info
             }
         }
         
+        /* CRITICAL: Send ACK BEFORE callback to prevent UART buffer overflow */
+        send_control(ACK);
+        expected_seq++;
+        
         /* Call handler - Flash write, etc. */
         if (valid_size > 0) {
             if (handler(packet_buf, valid_size, data_offset) != 0) {
@@ -281,8 +285,6 @@ ymodem_status_t ymodem_receive(ymodem_packet_handler_t handler, ymodem_file_info
             data_offset += valid_size;
         }
         
-        send_control(ACK);
-        expected_seq++;
         error_count = 0;  /* Reset error count on success */
     }
     
