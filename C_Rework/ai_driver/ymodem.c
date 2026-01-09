@@ -1,29 +1,29 @@
 #include "ymodem.h"
 #include <string.h>
 
-/* Ymodem 프로토콜 제어 문자 */
-#define SOH  0x01  /* 128바이트 블록 시작 */
-#define STX  0x02  /* 1024바이트 블록 시작 */
-#define EOT  0x04  /* 전송 종료 */
-#define ACK  0x06  /* 긍정 응답 */
-#define NAK  0x15  /* 부정 응답 */
-#define CAN  0x18  /* 전송 취소 */
-#define CRC  0x43  /* 'C' - CRC 모드 요청 */
+/* Ymodem protocol control characters */
+#define SOH  0x01  /* Start of 128-byte block */
+#define STX  0x02  /* Start of 1024-byte block */
+#define EOT  0x04  /* End of transmission */
+#define ACK  0x06  /* Acknowledge */
+#define NAK  0x15  /* Negative acknowledge */
+#define CAN  0x18  /* Cancel */
+#define CRC  0x43  /* 'C' - CRC mode request */
 
-/* 패킷 크기 */
+/* Packet sizes */
 #define PACKET_SIZE_128   128
 #define PACKET_SIZE_1024  1024
 
-/* 타임아웃 설정 (밀리초) - Flash 쓰기 시간 고려 */
-#define TIMEOUT_INITIAL   30000  /* 초기 대기 30초 */
-#define TIMEOUT_PACKET    10000  /* 패킷 대기 10초 (Flash 쓰기 시간 고려) */
-#define TIMEOUT_BYTE      2000   /* 바이트 대기 2초 */
+/* Retry counts (platform independent) */
+#define RETRY_INIT_HANDSHAKE  60   /* Initial 'C' handshake retry */
+#define RETRY_PACKET_RX       3    /* Packet reception retry */
+#define RETRY_ERROR_MAX       10   /* Maximum error count */
 
-/* 재시도 횟수 */
-#define MAX_ERRORS        10
-#define MAX_INIT_RETRY    60
+/* Timeout values (milliseconds) - used with uart_receive_byte */
+#define TIMEOUT_RX_BYTE       100  /* Per-byte timeout */
+#define TIMEOUT_RX_FIRST      500  /* First byte of packet timeout */
 
-/* 내부 함수 선언 */
+/* Internal functions */
 static uint16_t crc16(const uint8_t *data, uint16_t length);
 static ymodem_status_t receive_packet(uint8_t *buffer, uint32_t *packet_size, uint8_t *seq_num);
 static ymodem_status_t send_packet(const uint8_t *data, uint32_t size, uint8_t seq_num);
@@ -31,7 +31,7 @@ static void send_control(uint8_t control);
 static void abort_transfer(void);
 
 /**
- * @brief CRC16-CCITT 계산
+ * @brief Calculate CRC16-CCITT
  */
 static uint16_t crc16(const uint8_t *data, uint16_t length)
 {
@@ -51,7 +51,7 @@ static uint16_t crc16(const uint8_t *data, uint16_t length)
 }
 
 /**
- * @brief 제어 문자 송신
+ * @brief Send control character
  */
 static void send_control(uint8_t control)
 {
@@ -59,7 +59,7 @@ static void send_control(uint8_t control)
 }
 
 /**
- * @brief 전송 중단
+ * @brief Abort transfer
  */
 static void abort_transfer(void)
 {
@@ -68,7 +68,7 @@ static void abort_transfer(void)
 }
 
 /**
- * @brief 패킷 수신
+ * @brief Receive one packet
  */
 static ymodem_status_t receive_packet(uint8_t *buffer, uint32_t *packet_size, uint8_t *seq_num)
 {
@@ -76,12 +76,20 @@ static ymodem_status_t receive_packet(uint8_t *buffer, uint32_t *packet_size, ui
     uint16_t data_size, crc_recv, crc_calc;
     uint8_t crc_high, crc_low;
     
-    /* 헤더 수신 */
-    if (uart_receive_byte(&header, TIMEOUT_PACKET) != 0) {
+    /* Receive header with retry */
+    int retry = 0;
+    while (retry < RETRY_PACKET_RX) {
+        if (uart_receive_byte(&header, TIMEOUT_RX_FIRST) == 0) {
+            break;
+        }
+        retry++;
+    }
+    
+    if (retry >= RETRY_PACKET_RX) {
         return YMODEM_TIMEOUT;
     }
     
-    /* 특수 문자 처리 */
+    /* Handle special characters */
     if (header == EOT) {
         *packet_size = 0;
         return YMODEM_OK;
@@ -89,13 +97,13 @@ static ymodem_status_t receive_packet(uint8_t *buffer, uint32_t *packet_size, ui
     
     if (header == CAN) {
         uint8_t second;
-        if (uart_receive_byte(&second, 500) == 0 && second == CAN) {
+        if (uart_receive_byte(&second, TIMEOUT_RX_BYTE) == 0 && second == CAN) {
             return YMODEM_CANCEL;
         }
         return YMODEM_INVALID_PACKET;
     }
     
-    /* 패킷 크기 결정 */
+    /* Determine packet size */
     if (header == SOH) {
         data_size = PACKET_SIZE_128;
     } else if (header == STX) {
@@ -104,9 +112,9 @@ static ymodem_status_t receive_packet(uint8_t *buffer, uint32_t *packet_size, ui
         return YMODEM_INVALID_PACKET;
     }
     
-    /* 시퀀스 번호 수신 및 검증 */
-    if (uart_receive_byte(&seq, TIMEOUT_BYTE) != 0 ||
-        uart_receive_byte(&seq_inv, TIMEOUT_BYTE) != 0) {
+    /* Receive and verify sequence number */
+    if (uart_receive_byte(&seq, TIMEOUT_RX_BYTE) != 0 ||
+        uart_receive_byte(&seq_inv, TIMEOUT_RX_BYTE) != 0) {
         return YMODEM_TIMEOUT;
     }
     
@@ -114,16 +122,16 @@ static ymodem_status_t receive_packet(uint8_t *buffer, uint32_t *packet_size, ui
         return YMODEM_INVALID_PACKET;
     }
     
-    /* 데이터 수신 */
+    /* Receive data */
     for (uint16_t i = 0; i < data_size; i++) {
-        if (uart_receive_byte(&buffer[i], TIMEOUT_BYTE) != 0) {
+        if (uart_receive_byte(&buffer[i], TIMEOUT_RX_BYTE) != 0) {
             return YMODEM_TIMEOUT;
         }
     }
     
-    /* CRC 수신 및 검증 */
-    if (uart_receive_byte(&crc_high, TIMEOUT_BYTE) != 0 ||
-        uart_receive_byte(&crc_low, TIMEOUT_BYTE) != 0) {
+    /* Receive and verify CRC */
+    if (uart_receive_byte(&crc_high, TIMEOUT_RX_BYTE) != 0 ||
+        uart_receive_byte(&crc_low, TIMEOUT_RX_BYTE) != 0) {
         return YMODEM_TIMEOUT;
     }
     
@@ -140,15 +148,15 @@ static ymodem_status_t receive_packet(uint8_t *buffer, uint32_t *packet_size, ui
 }
 
 /**
- * @brief Ymodem 수신 구현 (콜백 방식)
+ * @brief Ymodem receive implementation (callback-based)
  */
 ymodem_status_t ymodem_receive(ymodem_packet_handler_t handler, ymodem_file_info_t *file_info)
 {
     uint8_t packet_buf[PACKET_SIZE_1024];
     uint8_t expected_seq = 0;
     uint32_t data_offset = 0;
+    int init_count = 0;
     int error_count = 0;
-    int packet_errors = 0;
     ymodem_status_t status;
     
     if (!handler || !file_info) {
@@ -157,36 +165,28 @@ ymodem_status_t ymodem_receive(ymodem_packet_handler_t handler, ymodem_file_info
     
     memset(file_info, 0, sizeof(ymodem_file_info_t));
     
-    /* 첫 번째 패킷(헤더) 수신 - 3초 간격으로 'C' 전송 */
-    error_count = 0;
-    while (error_count < MAX_INIT_RETRY) {
+    /* Receive first packet (header) - send 'C' periodically */
+    while (init_count < RETRY_INIT_HANDSHAKE) {
         send_control(CRC);
         
         uint32_t packet_size;
         uint8_t seq_num;
         
-        /* 3초 간격으로 재시도 (500ms씩 6번 체크) */
-        status = YMODEM_TIMEOUT;
-        for (int i = 0; i < 6; i++) {
-            status = receive_packet(packet_buf, &packet_size, &seq_num);
-            if (status != YMODEM_TIMEOUT) {
-                break;
-            }
-        }
+        status = receive_packet(packet_buf, &packet_size, &seq_num);
         
         if (status == YMODEM_CANCEL) {
             return YMODEM_CANCEL;
         }
         
-        /* 헤더 패킷은 반드시 시퀀스 0 */
+        /* Header packet must have sequence 0 */
         if (status == YMODEM_OK && seq_num == 0) {
-            /* 빈 파일명 = 배치 종료 */
+            /* Empty filename = batch end */
             if (packet_buf[0] == 0) {
                 send_control(ACK);
                 return YMODEM_OK;
             }
             
-            /* 파일명 추출 */
+            /* Extract filename */
             int name_len = 0;
             while (name_len < PACKET_SIZE_128 &&
                    name_len < (int)sizeof(file_info->filename) - 1 &&
@@ -196,7 +196,7 @@ ymodem_status_t ymodem_receive(ymodem_packet_handler_t handler, ymodem_file_info
             }
             file_info->filename[name_len] = '\0';
             
-            /* 파일 크기 추출 */
+            /* Extract file size */
             if (name_len < PACKET_SIZE_128 - 1 && packet_buf[name_len + 1] != 0) {
                 char *p = (char *)&packet_buf[name_len + 1];
                 while (*p == ' ') p++;
@@ -216,24 +216,24 @@ ymodem_status_t ymodem_receive(ymodem_packet_handler_t handler, ymodem_file_info
             break;
         }
         
-        error_count++;
+        init_count++;
     }
     
-    if (error_count >= MAX_INIT_RETRY) {
+    if (init_count >= RETRY_INIT_HANDSHAKE) {
         abort_transfer();
         return YMODEM_TIMEOUT;
     }
     
-    /* 데이터 패킷 수신 및 콜백 처리 */
-    packet_errors = 0;
+    /* Receive data packets and process via callback */
+    error_count = 0;
     
-    while (packet_errors < MAX_ERRORS) {
+    while (error_count < RETRY_ERROR_MAX) {
         uint32_t packet_size;
         uint8_t seq_num;
         
         status = receive_packet(packet_buf, &packet_size, &seq_num);
         
-        /* EOT 수신 */
+        /* EOT received */
         if (status == YMODEM_OK && packet_size == 0) {
             send_control(ACK);
             return YMODEM_OK;
@@ -245,23 +245,23 @@ ymodem_status_t ymodem_receive(ymodem_packet_handler_t handler, ymodem_file_info
         
         if (status != YMODEM_OK) {
             send_control(NAK);
-            packet_errors++;
+            error_count++;
             continue;
         }
         
-        /* 시퀀스 검증 (오버플로우 고려) */
+        /* Verify sequence (with overflow consideration) */
         if (seq_num != expected_seq) {
-            /* 중복 패킷 (이전 ACK를 못받은 경우) */
+            /* Duplicate packet (previous ACK was lost) */
             if (seq_num == (uint8_t)(expected_seq - 1)) {
                 send_control(ACK);
             } else {
                 send_control(NAK);
-                packet_errors++;
+                error_count++;
             }
             continue;
         }
         
-        /* 유효한 데이터 크기 계산 */
+        /* Calculate valid data size */
         uint32_t valid_size = packet_size;
         
         if (file_info->file_size > 0) {
@@ -272,10 +272,7 @@ ymodem_status_t ymodem_receive(ymodem_packet_handler_t handler, ymodem_file_info
             }
         }
         
-        /* 콜백 호출 전에 먼저 ACK 전송 (Flash 쓰기 시간 확보) */
-        send_control(ACK);
-        
-        /* 콜백 호출 - Flash 쓰기 등 처리 */
+        /* Call handler - Flash write, etc. */
         if (valid_size > 0) {
             if (handler(packet_buf, valid_size, data_offset) != 0) {
                 abort_transfer();
@@ -284,8 +281,9 @@ ymodem_status_t ymodem_receive(ymodem_packet_handler_t handler, ymodem_file_info
             data_offset += valid_size;
         }
         
+        send_control(ACK);
         expected_seq++;
-        packet_errors = 0;
+        error_count = 0;  /* Reset error count on success */
     }
     
     abort_transfer();
@@ -293,7 +291,7 @@ ymodem_status_t ymodem_receive(ymodem_packet_handler_t handler, ymodem_file_info
 }
 
 /**
- * @brief 패킷 송신
+ * @brief Send one packet
  */
 static ymodem_status_t send_packet(const uint8_t *data, uint32_t size, uint8_t seq_num)
 {
@@ -301,12 +299,12 @@ static ymodem_status_t send_packet(const uint8_t *data, uint32_t size, uint8_t s
     uint16_t packet_size = (size <= PACKET_SIZE_128) ? PACKET_SIZE_128 : PACKET_SIZE_1024;
     uint16_t crc;
     
-    /* 헤더 */
+    /* Header */
     packet[0] = (packet_size == PACKET_SIZE_128) ? SOH : STX;
     packet[1] = seq_num;
     packet[2] = (uint8_t)(~seq_num);
     
-    /* 데이터 및 패딩 */
+    /* Data and padding */
     memcpy(&packet[3], data, size);
     if (size < packet_size) {
         memset(&packet[3 + size], 0x1A, packet_size - size);
@@ -317,9 +315,9 @@ static ymodem_status_t send_packet(const uint8_t *data, uint32_t size, uint8_t s
     packet[3 + packet_size] = (uint8_t)(crc >> 8);
     packet[3 + packet_size + 1] = (uint8_t)(crc & 0xFF);
     
-    /* 전송 시도 */
-    for (int retry = 0; retry < MAX_ERRORS; retry++) {
-        /* 패킷 송신 */
+    /* Transmission attempts */
+    for (int retry = 0; retry < RETRY_ERROR_MAX; retry++) {
+        /* Send packet */
         int tx_ok = 1;
         for (uint32_t i = 0; i < 3 + packet_size + 2; i++) {
             if (uart_transmit_byte(packet[i]) != 0) {
@@ -332,15 +330,20 @@ static ymodem_status_t send_packet(const uint8_t *data, uint32_t size, uint8_t s
             return YMODEM_ERROR;
         }
         
-        /* 응답 대기 */
+        /* Wait for response */
         uint8_t response;
-        if (uart_receive_byte(&response, TIMEOUT_PACKET) == 0) {
-            if (response == ACK) {
-                return YMODEM_OK;
+        int rx_retry = 0;
+        while (rx_retry < RETRY_PACKET_RX) {
+            if (uart_receive_byte(&response, TIMEOUT_RX_FIRST) == 0) {
+                if (response == ACK) {
+                    return YMODEM_OK;
+                }
+                if (response == CAN) {
+                    return YMODEM_CANCEL;
+                }
+                break;
             }
-            if (response == CAN) {
-                return YMODEM_CANCEL;
-            }
+            rx_retry++;
         }
     }
     
@@ -348,7 +351,7 @@ static ymodem_status_t send_packet(const uint8_t *data, uint32_t size, uint8_t s
 }
 
 /**
- * @brief Ymodem 송신 구현
+ * @brief Ymodem transmit implementation
  */
 ymodem_status_t ymodem_transmit(const uint8_t *data, uint32_t size, const char *filename)
 {
@@ -356,15 +359,15 @@ ymodem_status_t ymodem_transmit(const uint8_t *data, uint32_t size, const char *
     uint8_t response;
     uint32_t offset = 0;
     uint8_t seq_num = 0;
-    int init_retry = 0;
+    int init_count = 0;
     
     if (!data || size == 0) {
         return YMODEM_ERROR;
     }
     
-    /* 'C' 대기 */
-    while (init_retry < MAX_INIT_RETRY) {
-        if (uart_receive_byte(&response, 500) == 0) {
+    /* Wait for 'C' */
+    while (init_count < RETRY_INIT_HANDSHAKE) {
+        if (uart_receive_byte(&response, TIMEOUT_RX_FIRST) == 0) {
             if (response == CRC) {
                 break;
             }
@@ -372,14 +375,14 @@ ymodem_status_t ymodem_transmit(const uint8_t *data, uint32_t size, const char *
                 return YMODEM_CANCEL;
             }
         }
-        init_retry++;
+        init_count++;
     }
     
-    if (init_retry >= MAX_INIT_RETRY) {
+    if (init_count >= RETRY_INIT_HANDSHAKE) {
         return YMODEM_TIMEOUT;
     }
     
-    /* 헤더 패킷 구성 */
+    /* Construct header packet */
     memset(header_packet, 0, sizeof(header_packet));
     
     if (filename) {
@@ -389,7 +392,7 @@ ymodem_status_t ymodem_transmit(const uint8_t *data, uint32_t size, const char *
             name_len++;
         }
         
-        /* 파일 크기 (ASCII) */
+        /* File size (ASCII) */
         char size_str[20];
         int len = 0;
         uint32_t tmp = size;
@@ -399,33 +402,33 @@ ymodem_status_t ymodem_transmit(const uint8_t *data, uint32_t size, const char *
             tmp /= 10;
         } while (tmp > 0);
         
-        /* 역순 복사 */
+        /* Copy in reverse */
         for (int i = 0; i < len && name_len + 1 + i < 100; i++) {
             header_packet[name_len + 1 + i] = size_str[len - 1 - i];
         }
     }
     
-    /* 헤더 송신 */
+    /* Send header */
     if (send_packet(header_packet, PACKET_SIZE_128, seq_num++) != YMODEM_OK) {
         abort_transfer();
         return YMODEM_ERROR;
     }
     
-    /* 'C' 재대기 */
-    init_retry = 0;
-    while (init_retry < 20) {
-        if (uart_receive_byte(&response, 500) == 0 && response == CRC) {
+    /* Wait for 'C' again */
+    init_count = 0;
+    while (init_count < 20) {
+        if (uart_receive_byte(&response, TIMEOUT_RX_FIRST) == 0 && response == CRC) {
             break;
         }
-        init_retry++;
+        init_count++;
     }
     
-    if (init_retry >= 20) {
+    if (init_count >= 20) {
         abort_transfer();
         return YMODEM_TIMEOUT;
     }
     
-    /* 데이터 송신 */
+    /* Send data */
     while (offset < size) {
         uint32_t chunk = (size - offset > PACKET_SIZE_1024) ? 
                         PACKET_SIZE_1024 : (size - offset);
@@ -438,11 +441,16 @@ ymodem_status_t ymodem_transmit(const uint8_t *data, uint32_t size, const char *
         offset += chunk;
     }
     
-    /* EOT 송신 및 ACK 대기 */
+    /* Send EOT and wait for ACK */
     send_control(EOT);
-    if (uart_receive_byte(&response, TIMEOUT_PACKET) != 0 || response != ACK) {
-        return YMODEM_ERROR;
+    
+    init_count = 0;
+    while (init_count < RETRY_PACKET_RX) {
+        if (uart_receive_byte(&response, TIMEOUT_RX_FIRST) == 0 && response == ACK) {
+            return YMODEM_OK;
+        }
+        init_count++;
     }
     
-    return YMODEM_OK;
+    return YMODEM_ERROR;
 }
