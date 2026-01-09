@@ -13,16 +13,15 @@
 /* 패킷 크기 */
 #define PACKET_SIZE_128   128
 #define PACKET_SIZE_1024  1024
-#define PACKET_HEADER     3    /* SOH/STX + SEQ + SEQ_INV */
-#define PACKET_TRAILER    2    /* CRC16 */
 
-/* 타임아웃 설정 (밀리초) */
-#define TIMEOUT_INITIAL   3000
-#define TIMEOUT_PACKET    1000
-#define TIMEOUT_BYTE      1000
+/* 타임아웃 설정 (밀리초) - Teraterm용으로 길게 설정 */
+#define TIMEOUT_INITIAL   30000  /* 초기 대기 30초 */
+#define TIMEOUT_PACKET    5000   /* 패킷 대기 5초 */
+#define TIMEOUT_BYTE      1000   /* 바이트 대기 1초 */
 
 /* 재시도 횟수 */
 #define MAX_ERRORS        10
+#define MAX_INIT_RETRY    60     /* 1분간 시도 */
 
 /* 내부 함수 선언 */
 static uint16_t crc16(const uint8_t *data, uint16_t length);
@@ -141,28 +140,28 @@ static ymodem_status_t receive_packet(uint8_t *buffer, uint32_t *packet_size, ui
 }
 
 /**
- * @brief Ymodem 수신 구현
+ * @brief Ymodem 수신 구현 (콜백 방식)
  */
-ymodem_status_t ymodem_receive(uint8_t *buffer, uint32_t max_size, ymodem_result_t *result)
+ymodem_status_t ymodem_receive(ymodem_packet_handler_t handler, ymodem_file_info_t *file_info)
 {
     uint8_t packet_buf[PACKET_SIZE_1024];
     uint8_t expected_seq = 0;
     uint32_t total_received = 0;
-    uint32_t file_size = 0;
     int error_count = 0;
     int packet_errors = 0;
     ymodem_status_t status;
     
-    if (!buffer || !result || max_size == 0) {
+    if (!handler || !file_info) {
         return YMODEM_ERROR;
     }
     
-    memset(result, 0, sizeof(ymodem_result_t));
+    memset(file_info, 0, sizeof(ymodem_file_info_t));
     
-    /* 첫 번째 패킷(헤더) 수신 */
-    send_control(CRC);
-    
-    while (error_count < MAX_ERRORS) {
+    /* 첫 번째 패킷(헤더) 수신 - 능동적으로 'C' 반복 전송 */
+    error_count = 0;
+    while (error_count < MAX_INIT_RETRY) {
+        send_control(CRC);
+        
         uint32_t packet_size;
         uint8_t seq_num;
         
@@ -172,60 +171,53 @@ ymodem_status_t ymodem_receive(uint8_t *buffer, uint32_t max_size, ymodem_result
             return YMODEM_CANCEL;
         }
         
-        if (status != YMODEM_OK) {
-            send_control(CRC);
-            error_count++;
-            continue;
-        }
-        
-        if (seq_num != 0) {
-            send_control(CRC);
-            error_count++;
-            continue;
-        }
-        
-        /* 빈 파일명 = 배치 종료 */
-        if (packet_buf[0] == 0) {
-            send_control(ACK);
-            return YMODEM_OK;
-        }
-        
-        /* 파일명 추출 */
-        int name_len = 0;
-        while (name_len < PACKET_SIZE_128 &&
-               name_len < (int)sizeof(result->filename) - 1 &&
-               packet_buf[name_len] != 0) {
-            result->filename[name_len] = packet_buf[name_len];
-            name_len++;
-        }
-        result->filename[name_len] = '\0';
-        
-        /* 파일 크기 추출 */
-        if (name_len < PACKET_SIZE_128 - 1) {
-            char *p = (char *)&packet_buf[name_len + 1];
-            while (*p == ' ') p++;  /* 공백 건너뛰기 */
-            
-            file_size = 0;
-            int digits = 0;
-            while (digits < 20 && *p >= '0' && *p <= '9') {
-                file_size = file_size * 10 + (*p - '0');
-                p++;
-                digits++;
+        if (status == YMODEM_OK && seq_num == 0) {
+            /* 빈 파일명 = 배치 종료 */
+            if (packet_buf[0] == 0) {
+                send_control(ACK);
+                return YMODEM_OK;
             }
+            
+            /* 파일명 추출 */
+            int name_len = 0;
+            while (name_len < PACKET_SIZE_128 &&
+                   name_len < (int)sizeof(file_info->filename) - 1 &&
+                   packet_buf[name_len] != 0) {
+                file_info->filename[name_len] = packet_buf[name_len];
+                name_len++;
+            }
+            file_info->filename[name_len] = '\0';
+            
+            /* 파일 크기 추출 */
+            if (name_len < PACKET_SIZE_128 - 1) {
+                char *p = (char *)&packet_buf[name_len + 1];
+                while (*p == ' ') p++;
+                
+                file_info->file_size = 0;
+                int digits = 0;
+                while (digits < 20 && *p >= '0' && *p <= '9') {
+                    file_info->file_size = file_info->file_size * 10 + (*p - '0');
+                    p++;
+                    digits++;
+                }
+            }
+            
+            send_control(ACK);
+            send_control(CRC);
+            expected_seq = 1;
+            break;
         }
         
-        send_control(ACK);
-        send_control(CRC);
-        expected_seq = 1;
-        break;
+        error_count++;
     }
     
-    if (error_count >= MAX_ERRORS) {
+    if (error_count >= MAX_INIT_RETRY) {
         abort_transfer();
         return YMODEM_TIMEOUT;
     }
     
-    /* 데이터 패킷 수신 */
+    /* 데이터 패킷 수신 및 콜백 처리 */
+    packet_errors = 0;
     while (packet_errors < MAX_ERRORS) {
         uint32_t packet_size;
         uint8_t seq_num;
@@ -235,8 +227,6 @@ ymodem_status_t ymodem_receive(uint8_t *buffer, uint32_t max_size, ymodem_result
         /* EOT 수신 */
         if (status == YMODEM_OK && packet_size == 0) {
             send_control(ACK);
-            result->size = (file_size > 0 && file_size <= total_received) ? 
-                          file_size : total_received;
             return YMODEM_OK;
         }
         
@@ -262,29 +252,28 @@ ymodem_status_t ymodem_receive(uint8_t *buffer, uint32_t max_size, ymodem_result
             continue;
         }
         
-        /* 복사할 크기 결정 */
-        uint32_t copy_size = packet_size;
-        
-        if (file_size > 0 && total_received + packet_size > file_size) {
-            copy_size = (file_size > total_received) ? 
-                       (file_size - total_received) : 0;
+        /* 유효한 데이터 크기 계산 */
+        uint32_t valid_size = packet_size;
+        if (file_info->file_size > 0) {
+            if (total_received >= file_info->file_size) {
+                valid_size = 0;
+            } else if (total_received + packet_size > file_info->file_size) {
+                valid_size = file_info->file_size - total_received;
+            }
         }
         
-        /* 버퍼 오버플로우 체크 */
-        if (total_received + copy_size > max_size) {
-            abort_transfer();
-            return YMODEM_BUFFER_FULL;
-        }
-        
-        /* 데이터 복사 */
-        if (copy_size > 0) {
-            memcpy(buffer + total_received, packet_buf, copy_size);
-            total_received += copy_size;
+        /* 콜백 호출 - Flash 쓰기 등 처리 */
+        if (valid_size > 0) {
+            if (handler(packet_buf, valid_size, total_received) != 0) {
+                abort_transfer();
+                return YMODEM_ABORT;
+            }
+            total_received += valid_size;
         }
         
         send_control(ACK);
         expected_seq++;
-        packet_errors = 0;  /* 성공 시 에러 카운터 리셋 */
+        packet_errors = 0;
     }
     
     abort_transfer();
@@ -296,7 +285,7 @@ ymodem_status_t ymodem_receive(uint8_t *buffer, uint32_t max_size, ymodem_result
  */
 static ymodem_status_t send_packet(const uint8_t *data, uint32_t size, uint8_t seq_num)
 {
-    uint8_t packet[PACKET_HEADER + PACKET_SIZE_1024 + PACKET_TRAILER];
+    uint8_t packet[3 + PACKET_SIZE_1024 + 2];  /* header + data + crc */
     uint16_t packet_size = (size <= PACKET_SIZE_128) ? PACKET_SIZE_128 : PACKET_SIZE_1024;
     uint16_t crc;
     
@@ -306,21 +295,21 @@ static ymodem_status_t send_packet(const uint8_t *data, uint32_t size, uint8_t s
     packet[2] = (uint8_t)(~seq_num);
     
     /* 데이터 및 패딩 */
-    memcpy(&packet[PACKET_HEADER], data, size);
+    memcpy(&packet[3], data, size);
     if (size < packet_size) {
-        memset(&packet[PACKET_HEADER + size], 0x1A, packet_size - size);
+        memset(&packet[3 + size], 0x1A, packet_size - size);
     }
     
     /* CRC */
-    crc = crc16(&packet[PACKET_HEADER], packet_size);
-    packet[PACKET_HEADER + packet_size] = (uint8_t)(crc >> 8);
-    packet[PACKET_HEADER + packet_size + 1] = (uint8_t)(crc & 0xFF);
+    crc = crc16(&packet[3], packet_size);
+    packet[3 + packet_size] = (uint8_t)(crc >> 8);
+    packet[3 + packet_size + 1] = (uint8_t)(crc & 0xFF);
     
     /* 전송 시도 */
     for (int retry = 0; retry < MAX_ERRORS; retry++) {
         /* 패킷 송신 */
         int tx_ok = 1;
-        for (uint32_t i = 0; i < PACKET_HEADER + packet_size + PACKET_TRAILER; i++) {
+        for (uint32_t i = 0; i < 3 + packet_size + 2; i++) {
             if (uart_transmit_byte(packet[i]) != 0) {
                 tx_ok = 0;
                 break;
@@ -340,7 +329,6 @@ static ymodem_status_t send_packet(const uint8_t *data, uint32_t size, uint8_t s
             if (response == CAN) {
                 return YMODEM_CANCEL;
             }
-            /* NAK이면 재전송 */
         }
     }
     
@@ -362,9 +350,9 @@ ymodem_status_t ymodem_transmit(const uint8_t *data, uint32_t size, const char *
         return YMODEM_ERROR;
     }
     
-    /* 'C' 대기 */
-    while (init_retry < 30) {
-        if (uart_receive_byte(&response, 100) == 0) {
+    /* 'C' 대기 - Teraterm이 준비될 때까지 */
+    while (init_retry < MAX_INIT_RETRY) {
+        if (uart_receive_byte(&response, 500) == 0) {
             if (response == CRC) {
                 break;
             }
@@ -375,7 +363,7 @@ ymodem_status_t ymodem_transmit(const uint8_t *data, uint32_t size, const char *
         init_retry++;
     }
     
-    if (init_retry >= 30) {
+    if (init_retry >= MAX_INIT_RETRY) {
         return YMODEM_TIMEOUT;
     }
     
@@ -413,14 +401,14 @@ ymodem_status_t ymodem_transmit(const uint8_t *data, uint32_t size, const char *
     
     /* 'C' 재대기 */
     init_retry = 0;
-    while (init_retry < 10) {
-        if (uart_receive_byte(&response, 100) == 0 && response == CRC) {
+    while (init_retry < 20) {
+        if (uart_receive_byte(&response, 500) == 0 && response == CRC) {
             break;
         }
         init_retry++;
     }
     
-    if (init_retry >= 10) {
+    if (init_retry >= 20) {
         abort_transfer();
         return YMODEM_TIMEOUT;
     }
